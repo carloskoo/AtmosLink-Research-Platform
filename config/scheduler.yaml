@@ -42,3 +42,11 @@ tasks:
       - python3
       - -m
       - weather_station.backup.backup_database
+
+  health_monitor:
+    enabled: true
+    interval_seconds: 60
+    command:
+      - python3
+      - -m
+      - weather_station.health.health_monitor
