@@ -2,13 +2,15 @@ import subprocess
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+from weather_station.config.settings import load_config
 
-AP_IP = "192.168.1.2"
-SM_IP = "192.168.1.3"
-SSH_USER = "admin"
-PASSFILE = "/home/carlos/epmp_logs/.ap_pass"
-DB_FILE = "SQLite/weather_local.db"
+CONFIG = load_config()
 
+AP_IP = CONFIG["radio_link"]["ap_ip"]
+SM_IP = CONFIG["radio_link"]["sm_ip"]
+SSH_USER = CONFIG["radio_link"]["ssh_user"]
+PASSFILE = CONFIG["radio_link"]["passfile"]
+DB_FILE = CONFIG["database"]["sqlite"]
 
 def now_times():
     return (
