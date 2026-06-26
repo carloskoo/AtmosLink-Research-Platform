@@ -50,3 +50,11 @@ tasks:
       - python3
       - -m
       - weather_station.health.health_monitor
+
+  notification_engine:
+    enabled: true
+    interval_seconds: 60
+    command:
+      - python3
+      - -m
+      - weather_station.notifications.notification_engine
