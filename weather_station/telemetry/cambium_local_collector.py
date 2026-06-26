@@ -1,7 +1,9 @@
 import subprocess
 import sqlite3
+import time
 from datetime import datetime, timezone
 from pathlib import Path
+
 from weather_station.config.settings import load_config
 
 CONFIG = load_config()
@@ -12,45 +14,15 @@ SSH_USER = CONFIG["radio_link"]["ssh_user"]
 PASSFILE = CONFIG["radio_link"]["passfile"]
 DB_FILE = CONFIG["database"]["sqlite"]
 
+INTERVAL_SECONDS = CONFIG.get("radio_link", {}).get("interval_seconds", 60)
+SSH_TIMEOUT = CONFIG.get("radio_link", {}).get("ssh_timeout_seconds", 15)
+
+
 def now_times():
     return (
         datetime.now(timezone.utc).isoformat(timespec="seconds"),
         datetime.now().astimezone().isoformat(timespec="seconds"),
     )
-
-
-def run_ssh(cmd):
-    command = [
-        "sshpass", "-f", PASSFILE,
-        "ssh",
-        "-o", "StrictHostKeyChecking=no",
-        "-o", "UserKnownHostsFile=/dev/null",
-        "-o", "ConnectTimeout=5",
-        f"{SSH_USER}@{AP_IP}",
-        cmd,
-    ]
-
-    result = subprocess.run(command, capture_output=True, text=True, timeout=15)
-
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip())
-
-    return result.stdout
-
-
-def value_after_key(text, key):
-    for line in text.splitlines():
-        parts = line.strip().split()
-        if len(parts) >= 2 and parts[0] == key:
-            return parts[1]
-    return None
-
-
-def value_after_colon(text, key):
-    for line in text.splitlines():
-        if key in line and ":" in line:
-            return line.split(":", 1)[1].strip()
-    return None
 
 
 def to_float(v):
@@ -91,7 +63,8 @@ def init_db():
             sta_dl_rssi REAL,
             sta_ul_rssi REAL,
 
-            note TEXT
+            note TEXT,
+            error TEXT
         )
     """)
 
@@ -99,9 +72,102 @@ def init_db():
     conn.close()
 
 
-def collect_once():
-    init_db()
+def save_status(note, error=""):
+    timestamp_utc, timestamp_local = now_times()
 
+    conn = sqlite3.connect(DB_FILE)
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO radio_link_local (
+            timestamp_utc,
+            timestamp_local,
+            source,
+            ap_ip,
+            sm_ip,
+            note,
+            error
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        timestamp_utc,
+        timestamp_local,
+        "local_ssh",
+        AP_IP,
+        SM_IP,
+        note,
+        error[:300] if error else "",
+    ))
+
+    conn.commit()
+    conn.close()
+
+    print(f"RADIO STATUS: {timestamp_local} note={note} error={error}")
+
+
+def run_ssh(cmd):
+    command = [
+        "sshpass", "-f", PASSFILE,
+        "ssh",
+        "-o", "StrictHostKeyChecking=no",
+        "-o", "UserKnownHostsFile=/dev/null",
+        "-o", f"ConnectTimeout={SSH_TIMEOUT}",
+        f"{SSH_USER}@{AP_IP}",
+        cmd,
+    ]
+
+    result = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        timeout=SSH_TIMEOUT + 5
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip())
+
+    return result.stdout
+
+
+def value_after_key(text, key):
+    for line in text.splitlines():
+        parts = line.strip().split()
+        if len(parts) >= 2 and parts[0] == key:
+            return parts[1]
+    return None
+
+
+def value_after_colon(text, key):
+    for line in text.splitlines():
+        if key in line and ":" in line:
+            return line.split(":", 1)[1].strip()
+    return None
+
+
+def classify_note(row):
+    note = "ok"
+
+    snr_dl = to_float(row.get("snr_dl"))
+    rssi_dl = to_float(row.get("sta_dl_rssi"))
+    mcs_dl = to_float(row.get("mcs_dl"))
+    dl_rate = to_float(row.get("dl_rate"))
+
+    if snr_dl is not None and snr_dl < 15:
+        note = "LOW_SNR"
+
+    if rssi_dl is not None and rssi_dl < -75:
+        note = "LOW_RSSI"
+
+    if mcs_dl is not None and mcs_dl < 3:
+        note = "LOW_MCS"
+
+    if dl_rate is not None and dl_rate < 20:
+        note = "LOW_RATE"
+
+    return note
+
+
+def collect_once():
     show_sta = run_ssh("show sta")
     show_rssi = run_ssh("show rssi")
 
@@ -110,8 +176,10 @@ def collect_once():
         "mcs_ul": value_after_key(show_sta, "connectedSTAULMCS"),
         "snr_dl": value_after_key(show_sta, "connectedSTADLSNR"),
         "snr_ul": value_after_key(show_sta, "connectedSTAULSNR"),
+
         "dl_rate": value_after_key(show_sta, "connectedSTADLRateMbps"),
         "ul_rate": value_after_key(show_sta, "connectedSTAULRateMbps"),
+
         "sta_dl_rssi": value_after_key(show_sta, "connectedSTADLRSSI"),
         "sta_ul_rssi": value_after_key(show_sta, "connectedSTAULRSSI"),
 
@@ -121,19 +189,7 @@ def collect_once():
         "rssi_c1e": value_after_colon(show_rssi, "chain 1 RSSI extension"),
     }
 
-    note = "ok"
-
-    if to_float(row["snr_dl"]) is not None and to_float(row["snr_dl"]) < 15:
-        note = "LOW_SNR"
-
-    if to_float(row["sta_dl_rssi"]) is not None and to_float(row["sta_dl_rssi"]) < -75:
-        note = "LOW_RSSI"
-
-    if to_float(row["mcs_dl"]) is not None and to_float(row["mcs_dl"]) < 3:
-        note = "LOW_MCS"
-
-    if to_float(row["dl_rate"]) is not None and to_float(row["dl_rate"]) < 20:
-        note = "LOW_RATE"
+    note = classify_note(row)
 
     timestamp_utc, timestamp_local = now_times()
 
@@ -147,47 +203,86 @@ def collect_once():
             source,
             ap_ip,
             sm_ip,
+
             mcs_dl,
             mcs_ul,
             snr_dl,
             snr_ul,
+
             rssi_c0p,
             rssi_c0e,
             rssi_c1p,
             rssi_c1e,
+
             dl_rate,
             ul_rate,
+
             sta_dl_rssi,
             sta_ul_rssi,
-            note
+
+            note,
+            error
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         timestamp_utc,
         timestamp_local,
         "local_ssh",
         AP_IP,
         SM_IP,
+
         to_float(row["mcs_dl"]),
         to_float(row["mcs_ul"]),
         to_float(row["snr_dl"]),
         to_float(row["snr_ul"]),
+
         to_float(row["rssi_c0p"]),
         to_float(row["rssi_c0e"]),
         to_float(row["rssi_c1p"]),
         to_float(row["rssi_c1e"]),
+
         to_float(row["dl_rate"]),
         to_float(row["ul_rate"]),
+
         to_float(row["sta_dl_rssi"]),
         to_float(row["sta_ul_rssi"]),
+
         note,
+        "",
     ))
 
     conn.commit()
     conn.close()
 
-    print("GUARDADO RADIO:", timestamp_local, row, "note=", note)
+    print(f"GUARDADO RADIO: {timestamp_local} note={note} row={row}")
+
+
+def run_daemon():
+    init_db()
+
+    print("AtmosLink RadioLink Collector iniciado")
+    print(f"AP: {AP_IP}")
+    print(f"SM: {SM_IP}")
+    print(f"Intervalo: {INTERVAL_SECONDS} s")
+
+    while True:
+        try:
+            collect_once()
+
+        except KeyboardInterrupt:
+            print("RadioLink Collector detenido por usuario")
+            break
+
+        except Exception as e:
+            err = str(e)
+            print(f"RADIO ERROR: {err}")
+            try:
+                save_status("RADIO_UNAVAILABLE", err)
+            except Exception as db_err:
+                print(f"ERROR GUARDANDO ESTADO RADIO: {db_err}")
+
+        time.sleep(INTERVAL_SECONDS)
 
 
 if __name__ == "__main__":
-    collect_once()
+    run_daemon()
