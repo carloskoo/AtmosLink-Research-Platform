@@ -19,3 +19,5 @@ Config/secrets.env
 
 .vscode/
 .idea/
+
+Data/external/
