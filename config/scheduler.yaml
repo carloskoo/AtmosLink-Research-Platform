@@ -1,0 +1,44 @@
+scheduler:
+  loop_sleep_seconds: 5
+  task_timeout_seconds: 300
+
+tasks:
+  sync_master_dataset:
+    enabled: true
+    interval_seconds: 3600
+    command:
+      - python3
+      - -m
+      - weather_station.sync.build_master_dataset
+
+  weather_logger:
+    enabled: false
+    interval_seconds: 60
+    command:
+      - python3
+      - -m
+      - weather_station.logger.weather_logger
+
+  radio_collector:
+    enabled: false
+    interval_seconds: 60
+    command:
+      - python3
+      - -m
+      - weather_station.radio.radio_collector
+
+  era5_downloader:
+    enabled: false
+    interval_seconds: 86400
+    command:
+      - python3
+      - -m
+      - weather_station.era5.era5_downloader
+
+  daily_backup:
+    enabled: false
+    interval_seconds: 86400
+    command:
+      - python3
+      - -m
+      - weather_station.backup.backup_database

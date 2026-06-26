@@ -1,23 +1,19 @@
-venv/
+# Python
 __pycache__/
 *.pyc
 
-SQLite/*.db
-SQLite/*.db-wal
-SQLite/*.db-shm
-SQLite/backup/
+# Virtual environment
+venv/
 
-Data/raw/*.csv
-Data/processed/*.csv
-Data/exports/*.csv
+# Runtime and logs
+runtime/
+logs/
+Logs/
 
-Logs/*.log
-
-Config/secrets.env
-*.cdsapirc
-.cdsapirc
-
-.vscode/
-.idea/
-
-Data/external/
+# Data and databases
+Data/
+SQLite/
+*.db
+*.sqlite
+*.db-wal
+*.db-shm
