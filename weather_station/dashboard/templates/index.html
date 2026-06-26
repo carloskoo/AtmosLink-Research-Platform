@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>AtmosLink Research Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2937;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --ok: #22c55e;
+      --bad: #ef4444;
+      --accent: #38bdf8;
+      --warning: #f59e0b;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: var(--panel);
+      padding: 18px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .online {
+      color: var(--ok);
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    main {
+      padding: 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .value {
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .unit {
+      font-size: 18px;
+      color: var(--muted);
+    }
+
+    .ok {
+      color: var(--ok);
+    }
+
+    .bad {
+      color: var(--bad);
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+
+    .chart-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+
+    .chart-title {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    footer {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <h1>AtmosLink Research Platform</h1>
+    <div class="subtitle">Scientific monitoring dashboard · Weather Station Module</div>
+  </div>
+  <div class="online" id="systemStatus">● ONLINE</div>
+</header>
+
+<main>
+
+  <div class="grid">
+    <div class="card">
+      <div class="label">Última actualización</div>
+      <div class="value" id="timestamp" style="font-size:20px;">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Temperatura</div>
+      <div class="value"><span id="temp">--</span> <span class="unit">°C</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Humedad relativa</div>
+      <div class="value"><span id="hum">--</span> <span class="unit">%</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Presión atmosférica</div>
+      <div class="value"><span id="pres">--</span> <span class="unit">hPa</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Punto de rocío</div>
+      <div class="value"><span id="dew">--</span> <span class="unit">°C</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Presión de vapor</div>
+      <div class="value"><span id="vapor">--</span> <span class="unit">hPa</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Lluvia última hora</div>
+      <div class="value"><span id="rain1h">--</span> <span class="unit">mm</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Lluvia acumulada</div>
+      <div class="value"><span id="raintotal">--</span> <span class="unit">mm</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Sensor BME280</div>
+      <div class="value" id="bme">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Pluviómetro</div>
+      <div class="value" id="rainok">--</div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-card">
+      <div class="chart-title">Temperatura · Últimos 60 registros</div>
+      <canvas id="tempChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Humedad relativa · Últimos 60 registros</div>
+      <canvas id="humChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Presión atmosférica · Últimos 60 registros</div>
+      <canvas id="presChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Precipitación por minuto · Últimos 60 registros</div>
+      <canvas id="rainChart"></canvas>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  AtmosLink Research Platform · Local Scientific Data Acquisition System
+</footer>
+
+<script>
+let tempChart, humChart, presChart, rainChart;
+
+function formatTime(ts) {
+  if (!ts) return "--";
+  return ts.replace("T", " ").substring(0, 19);
+}
+
+async function updateLatest() {
+  const r = await fetch("/api/latest");
+  const d = await r.json();
+
+  if (!d || !d.timestamp_local) {
+    document.getElementById("systemStatus").innerText = "● SIN DATOS";
+    document.getElementById("systemStatus").className = "bad";
+    return;
+  }
+
+  document.getElementById("timestamp").innerText = formatTime(d.timestamp_local);
+  document.getElementById("temp").innerText = d.temp_avg_C;
+  document.getElementById("hum").innerText = d.hum_avg_pct;
+  document.getElementById("pres").innerText = d.pres_avg_hPa;
+  document.getElementById("dew").innerText = d.dew_point_C;
+  document.getElementById("vapor").innerText = d.vapor_pressure_hPa;
+  document.getElementById("rain1h").innerText = d.rain_1h_mm;
+  document.getElementById("raintotal").innerText = d.rain_total_mm;
+
+  document.getElementById("bme").innerHTML =
+    d.bme_ok === 1 ? "<span class='ok'>OK</span>" : "<span class='bad'>FALLA</span>";
+
+  document.getElementById("rainok").innerHTML =
+    d.rain_ok === 1 ? "<span class='ok'>OK</span>" : "<span class='bad'>FALLA</span>";
+}
+
+async function updateCharts() {
+  const r = await fetch("/api/history");
+  const data = await r.json();
+
+  const labels = data.map(x => x.timestamp_local.substring(11, 16));
+  const temps = data.map(x => x.temp_avg_C);
+  const hums = data.map(x => x.hum_avg_pct);
+  const press = data.map(x => x.pres_avg_hPa);
+  const rain = data.map(x => x.rain_1min_mm);
+
+  const commonOptions = {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: "#f9fafb" } }
+    },
+    scales: {
+      x: { ticks: { color: "#9ca3af" }, grid: { color: "rgba(255,255,255,0.08)" } },
+      y: { ticks: { color: "#9ca3af" }, grid: { color: "rgba(255,255,255,0.08)" } }
+    }
+  };
+
+  if (!tempChart) {
+    tempChart = new Chart(document.getElementById("tempChart"), {
+      type: "line",
+      data: { labels, datasets: [{ label: "Temperatura °C", data: temps, tension: 0.25 }] },
+      options: commonOptions
+    });
+
+    humChart = new Chart(document.getElementById("humChart"), {
+      type: "line",
+      data: { labels, datasets: [{ label: "Humedad %", data: hums, tension: 0.25 }] },
+      options: commonOptions
+    });
+
+    presChart = new Chart(document.getElementById("presChart"), {
+      type: "line",
+      data: { labels, datasets: [{ label: "Presión hPa", data: press, tension: 0.25 }] },
+      options: commonOptions
+    });
+
+    rainChart = new Chart(document.getElementById("rainChart"), {
+      type: "bar",
+      data: { labels, datasets: [{ label: "Lluvia 1 min (mm)", data: rain }] },
+      options: commonOptions
+    });
+  } else {
+    tempChart.data.labels = labels;
+    tempChart.data.datasets[0].data = temps;
+    tempChart.update();
+
+    humChart.data.labels = labels;
+    humChart.data.datasets[0].data = hums;
+    humChart.update();
+
+    presChart.data.labels = labels;
+    presChart.data.datasets[0].data = press;
+    presChart.update();
+
+    rainChart.data.labels = labels;
+    rainChart.data.datasets[0].data = rain;
+    rainChart.update();
+  }
+}
+
+async function refresh() {
+  await updateLatest();
+  await updateCharts();
+}
+
+refresh();
+setInterval(refresh, 60000);
+</script>
+
+</body>
+</html>
