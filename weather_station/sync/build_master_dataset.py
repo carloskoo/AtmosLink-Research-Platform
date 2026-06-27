@@ -202,6 +202,10 @@ def prepare_era5(df, site_tag="MID_LINK"):
     if df.empty:
         return df
 
+    if "site_tag" not in df.columns:
+        print("ERA5 no tiene columna site_tag")
+        return pd.DataFrame()
+
     df = df[df["site_tag"] == site_tag].copy()
 
     if df.empty:
@@ -249,6 +253,98 @@ def prepare_era5(df, site_tag="MID_LINK"):
     return df
 
 
+def prepare_nasa_power(df, site_tag="MID_LINK"):
+    if df.empty:
+        return df
+
+    if "site_tag" not in df.columns:
+        print("NASA POWER no tiene columna site_tag")
+        return pd.DataFrame()
+
+    df = df[df["site_tag"] == site_tag].copy()
+
+    if df.empty:
+        print(f"No hay datos NASA POWER para site_tag={site_tag}")
+        return df
+
+    df["timestamp_local_dt"] = pd.to_datetime(df["timestamp_local"], errors="coerce")
+    df = df.dropna(subset=["timestamp_local_dt"])
+    df["bucket_hour"] = df["timestamp_local_dt"].dt.floor("h")
+
+    required = [
+        "temp_c",
+        "dewpoint_c",
+        "rh_pct",
+        "precip_mm",
+        "press_hpa",
+        "wind10m_ms",
+    ]
+
+    for col in required:
+        if col not in df.columns:
+            print(f"Columna NASA POWER faltante: {col}")
+            return pd.DataFrame()
+
+    before = len(df)
+
+    df = df[
+        (df["temp_c"].between(-60, 60)) &
+        (df["dewpoint_c"].between(-80, 60)) &
+        (df["rh_pct"].between(0, 100)) &
+        (df["precip_mm"] >= 0) &
+        (df["press_hpa"].between(300, 1100)) &
+        (df["wind10m_ms"] >= 0)
+    ].copy()
+
+    removed = before - len(df)
+    if removed > 0:
+        print(f"Registros NASA POWER descartados por calidad: {removed}")
+
+    cols = [
+        "bucket_hour",
+        "timestamp_utc",
+        "timestamp_local",
+        "site_tag",
+        "lat",
+        "lon",
+        "temp_c",
+        "dewpoint_c",
+        "rh_pct",
+        "precip_mm",
+        "press_kpa",
+        "press_hpa",
+        "wind10m_ms",
+        "source",
+        "downloaded_at_utc",
+    ]
+
+    cols = [c for c in cols if c in df.columns]
+    df = df[cols].copy()
+
+    rename = {
+        "timestamp_utc": "nasa_timestamp_utc",
+        "timestamp_local": "nasa_timestamp_local",
+        "site_tag": "nasa_site_tag",
+        "lat": "nasa_lat",
+        "lon": "nasa_lon",
+        "temp_c": "nasa_temp_c",
+        "dewpoint_c": "nasa_dewpoint_c",
+        "rh_pct": "nasa_rh_pct",
+        "precip_mm": "nasa_precip_mm",
+        "press_kpa": "nasa_press_kpa",
+        "press_hpa": "nasa_press_hpa",
+        "wind10m_ms": "nasa_wind10m_ms",
+        "source": "nasa_source",
+        "downloaded_at_utc": "nasa_downloaded_at_utc",
+    }
+
+    df = df.rename(columns=rename)
+    df = df.sort_values("bucket_hour")
+    df = df.drop_duplicates(subset=["bucket_hour"], keep="last")
+
+    return df
+
+
 def build_master():
     Path(DB_FILE).parent.mkdir(parents=True, exist_ok=True)
 
@@ -257,10 +353,12 @@ def build_master():
     weather = read_table(conn, "weather_local")
     radio = read_table(conn, "radio_link_local")
     era5 = read_table(conn, "era5_land_hourly")
+    nasa = read_table(conn, "nasa_power_hourly")
 
     weather = prepare_weather(weather)
     radio = prepare_radio(radio)
     era5 = prepare_era5(era5, site_tag="MID_LINK")
+    nasa = prepare_nasa_power(nasa, site_tag="MID_LINK")
 
     if weather.empty:
         print("No hay datos meteorológicos locales válidos. No se genera master.")
@@ -288,6 +386,36 @@ def build_master():
         "radio_error",
     ]
 
+    expected_era5_cols = [
+        "era5_timestamp_utc",
+        "era5_timestamp_local",
+        "era5_site_tag",
+        "era5_lat",
+        "era5_lon",
+        "era5_temp_c",
+        "era5_dewpoint_c",
+        "era5_precip_mm",
+        "era5_press_hpa",
+        "era5_wind_ms",
+    ]
+
+    expected_nasa_cols = [
+        "nasa_timestamp_utc",
+        "nasa_timestamp_local",
+        "nasa_site_tag",
+        "nasa_lat",
+        "nasa_lon",
+        "nasa_temp_c",
+        "nasa_dewpoint_c",
+        "nasa_rh_pct",
+        "nasa_precip_mm",
+        "nasa_press_kpa",
+        "nasa_press_hpa",
+        "nasa_wind10m_ms",
+        "nasa_source",
+        "nasa_downloaded_at_utc",
+    ]
+
     if not radio.empty:
         master = master.merge(radio, on="bucket_minute", how="left")
 
@@ -299,6 +427,17 @@ def build_master():
 
     if not era5.empty:
         master = master.merge(era5, on="bucket_hour", how="left")
+
+    for col in expected_era5_cols:
+        if col not in master.columns:
+            master[col] = None
+
+    if not nasa.empty:
+        master = master.merge(nasa, on="bucket_hour", how="left")
+
+    for col in expected_nasa_cols:
+        if col not in master.columns:
+            master[col] = None
 
     master["master_timestamp_local"] = master["bucket_minute"].astype(str)
     master["master_timestamp_hour"] = master["bucket_hour"].astype(str)
