@@ -251,6 +251,11 @@
     </div>
 
     <div class="card">
+      <div class="label">ERA5 humedad relativa</div>
+      <div class="value"><span id="era5Rh">--</span> <span class="unit">%</span></div>
+    </div>
+
+    <div class="card">
       <div class="label">ERA5 punto de rocío</div>
       <div class="value"><span id="era5Dew">--</span> <span class="unit">°C</span></div>
     </div>
@@ -352,7 +357,7 @@
   </div>
 
   <div class="chart-card">
-    <div class="chart-title">Humedad: Local vs NASA POWER</div>
+    <div class="chart-title">Humedad: Local vs ERA5 vs NASA POWER</div>
     <canvas id="humidityCompareChart"></canvas>
   </div>
 
@@ -487,6 +492,7 @@ async function updateLatest() {
     d.rain_ok === 1 ? "<span class='ok'>OK</span>" : "<span class='bad'>FALLA</span>";
 
   setText("era5Temp", d.era5_temp_c);
+  setText("era5Rh", d.era5_rh_pct);
   setText("era5Dew", d.era5_dewpoint_c);
   setText("era5Rain", d.era5_precip_mm);
   setText("era5Press", d.era5_press_hpa);
@@ -674,6 +680,13 @@ async function updateCharts() {
         data: data.map(x => x.local_hum_avg_pct),
         borderColor: "#38bdf8",
         backgroundColor: "rgba(56,189,248,0.15)",
+        tension: 0.25
+      },
+      {
+        label: "ERA5 %",
+        data: data.map(x => x.era5_rh_pct),
+        borderColor: "#f59e0b",
+        backgroundColor: "rgba(245,158,11,0.15)",
         tension: 0.25
       },
       {

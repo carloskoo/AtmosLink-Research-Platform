@@ -115,6 +115,7 @@ def get_history(limit=120):
 
             era5_temp_c,
             era5_dewpoint_c,
+            era5_rh_pct,
             era5_precip_mm,
             era5_press_hpa,
             era5_wind_ms,

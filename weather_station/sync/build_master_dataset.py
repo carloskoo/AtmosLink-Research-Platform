@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from weather_station.config.settings import load_config
@@ -24,6 +25,23 @@ def read_table(conn, table_name):
         return pd.DataFrame()
 
     return pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
+
+
+def saturation_vapor_pressure_hpa(temp_c):
+    return 6.112 * np.exp((17.67 * temp_c) / (temp_c + 243.5))
+
+
+def calc_relative_humidity_pct(temp_c, dewpoint_c):
+    temp_c = pd.to_numeric(temp_c, errors="coerce")
+    dewpoint_c = pd.to_numeric(dewpoint_c, errors="coerce")
+
+    es_temp = saturation_vapor_pressure_hpa(temp_c)
+    es_dew = saturation_vapor_pressure_hpa(dewpoint_c)
+
+    rh = 100.0 * (es_dew / es_temp)
+    rh = rh.clip(lower=0, upper=100)
+
+    return rh.round(2)
 
 
 def prepare_weather(df):
@@ -126,7 +144,6 @@ def prepare_weather(df):
     }
 
     df = df.rename(columns=rename)
-
     df = df.sort_values("bucket_minute")
     df = df.drop_duplicates(subset=["bucket_minute"], keep="last")
 
@@ -191,7 +208,6 @@ def prepare_radio(df):
     }
 
     df = df.rename(columns=rename)
-
     df = df.sort_values("bucket_minute")
     df = df.drop_duplicates(subset=["bucket_minute"], keep="last")
 
@@ -216,6 +232,21 @@ def prepare_era5(df, site_tag="MID_LINK"):
     df = df.dropna(subset=["timestamp_local_dt"])
     df["bucket_hour"] = df["timestamp_local_dt"].dt.floor("h")
 
+    required = [
+        "temp_c",
+        "dewpoint_c",
+    ]
+
+    for col in required:
+        if col not in df.columns:
+            print(f"Columna ERA5 faltante: {col}")
+            return pd.DataFrame()
+
+    df["era5_rh_pct_calc"] = calc_relative_humidity_pct(
+        df["temp_c"],
+        df["dewpoint_c"]
+    )
+
     cols = [
         "bucket_hour",
         "timestamp_utc",
@@ -225,6 +256,7 @@ def prepare_era5(df, site_tag="MID_LINK"):
         "lon",
         "temp_c",
         "dewpoint_c",
+        "era5_rh_pct_calc",
         "precip_mm",
         "press_hpa",
         "wind_ms",
@@ -241,6 +273,7 @@ def prepare_era5(df, site_tag="MID_LINK"):
         "lon": "era5_lon",
         "temp_c": "era5_temp_c",
         "dewpoint_c": "era5_dewpoint_c",
+        "era5_rh_pct_calc": "era5_rh_pct",
         "precip_mm": "era5_precip_mm",
         "press_hpa": "era5_press_hpa",
         "wind_ms": "era5_wind_ms",
@@ -394,6 +427,7 @@ def build_master():
         "era5_lon",
         "era5_temp_c",
         "era5_dewpoint_c",
+        "era5_rh_pct",
         "era5_precip_mm",
         "era5_press_hpa",
         "era5_wind_ms",
