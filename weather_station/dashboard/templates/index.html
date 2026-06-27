@@ -94,6 +94,10 @@
       color: var(--bad);
     }
 
+    .warning {
+      color: var(--warning);
+    }
+
     .charts {
       display: grid;
       grid-template-columns: 1fr;
@@ -105,11 +109,33 @@
       border-radius: 16px;
       padding: 20px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+      margin-bottom: 22px;
     }
 
     .chart-title {
       font-size: 18px;
       margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th {
+      text-align: left;
+      padding: 8px;
+      color: var(--accent);
+      border-bottom: 1px solid #374151;
+      font-size: 14px;
+    }
+
+    td {
+      padding: 8px;
+      border-top: 1px solid #374151;
+      font-size: 14px;
       color: var(--text);
     }
 
@@ -186,6 +212,72 @@
     </div>
   </div>
 
+  <div class="chart-card">
+    <div class="chart-title">AtmosLink Core Status</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="label">Estado general</div>
+        <div class="value" id="coreOverall">--</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Alertas activas</div>
+        <div class="value" id="coreAlerts">--</div>
+      </div>
+
+      <div class="card">
+        <div class="label">SQLite</div>
+        <div class="value" id="coreSqlite">--</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Internet</div>
+        <div class="value" id="coreInternet">--</div>
+      </div>
+
+      <div class="card">
+        <div class="label">CPU</div>
+        <div class="value"><span id="coreCpu">--</span> <span class="unit">%</span></div>
+      </div>
+
+      <div class="card">
+        <div class="label">RAM</div>
+        <div class="value"><span id="coreRam">--</span> <span class="unit">%</span></div>
+      </div>
+
+      <div class="card">
+        <div class="label">Disco libre</div>
+        <div class="value"><span id="coreDisk">--</span> <span class="unit">%</span></div>
+      </div>
+
+      <div class="card">
+        <div class="label">Última revisión</div>
+        <div class="value" id="coreUpdated" style="font-size:18px;">--</div>
+      </div>
+    </div>
+
+    <div class="chart-title" style="margin-top:20px;">Scheduler Tasks</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tarea</th>
+          <th>Estado</th>
+          <th>Habilitada</th>
+          <th>Última ejecución</th>
+          <th>Duración</th>
+          <th>Fallos</th>
+        </tr>
+      </thead>
+      <tbody id="taskTable">
+        <tr>
+          <td colspan="6">Cargando tareas...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <div class="charts">
     <div class="chart-card">
       <div class="chart-title">Temperatura · Últimos 60 registros</div>
@@ -248,6 +340,70 @@ async function updateLatest() {
     d.rain_ok === 1 ? "<span class='ok'>OK</span>" : "<span class='bad'>FALLA</span>";
 }
 
+async function updateCoreStatus() {
+  const r = await fetch("/api/core/status");
+  const d = await r.json();
+
+  const health = d.health || {};
+  const checks = health.checks || {};
+  const alerts = d.alerts || {};
+  const registry = d.registry || {};
+
+  const overall = health.overall_status || "--";
+  const alertCount = alerts.alert_count ?? "--";
+
+  document.getElementById("coreOverall").innerHTML =
+    overall === "HEALTHY" ? "<span class='ok'>HEALTHY</span>" :
+    overall === "WARNING" ? "<span class='warning'>WARNING</span>" :
+    overall === "ERROR" ? "<span class='bad'>ERROR</span>" :
+    "--";
+
+  document.getElementById("coreAlerts").innerHTML =
+    alertCount === 0 ? "<span class='ok'>0</span>" : "<span class='warning'>" + alertCount + "</span>";
+
+  document.getElementById("coreSqlite").innerHTML =
+    checks.sqlite && checks.sqlite.status === "ok" ? "<span class='ok'>OK</span>" : "<span class='bad'>FALLA</span>";
+
+  document.getElementById("coreInternet").innerHTML =
+    checks.internet && checks.internet.status === "ok" ? "<span class='ok'>OK</span>" : "<span class='warning'>WARNING</span>";
+
+  document.getElementById("coreCpu").innerText =
+    checks.cpu_memory && checks.cpu_memory.cpu_percent !== undefined ? checks.cpu_memory.cpu_percent : "--";
+
+  document.getElementById("coreRam").innerText =
+    checks.cpu_memory && checks.cpu_memory.memory_percent !== undefined ? checks.cpu_memory.memory_percent : "--";
+
+  document.getElementById("coreDisk").innerText =
+    checks.disk && checks.disk.free_percent !== undefined ? checks.disk.free_percent : "--";
+
+  document.getElementById("coreUpdated").innerText =
+    health.updated_at ? formatTime(health.updated_at) : "--";
+
+  const tasks = registry.tasks || {};
+  const tbody = document.getElementById("taskTable");
+  tbody.innerHTML = "";
+
+  Object.entries(tasks).forEach(([name, task]) => {
+    const status = task.status || "--";
+    let colorClass = "";
+
+    if (status === "completed" || status === "running") colorClass = "ok";
+    if (status === "failed" || status === "error" || status === "timeout") colorClass = "bad";
+    if (status === "disabled") colorClass = "warning";
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${name}</td>
+      <td class="${colorClass}">${status}</td>
+      <td>${task.enabled}</td>
+      <td>${task.last_run || "--"}</td>
+      <td>${task.last_duration_seconds || "--"}</td>
+      <td>${task.failures}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
 async function updateCharts() {
   const r = await fetch("/api/history");
   const data = await r.json();
@@ -261,64 +417,92 @@ async function updateCharts() {
   const commonOptions = {
     responsive: true,
     plugins: {
-      legend: { labels: { color: "#f9fafb" } }
+      legend: {
+        labels: { color: "#f9fafb" }
+      }
     },
     scales: {
-      x: { ticks: { color: "#9ca3af" }, grid: { color: "rgba(255,255,255,0.08)" } },
-      y: { ticks: { color: "#9ca3af" }, grid: { color: "rgba(255,255,255,0.08)" } }
+      x: {
+        ticks: { color: "#9ca3af" },
+        grid: { color: "#374151" }
+      },
+      y: {
+        ticks: { color: "#9ca3af" },
+        grid: { color: "#374151" }
+      }
     }
   };
 
-  if (!tempChart) {
-    tempChart = new Chart(document.getElementById("tempChart"), {
-      type: "line",
-      data: { labels, datasets: [{ label: "Temperatura °C", data: temps, tension: 0.25 }] },
-      options: commonOptions
-    });
+  if (tempChart) tempChart.destroy();
+  tempChart = new Chart(document.getElementById("tempChart"), {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Temperatura °C",
+        data: temps,
+        borderColor: "#38bdf8",
+        backgroundColor: "rgba(56,189,248,0.2)",
+        tension: 0.25
+      }]
+    },
+    options: commonOptions
+  });
 
-    humChart = new Chart(document.getElementById("humChart"), {
-      type: "line",
-      data: { labels, datasets: [{ label: "Humedad %", data: hums, tension: 0.25 }] },
-      options: commonOptions
-    });
+  if (humChart) humChart.destroy();
+  humChart = new Chart(document.getElementById("humChart"), {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Humedad %",
+        data: hums,
+        borderColor: "#22c55e",
+        backgroundColor: "rgba(34,197,94,0.2)",
+        tension: 0.25
+      }]
+    },
+    options: commonOptions
+  });
 
-    presChart = new Chart(document.getElementById("presChart"), {
-      type: "line",
-      data: { labels, datasets: [{ label: "Presión hPa", data: press, tension: 0.25 }] },
-      options: commonOptions
-    });
+  if (presChart) presChart.destroy();
+  presChart = new Chart(document.getElementById("presChart"), {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Presión hPa",
+        data: press,
+        borderColor: "#f59e0b",
+        backgroundColor: "rgba(245,158,11,0.2)",
+        tension: 0.25
+      }]
+    },
+    options: commonOptions
+  });
 
-    rainChart = new Chart(document.getElementById("rainChart"), {
-      type: "bar",
-      data: { labels, datasets: [{ label: "Lluvia 1 min (mm)", data: rain }] },
-      options: commonOptions
-    });
-  } else {
-    tempChart.data.labels = labels;
-    tempChart.data.datasets[0].data = temps;
-    tempChart.update();
-
-    humChart.data.labels = labels;
-    humChart.data.datasets[0].data = hums;
-    humChart.update();
-
-    presChart.data.labels = labels;
-    presChart.data.datasets[0].data = press;
-    presChart.update();
-
-    rainChart.data.labels = labels;
-    rainChart.data.datasets[0].data = rain;
-    rainChart.update();
-  }
+  if (rainChart) rainChart.destroy();
+  rainChart = new Chart(document.getElementById("rainChart"), {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Lluvia mm/min",
+        data: rain,
+        backgroundColor: "rgba(56,189,248,0.5)"
+      }]
+    },
+    options: commonOptions
+  });
 }
 
-async function refresh() {
-  await updateLatest();
-  await updateCharts();
-}
+updateLatest();
+updateCharts();
+updateCoreStatus();
 
-refresh();
-setInterval(refresh, 60000);
+setInterval(updateLatest, 5000);
+setInterval(updateCharts, 15000);
+setInterval(updateCoreStatus, 10000);
 </script>
 
 </body>
