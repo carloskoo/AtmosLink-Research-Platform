@@ -17,3 +17,5 @@ SQLite/
 *.sqlite
 *.db-wal
 *.db-shm
+
+config/telegram.yaml
