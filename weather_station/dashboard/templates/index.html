@@ -104,17 +104,9 @@
       color: var(--muted);
     }
 
-    .ok {
-      color: var(--ok);
-    }
-
-    .bad {
-      color: var(--bad);
-    }
-
-    .warning {
-      color: var(--warning);
-    }
+    .ok { color: var(--ok); }
+    .bad { color: var(--bad); }
+    .warning { color: var(--warning); }
 
     .chart-card {
       background: var(--card);
@@ -225,6 +217,11 @@
     </div>
 
     <div class="card">
+      <div class="label">Presión de vapor local</div>
+      <div class="value"><span id="vapor">--</span> <span class="unit">hPa</span></div>
+    </div>
+
+    <div class="card">
       <div class="label">Lluvia última hora</div>
       <div class="value"><span id="rain1h">--</span> <span class="unit">mm</span></div>
     </div>
@@ -245,7 +242,7 @@
     </div>
   </div>
 
-  <div class="section-title">Fuentes externas</div>
+  <div class="section-title">ERA5</div>
 
   <div class="grid">
     <div class="card">
@@ -254,22 +251,41 @@
     </div>
 
     <div class="card">
+      <div class="label">ERA5 punto de rocío</div>
+      <div class="value"><span id="era5Dew">--</span> <span class="unit">°C</span></div>
+    </div>
+
+    <div class="card">
       <div class="label">ERA5 lluvia</div>
       <div class="value"><span id="era5Rain">--</span> <span class="unit">mm</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">ERA5 presión</div>
+      <div class="value"><span id="era5Press">--</span> <span class="unit">hPa</span></div>
     </div>
 
     <div class="card">
       <div class="label">ERA5 viento</div>
       <div class="value"><span id="era5Wind">--</span> <span class="unit">m/s</span></div>
     </div>
+  </div>
 
+  <div class="section-title">NASA POWER</div>
+
+  <div class="grid">
     <div class="card">
       <div class="label">NASA temperatura</div>
       <div class="value"><span id="nasaTemp">--</span> <span class="unit">°C</span></div>
     </div>
 
     <div class="card">
-      <div class="label">NASA humedad</div>
+      <div class="label">NASA punto de rocío</div>
+      <div class="value"><span id="nasaDew">--</span> <span class="unit">°C</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">NASA humedad relativa</div>
       <div class="value"><span id="nasaRh">--</span> <span class="unit">%</span></div>
     </div>
 
@@ -328,6 +344,11 @@
   <div class="chart-card">
     <div class="chart-title">Temperatura: Local vs ERA5 vs NASA POWER</div>
     <canvas id="tempCompareChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title">Punto de rocío: Local vs ERA5 vs NASA POWER</div>
+    <canvas id="dewCompareChart"></canvas>
   </div>
 
   <div class="chart-card">
@@ -418,6 +439,7 @@
 
 <script>
 let tempCompareChart;
+let dewCompareChart;
 let humidityCompareChart;
 let pressureCompareChart;
 let rainCompareChart;
@@ -454,6 +476,7 @@ async function updateLatest() {
   setText("hum", d.hum_avg_pct);
   setText("pres", d.pres_avg_hPa);
   setText("dew", d.dew_point_C);
+  setText("vapor", d.vapor_pressure_hPa);
   setText("rain1h", d.rain_1h_mm);
   setText("raintotal", d.rain_total_mm);
 
@@ -464,10 +487,13 @@ async function updateLatest() {
     d.rain_ok === 1 ? "<span class='ok'>OK</span>" : "<span class='bad'>FALLA</span>";
 
   setText("era5Temp", d.era5_temp_c);
+  setText("era5Dew", d.era5_dewpoint_c);
   setText("era5Rain", d.era5_precip_mm);
+  setText("era5Press", d.era5_press_hpa);
   setText("era5Wind", d.era5_wind_ms);
 
   setText("nasaTemp", d.nasa_temp_c);
+  setText("nasaDew", d.nasa_dewpoint_c);
   setText("nasaRh", d.nasa_rh_pct);
   setText("nasaRain", d.nasa_precip_mm);
   setText("nasaPress", d.nasa_press_hpa);
@@ -602,6 +628,35 @@ async function updateCharts() {
       {
         label: "NASA °C",
         data: data.map(x => x.nasa_temp_c),
+        borderColor: "#22c55e",
+        backgroundColor: "rgba(34,197,94,0.15)",
+        tension: 0.25
+      }
+    ]
+  );
+
+  dewCompareChart = makeLineChart(
+    "dewCompareChart",
+    dewCompareChart,
+    labels,
+    [
+      {
+        label: "Local °C",
+        data: data.map(x => x.local_dew_point_c),
+        borderColor: "#38bdf8",
+        backgroundColor: "rgba(56,189,248,0.15)",
+        tension: 0.25
+      },
+      {
+        label: "ERA5 °C",
+        data: data.map(x => x.era5_dewpoint_c),
+        borderColor: "#f59e0b",
+        backgroundColor: "rgba(245,158,11,0.15)",
+        tension: 0.25
+      },
+      {
+        label: "NASA °C",
+        data: data.map(x => x.nasa_dewpoint_c),
         borderColor: "#22c55e",
         backgroundColor: "rgba(34,197,94,0.15)",
         tension: 0.25
