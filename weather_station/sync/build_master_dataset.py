@@ -5,6 +5,7 @@ import pandas as pd
 
 from weather_station.config.settings import load_config
 
+
 CONFIG = load_config()
 DB_FILE = CONFIG["database"]["sqlite"]
 
@@ -32,6 +33,51 @@ def prepare_weather(df):
     df["timestamp_local_dt"] = pd.to_datetime(df["timestamp_local"], errors="coerce")
     df = df.dropna(subset=["timestamp_local_dt"])
     df["bucket_minute"] = df["timestamp_local_dt"].dt.floor("min")
+
+    required = [
+        "temp_avg_C",
+        "temp_min_C",
+        "temp_max_C",
+        "hum_avg_pct",
+        "hum_min_pct",
+        "hum_max_pct",
+        "pres_avg_hPa",
+        "dew_point_C",
+        "vapor_pressure_hPa",
+        "rain_1min_mm",
+        "rain_1h_mm",
+        "rain_total_mm",
+        "bme_ok",
+        "rain_ok",
+    ]
+
+    for col in required:
+        if col not in df.columns:
+            print(f"Columna meteorológica faltante: {col}")
+            return pd.DataFrame()
+
+    before = len(df)
+
+    df = df[
+        (df["temp_avg_C"].between(-30, 60)) &
+        (df["temp_min_C"].between(-30, 60)) &
+        (df["temp_max_C"].between(-30, 60)) &
+        (df["hum_avg_pct"].between(0, 100)) &
+        (df["hum_min_pct"].between(0, 100)) &
+        (df["hum_max_pct"].between(0, 100)) &
+        (df["pres_avg_hPa"].between(500, 1100)) &
+        (df["dew_point_C"].between(-40, 60)) &
+        (df["vapor_pressure_hPa"].between(0, 100)) &
+        (df["rain_1min_mm"] >= 0) &
+        (df["rain_1h_mm"] >= 0) &
+        (df["rain_total_mm"] >= 0) &
+        (df["bme_ok"] == 1) &
+        (df["rain_ok"] == 1)
+    ].copy()
+
+    removed = before - len(df)
+    if removed > 0:
+        print(f"Registros meteorológicos descartados por calidad: {removed}")
 
     cols = [
         "bucket_minute",
@@ -80,6 +126,10 @@ def prepare_weather(df):
     }
 
     df = df.rename(columns=rename)
+
+    df = df.sort_values("bucket_minute")
+    df = df.drop_duplicates(subset=["bucket_minute"], keep="last")
+
     return df
 
 
@@ -90,6 +140,13 @@ def prepare_radio(df):
     df["timestamp_local_dt"] = pd.to_datetime(df["timestamp_local"], errors="coerce")
     df = df.dropna(subset=["timestamp_local_dt"])
     df["bucket_minute"] = df["timestamp_local_dt"].dt.floor("min")
+
+    if "error" in df.columns:
+        df = df[(df["error"].isna()) | (df["error"] == "")].copy()
+
+    if "note" in df.columns:
+        accepted_notes = ["ok", "LOW_SNR", "LOW_RSSI", "LOW_MCS", "LOW_RATE"]
+        df = df[df["note"].fillna("ok").isin(accepted_notes)].copy()
 
     cols = [
         "bucket_minute",
@@ -206,37 +263,37 @@ def build_master():
     era5 = prepare_era5(era5, site_tag="MID_LINK")
 
     if weather.empty:
-        print("No hay datos meteorológicos locales. No se genera master.")
+        print("No hay datos meteorológicos locales válidos. No se genera master.")
         conn.close()
         return
 
     master = weather.copy()
 
     expected_radio_cols = [
-    	"radio_timestamp_utc",
-    	"radio_timestamp_local",
-    	"radio_mcs_dl",
-    	"radio_mcs_ul",
-    	"radio_snr_dl",
-    	"radio_snr_ul",
-    	"radio_rssi_c0p",
-    	"radio_rssi_c0e",
-    	"radio_rssi_c1p",
-    	"radio_rssi_c1e",
-    	"radio_dl_rate",
-    	"radio_ul_rate",
-    	"radio_sta_dl_rssi",
-    	"radio_sta_ul_rssi",
-    	"radio_note",
-    	"radio_error",
-]
+        "radio_timestamp_utc",
+        "radio_timestamp_local",
+        "radio_mcs_dl",
+        "radio_mcs_ul",
+        "radio_snr_dl",
+        "radio_snr_ul",
+        "radio_rssi_c0p",
+        "radio_rssi_c0e",
+        "radio_rssi_c1p",
+        "radio_rssi_c1e",
+        "radio_dl_rate",
+        "radio_ul_rate",
+        "radio_sta_dl_rssi",
+        "radio_sta_ul_rssi",
+        "radio_note",
+        "radio_error",
+    ]
 
     if not radio.empty:
-    	master = master.merge(radio, on="bucket_minute", how="left")
+        master = master.merge(radio, on="bucket_minute", how="left")
 
     for col in expected_radio_cols:
-    	if col not in master.columns:
-        	master[col] = None
+        if col not in master.columns:
+            master[col] = None
 
     master["bucket_hour"] = master["bucket_minute"].dt.floor("h")
 
