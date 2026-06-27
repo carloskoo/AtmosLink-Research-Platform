@@ -5,7 +5,7 @@ scheduler:
 tasks:
   sync_master_dataset:
     enabled: true
-    interval_seconds: 3600
+    interval_seconds: 60
     command:
       - python3
       - -m
