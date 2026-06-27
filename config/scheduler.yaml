@@ -35,6 +35,14 @@ tasks:
       - -m
       - weather_station.era5.era5_downloader
 
+  nasa_power_downloader:
+    enabled: true
+    interval_seconds: 86400
+    command:
+      - python3
+      - -m
+      - weather_station.weather_sources.nasa_power_downloader
+
   daily_backup:
     enabled: false
     interval_seconds: 86400
@@ -58,11 +66,3 @@ tasks:
       - python3
       - -m
       - weather_station.notifications.notification_engine
-
-  telegram_alert_sender:
-    enabled: true
-    interval_seconds: 60
-    command:
-      - python3
-      - -m
-      - weather_station.notifications.telegram_alert_sender
