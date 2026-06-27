@@ -11,6 +11,14 @@ tasks:
       - -m
       - weather_station.sync.build_master_dataset
 
+  telegram_alert_sender:
+    enabled: true
+    interval_seconds: 60
+    command:
+      - python3
+      - -m
+      - weather_station.notifications.telegram_alert_sender
+  
   weather_logger:
     enabled: false
     interval_seconds: 60

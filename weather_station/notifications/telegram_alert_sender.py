@@ -1,119 +1,207 @@
-#!/usr/bin/env python3
-"""
-AtmosLink Telegram Alert Sender
-
-Lee runtime/alerts.json y envía alertas activas a Telegram
-usando config/telegram.yaml.
-"""
-
 import json
-import yaml
+import os
 import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
+from weather_station.config.settings import load_config
+
+
+CONFIG = load_config()
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
-CONFIG_FILE = BASE_DIR / "config" / "telegram.yaml"
-RUNTIME_DIR = BASE_DIR / "runtime"
-ALERTS_FILE = RUNTIME_DIR / "alerts.json"
+ALERTS_FILE = BASE_DIR / "runtime" / "alerts.json"
+STATE_FILE = BASE_DIR / "runtime" / "telegram_alert_state.json"
+LOCAL_CONFIG_FILE = BASE_DIR / "config" / "telegram.yaml"
+
+
+def load_json(path):
+    if not path.exists():
+        return {}
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_json(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 
 def load_telegram_config():
-    if not CONFIG_FILE.exists():
-        return {"enabled": False}
+    token = os.getenv("ATMOSLINK_TELEGRAM_BOT_TOKEN")
+    chat_id = os.getenv("ATMOSLINK_TELEGRAM_CHAT_ID")
 
-    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f) or {}
+    if token and chat_id:
+        return token, chat_id
 
-    return data.get("telegram", {})
+    if LOCAL_CONFIG_FILE.exists():
+        try:
+            import yaml
+
+            with open(LOCAL_CONFIG_FILE, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+
+            telegram = data.get("telegram", {})
+            token = telegram.get("bot_token")
+            chat_id = telegram.get("chat_id")
+
+            if token and chat_id:
+                return token, str(chat_id)
+
+        except Exception as e:
+            print(f"No se pudo leer config/telegram.yaml: {e}")
+
+    return None, None
 
 
-def load_alerts():
-    if not ALERTS_FILE.exists():
-        return {
-            "alert_count": 1,
-            "alerts": [
-                {
-                    "level": "ERROR",
-                    "source": "telegram_alert_sender",
-                    "message": "No existe runtime/alerts.json"
-                }
-            ]
-        }
-
-    with open(ALERTS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def send_telegram_message(bot_token, chat_id, message):
-    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+def send_telegram_message(token, chat_id, text):
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
 
     payload = urllib.parse.urlencode({
         "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "HTML"
+        "text": text,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": "true",
     }).encode("utf-8")
 
-    req = urllib.request.Request(url, data=payload)
+    request = urllib.request.Request(url, data=payload, method="POST")
 
-    try:
-        with urllib.request.urlopen(req, timeout=10) as response:
-            return response.status == 200
+    with urllib.request.urlopen(request, timeout=30) as response:
+        raw = response.read().decode("utf-8")
 
-    except Exception as e:
-        print(f"Error enviando Telegram: {e}")
-        return False
+    result = json.loads(raw)
+
+    if not result.get("ok"):
+        raise RuntimeError(f"Telegram API error: {result}")
+
+    return result
 
 
-def build_message(alerts_payload):
-    alert_count = alerts_payload.get("alert_count", 0)
-    alerts = alerts_payload.get("alerts", [])
+def normalize_alert(alert):
+    if isinstance(alert, str):
+        return {
+            "id": alert,
+            "severity": "warning",
+            "title": alert,
+            "message": alert,
+        }
 
-    lines = [
-        "🚨 <b>AtmosLink Alert</b>",
-        f"Alertas activas: <b>{alert_count}</b>",
-        ""
-    ]
+    if not isinstance(alert, dict):
+        return {
+            "id": str(alert),
+            "severity": "warning",
+            "title": "Alerta AtmosLink",
+            "message": str(alert),
+        }
 
-    for alert in alerts[:5]:
-        lines.append(f"Nivel: <b>{alert.get('level')}</b>")
-        lines.append(f"Fuente: {alert.get('source')}")
-        lines.append(f"Mensaje: {alert.get('message')}")
-        lines.append("")
+    alert_id = (
+        alert.get("id")
+        or alert.get("code")
+        or alert.get("title")
+        or alert.get("message")
+        or json.dumps(alert, sort_keys=True, ensure_ascii=False)
+    )
 
-    return "\n".join(lines)
+    return {
+        "id": str(alert_id),
+        "severity": alert.get("severity", "warning"),
+        "title": alert.get("title", alert.get("type", "Alerta AtmosLink")),
+        "message": alert.get("message", alert.get("description", "")),
+        "raw": alert,
+    }
+
+
+def format_new_alert(alert, updated_at):
+    severity = alert.get("severity", "warning").upper()
+    title = alert.get("title", "Alerta AtmosLink")
+    message = alert.get("message", "")
+
+    icon = "🚨"
+    if severity in ["INFO", "OK"]:
+        icon = "ℹ️"
+    elif severity in ["WARNING", "WARN"]:
+        icon = "⚠️"
+    elif severity in ["CRITICAL", "ERROR", "FAILED"]:
+        icon = "🚨"
+
+    return (
+        f"{icon} <b>AtmosLink Alert</b>\n\n"
+        f"<b>Severidad:</b> {severity}\n"
+        f"<b>Evento:</b> {title}\n"
+        f"<b>Detalle:</b> {message if message else 'Sin detalle adicional'}\n"
+        f"<b>Actualizado:</b> {updated_at}"
+    )
+
+
+def format_resolved_alert(alert_id):
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+    return (
+        f"✅ <b>AtmosLink Recovery</b>\n\n"
+        f"La alerta fue resuelta.\n"
+        f"<b>ID:</b> {alert_id}\n"
+        f"<b>Hora UTC:</b> {now}"
+    )
 
 
 def main():
-    telegram = load_telegram_config()
+    token, chat_id = load_telegram_config()
 
-    if not telegram.get("enabled", False):
-        print("Telegram deshabilitado o config/telegram.yaml no existe")
+    if not token or not chat_id:
+        print("Telegram no configurado. No se enviaron alertas.")
+        print("Configure ATMOSLINK_TELEGRAM_BOT_TOKEN y ATMOSLINK_TELEGRAM_CHAT_ID")
+        print("o cree config/telegram.yaml")
         return
 
-    bot_token = telegram.get("bot_token")
-    chat_id = telegram.get("chat_id")
+    alerts_payload = load_json(ALERTS_FILE)
+    state = load_json(STATE_FILE)
 
-    if not bot_token or not chat_id:
-        print("Telegram mal configurado: falta bot_token o chat_id")
-        return
+    active_alerts_raw = alerts_payload.get("alerts", [])
+    updated_at = alerts_payload.get("updated_at", datetime.now(timezone.utc).isoformat(timespec="seconds"))
 
-    alerts_payload = load_alerts()
-    alert_count = alerts_payload.get("alert_count", 0)
+    active_alerts = [normalize_alert(a) for a in active_alerts_raw]
+    active_ids = {a["id"] for a in active_alerts}
 
-    if alert_count <= 0:
-        print("Sin alertas activas. No se envió mensaje.")
-        return
+    previous_active_ids = set(state.get("active_alert_ids", []))
 
-    message = build_message(alerts_payload)
-    sent = send_telegram_message(bot_token, chat_id, message)
+    new_alerts = [a for a in active_alerts if a["id"] not in previous_active_ids]
+    resolved_ids = previous_active_ids - active_ids
 
-    if sent:
-        print("Alerta enviada por Telegram")
+    sent_messages = 0
+
+    for alert in new_alerts:
+        text = format_new_alert(alert, updated_at)
+        send_telegram_message(token, chat_id, text)
+        print(f"Telegram enviado: nueva alerta {alert['id']}")
+        sent_messages += 1
+
+    for alert_id in resolved_ids:
+        text = format_resolved_alert(alert_id)
+        send_telegram_message(token, chat_id, text)
+        print(f"Telegram enviado: alerta resuelta {alert_id}")
+        sent_messages += 1
+
+    state = {
+        "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "active_alert_ids": sorted(active_ids),
+        "last_alert_count": len(active_ids),
+        "last_sent_messages": sent_messages,
+    }
+
+    save_json(STATE_FILE, state)
+
+    if sent_messages == 0:
+        print("Sin alertas nuevas ni resueltas. No se envió mensaje.")
     else:
-        print("No se pudo enviar la alerta por Telegram")
+        print(f"Mensajes Telegram enviados: {sent_messages}")
 
 
 if __name__ == "__main__":
