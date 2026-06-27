@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 BASE_DIR = Path(__file__).resolve().parents[2]
-
 DB_FILE = BASE_DIR / "SQLite" / "weather_local.db"
 
 RUNTIME_DIR = BASE_DIR / "runtime"
@@ -19,7 +18,6 @@ app = Flask(__name__)
 def load_json(path):
     if not path.exists():
         return {}
-
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -28,59 +26,105 @@ def load_json(path):
 
 
 def table_exists(conn, table_name):
-    query = """
-        SELECT name
-        FROM sqlite_master
-        WHERE type='table'
-        AND name=?
+    q = """
+    SELECT name FROM sqlite_master
+    WHERE type='table' AND name=?
     """
-    return conn.execute(query, (table_name,)).fetchone() is not None
+    return conn.execute(q, (table_name,)).fetchone() is not None
+
+
+def get_connection():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def get_latest():
-    """
-    Devuelve el último registro científico válido desde master_observations.
-
-    Se mantiene el formato esperado por el dashboard actual:
-    temp_avg_C, hum_avg_pct, pres_avg_hPa, etc.
-    """
-
     if not DB_FILE.exists():
-        return None
+        return {}
 
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    cur = conn.cursor()
+    conn = get_connection()
 
     if not table_exists(conn, "master_observations"):
         conn.close()
-        return None
+        return {}
+
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT *
+        FROM master_observations
+        WHERE local_temp_avg_c BETWEEN -30 AND 60
+          AND local_hum_avg_pct BETWEEN 0 AND 100
+          AND local_press_hpa BETWEEN 500 AND 1100
+          AND local_rain_1h_mm >= 0
+          AND local_bme_ok = 1
+          AND local_rain_ok = 1
+        ORDER BY bucket_minute DESC
+        LIMIT 1
+    """)
+
+    row = cur.fetchone()
+    conn.close()
+
+    if row is None:
+        return {}
+
+    d = dict(row)
+
+    d["timestamp_local"] = d.get("master_timestamp_local")
+    d["temp_avg_C"] = d.get("local_temp_avg_c")
+    d["hum_avg_pct"] = d.get("local_hum_avg_pct")
+    d["pres_avg_hPa"] = d.get("local_press_hpa")
+    d["dew_point_C"] = d.get("local_dew_point_c")
+    d["vapor_pressure_hPa"] = d.get("local_vapor_pressure_hpa")
+    d["rain_1min_mm"] = d.get("local_rain_1min_mm")
+    d["rain_1h_mm"] = d.get("local_rain_1h_mm")
+    d["rain_total_mm"] = d.get("local_rain_total_mm")
+    d["bme_ok"] = d.get("local_bme_ok")
+    d["rain_ok"] = d.get("local_rain_ok")
+
+    return d
+
+
+def get_history(limit=120):
+    if not DB_FILE.exists():
+        return []
+
+    conn = get_connection()
+
+    if not table_exists(conn, "master_observations"):
+        conn.close()
+        return []
+
+    cur = conn.cursor()
 
     cur.execute("""
         SELECT
-            master_timestamp_local AS timestamp_local,
+            master_timestamp_local,
+            master_timestamp_hour,
 
-            local_temp_avg_c AS temp_avg_C,
-            local_temp_min_c AS temp_min_C,
-            local_temp_max_c AS temp_max_C,
+            local_temp_avg_c,
+            local_hum_avg_pct,
+            local_press_hpa,
+            local_dew_point_c,
+            local_vapor_pressure_hpa,
+            local_rain_1min_mm,
+            local_rain_1h_mm,
+            local_rain_total_mm,
 
-            local_hum_avg_pct AS hum_avg_pct,
-            local_hum_min_pct AS hum_min_pct,
-            local_hum_max_pct AS hum_max_pct,
+            era5_temp_c,
+            era5_dewpoint_c,
+            era5_precip_mm,
+            era5_press_hpa,
+            era5_wind_ms,
 
-            local_press_hpa AS pres_avg_hPa,
-            local_dew_point_c AS dew_point_C,
-            local_vapor_pressure_hpa AS vapor_pressure_hPa,
-
-            local_rain_1min_mm AS rain_1min_mm,
-            local_rain_1h_mm AS rain_1h_mm,
-            local_rain_total_mm AS rain_total_mm,
-
-            local_pulses_delta AS pulses_delta,
-            local_pulses_total AS pulses_total,
-
-            local_bme_ok AS bme_ok,
-            local_rain_ok AS rain_ok,
+            nasa_temp_c,
+            nasa_dewpoint_c,
+            nasa_rh_pct,
+            nasa_precip_mm,
+            nasa_press_hpa,
+            nasa_wind10m_ms,
 
             radio_mcs_dl,
             radio_mcs_ul,
@@ -90,13 +134,7 @@ def get_latest():
             radio_sta_ul_rssi,
             radio_dl_rate,
             radio_ul_rate,
-            radio_note,
-
-            era5_temp_c,
-            era5_dewpoint_c,
-            era5_precip_mm,
-            era5_press_hpa,
-            era5_wind_ms
+            radio_note
         FROM master_observations
         WHERE local_temp_avg_c BETWEEN -30 AND 60
           AND local_hum_avg_pct BETWEEN 0 AND 100
@@ -104,54 +142,7 @@ def get_latest():
           AND local_rain_1h_mm >= 0
           AND local_bme_ok = 1
           AND local_rain_ok = 1
-        ORDER BY master_timestamp_local DESC
-        LIMIT 1
-    """)
-
-    row = cur.fetchone()
-    conn.close()
-
-    if row is None:
-        return None
-
-    return dict(row)
-
-
-def get_history(limit=60):
-    """
-    Devuelve histórico científico desde master_observations.
-
-    Mantiene compatibilidad con el JavaScript actual del dashboard.
-    """
-
-    if not DB_FILE.exists():
-        return []
-
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    cur = conn.cursor()
-
-    if not table_exists(conn, "master_observations"):
-        conn.close()
-        return []
-
-    cur.execute("""
-        SELECT
-            master_timestamp_local AS timestamp_local,
-            local_temp_avg_c AS temp_avg_C,
-            local_hum_avg_pct AS hum_avg_pct,
-            local_press_hpa AS pres_avg_hPa,
-            local_rain_1min_mm AS rain_1min_mm,
-            local_rain_1h_mm AS rain_1h_mm,
-            local_rain_total_mm AS rain_total_mm
-        FROM master_observations
-        WHERE local_temp_avg_c BETWEEN -30 AND 60
-          AND local_hum_avg_pct BETWEEN 0 AND 100
-          AND local_press_hpa BETWEEN 500 AND 1100
-          AND local_rain_1h_mm >= 0
-          AND local_bme_ok = 1
-          AND local_rain_ok = 1
-        ORDER BY master_timestamp_local DESC
+        ORDER BY bucket_minute DESC
         LIMIT ?
     """, (limit,))
 
@@ -162,28 +153,25 @@ def get_history(limit=60):
 
 
 def get_master_summary():
-    """
-    Resumen básico del dataset maestro.
-    """
-
     if not DB_FILE.exists():
         return {}
 
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    cur = conn.cursor()
+    conn = get_connection()
 
     if not table_exists(conn, "master_observations"):
         conn.close()
         return {}
+
+    cur = conn.cursor()
 
     cur.execute("""
         SELECT
             COUNT(*) AS total_records,
             MIN(master_timestamp_local) AS first_record,
             MAX(master_timestamp_local) AS last_record,
-            COUNT(radio_timestamp_local) AS radio_matched_records,
-            COUNT(era5_timestamp_local) AS era5_matched_records
+            COUNT(era5_timestamp_local) AS era5_matched_records,
+            COUNT(nasa_timestamp_local) AS nasa_matched_records,
+            COUNT(radio_timestamp_local) AS radio_matched_records
         FROM master_observations
     """)
 
@@ -200,8 +188,7 @@ def index():
 
 @app.route("/api/latest")
 def api_latest():
-    latest = get_latest()
-    return jsonify(latest or {})
+    return jsonify(get_latest())
 
 
 @app.route("/api/history")
