@@ -1,93 +1,354 @@
-#!/usr/bin/env python3
-"""
-AtmosLink Notification Engine
-
-Lee el estado de salud de AtmosLink y genera alertas básicas.
-Versión inicial: registra alertas en runtime/alerts.json.
-"""
-
 import json
-from datetime import datetime
+import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 
+from weather_station.config.settings import load_config
+
+
+CONFIG = load_config()
 
 BASE_DIR = Path(__file__).resolve().parents[2]
+DB_FILE = Path(CONFIG["database"]["sqlite"])
 
 RUNTIME_DIR = BASE_DIR / "runtime"
-RUNTIME_DIR.mkdir(exist_ok=True)
-
-HEALTH_FILE = RUNTIME_DIR / "health_status.json"
 ALERTS_FILE = RUNTIME_DIR / "alerts.json"
+HEALTH_FILE = RUNTIME_DIR / "health_status.json"
+TASK_REGISTRY_FILE = RUNTIME_DIR / "task_registry.json"
+
+MAX_WEATHER_AGE_MINUTES = 5
+MAX_MASTER_AGE_MINUTES = 5
+RAIN_INTENSE_MM_H = 10.0
+DISK_FREE_CRITICAL_PCT = 10.0
+DISK_FREE_WARNING_PCT = 20.0
+CPU_WARNING_PCT = 90.0
+RAM_WARNING_PCT = 90.0
 
 
-def now_iso():
-    return datetime.now().isoformat(timespec="seconds")
+def now_utc():
+    return datetime.now(timezone.utc)
 
 
-def load_health():
-    if not HEALTH_FILE.exists():
+def load_json(path):
+    if not path.exists():
+        return {}
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_json(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def parse_dt(value):
+    if not value:
         return None
 
-    with open(HEALTH_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except Exception:
+        return None
 
 
-def build_alerts(health):
-    alerts = []
+def minutes_since(dt):
+    if dt is None:
+        return None
 
-    if health is None:
-        alerts.append({
-            "level": "ERROR",
-            "source": "health_monitor",
-            "message": "No existe health_status.json",
-            "created_at": now_iso()
-        })
-        return alerts
+    if dt.tzinfo is None:
+        dt = dt.astimezone()
 
-    overall = health.get("overall_status", "UNKNOWN")
+    return (now_utc() - dt.astimezone(timezone.utc)).total_seconds() / 60.0
 
-    if overall != "HEALTHY":
-        alerts.append({
-            "level": overall,
-            "source": "overall_status",
-            "message": f"Estado general de AtmosLink: {overall}",
-            "created_at": now_iso()
-        })
 
+def table_exists(conn, table_name):
+    query = """
+        SELECT name
+        FROM sqlite_master
+        WHERE type='table'
+        AND name=?
+    """
+    return conn.execute(query, (table_name,)).fetchone() is not None
+
+
+def get_latest_row(table_name, order_column="id"):
+    if not DB_FILE.exists():
+        return None
+
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+
+    if not table_exists(conn, table_name):
+        conn.close()
+        return None
+
+    cur = conn.cursor()
+    cur.execute(f"""
+        SELECT *
+        FROM {table_name}
+        ORDER BY {order_column} DESC
+        LIMIT 1
+    """)
+
+    row = cur.fetchone()
+    conn.close()
+
+    return dict(row) if row else None
+
+
+def add_alert(alerts, alert_id, severity, title, message):
+    alerts.append({
+        "id": alert_id,
+        "severity": severity,
+        "title": title,
+        "message": message,
+    })
+
+
+def check_weather(alerts):
+    row = get_latest_row("weather_local")
+
+    if not row:
+        add_alert(
+            alerts,
+            "WEATHER_NO_DATA",
+            "critical",
+            "Sin datos meteorológicos",
+            "No existen registros en weather_local."
+        )
+        return
+
+    ts = parse_dt(row.get("timestamp_local"))
+    age = minutes_since(ts)
+
+    if age is None:
+        add_alert(
+            alerts,
+            "WEATHER_INVALID_TIMESTAMP",
+            "warning",
+            "Timestamp meteorológico inválido",
+            f"No se pudo interpretar timestamp_local: {row.get('timestamp_local')}"
+        )
+    elif age > MAX_WEATHER_AGE_MINUTES:
+        add_alert(
+            alerts,
+            "WEATHER_STALE",
+            "critical",
+            "Estación meteorológica sin actualización",
+            f"Último dato hace {age:.1f} minutos. Último timestamp: {row.get('timestamp_local')}"
+        )
+
+    if row.get("bme_ok") != 1:
+        add_alert(
+            alerts,
+            "BME280_NOT_OK",
+            "critical",
+            "BME280 con falla",
+            "El último registro indica bme_ok diferente de 1."
+        )
+
+    if row.get("rain_ok") != 1:
+        add_alert(
+            alerts,
+            "RAIN_SENSOR_NOT_OK",
+            "critical",
+            "Pluviómetro con falla",
+            "El último registro indica rain_ok diferente de 1."
+        )
+
+    rain_1h = row.get("rain_1h_mm")
+    try:
+        rain_1h = float(rain_1h)
+        if rain_1h >= RAIN_INTENSE_MM_H:
+            add_alert(
+                alerts,
+                "INTENSE_RAIN",
+                "warning",
+                "Lluvia intensa detectada",
+                f"Lluvia última hora: {rain_1h:.2f} mm."
+            )
+    except Exception:
+        pass
+
+
+def check_master(alerts):
+    row = get_latest_row("master_observations", order_column="bucket_minute")
+
+    if not row:
+        add_alert(
+            alerts,
+            "MASTER_NO_DATA",
+            "warning",
+            "Master dataset sin datos",
+            "No existen registros en master_observations."
+        )
+        return
+
+    ts = parse_dt(row.get("master_timestamp_local"))
+    age = minutes_since(ts)
+
+    if age is not None and age > MAX_MASTER_AGE_MINUTES:
+        add_alert(
+            alerts,
+            "MASTER_STALE",
+            "warning",
+            "Master dataset desactualizado",
+            f"Última sincronización útil hace {age:.1f} minutos. Último registro: {row.get('master_timestamp_local')}"
+        )
+
+
+def check_health(alerts):
+    health = load_json(HEALTH_FILE)
     checks = health.get("checks", {})
 
-    for check_name, check_data in checks.items():
-        status = check_data.get("status")
+    sqlite_check = checks.get("sqlite", {})
+    if sqlite_check and sqlite_check.get("status") != "ok":
+        add_alert(
+            alerts,
+            "SQLITE_HEALTH_FAIL",
+            "critical",
+            "SQLite con falla",
+            sqlite_check.get("message", "El chequeo SQLite no está en estado OK.")
+        )
 
-        if status in ["warning", "error"]:
-            alerts.append({
-                "level": status.upper(),
-                "source": check_name,
-                "message": check_data.get("message", f"Problema detectado en {check_name}"),
-                "created_at": now_iso()
-            })
+    internet_check = checks.get("internet", {})
+    if internet_check and internet_check.get("status") != "ok":
+        add_alert(
+            alerts,
+            "INTERNET_HEALTH_FAIL",
+            "warning",
+            "Conectividad a Internet con falla",
+            internet_check.get("message", "El chequeo de Internet no está en estado OK.")
+        )
 
-    return alerts
+    disk = checks.get("disk", {})
+    free_pct = disk.get("free_percent")
+
+    try:
+        free_pct = float(free_pct)
+        if free_pct < DISK_FREE_CRITICAL_PCT:
+            add_alert(
+                alerts,
+                "DISK_FREE_CRITICAL",
+                "critical",
+                "Espacio en disco crítico",
+                f"Espacio libre: {free_pct:.2f}%."
+            )
+        elif free_pct < DISK_FREE_WARNING_PCT:
+            add_alert(
+                alerts,
+                "DISK_FREE_WARNING",
+                "warning",
+                "Espacio en disco bajo",
+                f"Espacio libre: {free_pct:.2f}%."
+            )
+    except Exception:
+        pass
+
+    cpu_memory = checks.get("cpu_memory", {})
+
+    try:
+        cpu = float(cpu_memory.get("cpu_percent"))
+        if cpu >= CPU_WARNING_PCT:
+            add_alert(
+                alerts,
+                "CPU_HIGH",
+                "warning",
+                "CPU elevada",
+                f"Uso de CPU: {cpu:.2f}%."
+            )
+    except Exception:
+        pass
+
+    try:
+        ram = float(cpu_memory.get("memory_percent"))
+        if ram >= RAM_WARNING_PCT:
+            add_alert(
+                alerts,
+                "RAM_HIGH",
+                "warning",
+                "RAM elevada",
+                f"Uso de RAM: {ram:.2f}%."
+            )
+    except Exception:
+        pass
 
 
-def save_alerts(alerts):
+def check_scheduler(alerts):
+    registry = load_json(TASK_REGISTRY_FILE)
+    tasks = registry.get("tasks", {})
+
+    for task_name, task in tasks.items():
+        enabled = task.get("enabled")
+        status = task.get("status")
+        failures = task.get("failures", 0)
+
+        if enabled and status in ["failed", "error", "timeout"]:
+            add_alert(
+                alerts,
+                f"TASK_{task_name}_FAILED",
+                "warning",
+                f"Tarea fallida: {task_name}",
+                f"Estado: {status}. Fallos acumulados: {failures}."
+            )
+
+
+def check_radio(alerts):
+    row = get_latest_row("radio_link_local")
+
+    if not row:
+        return
+
+    note = row.get("note")
+    if note and note not in ["ok", "LOW_SNR", "LOW_RSSI", "LOW_MCS", "LOW_RATE"]:
+        add_alert(
+            alerts,
+            "RADIO_LINK_STATUS",
+            "warning",
+            "Estado anómalo del radioenlace",
+            f"Nota del colector: {note}"
+        )
+
+    if note in ["LOW_SNR", "LOW_RSSI", "LOW_MCS", "LOW_RATE"]:
+        add_alert(
+            alerts,
+            f"RADIO_{note}",
+            "warning",
+            f"Radioenlace: {note}",
+            f"Último estado del radioenlace: {note}"
+        )
+
+
+def build_alerts():
+    alerts = []
+
+    check_weather(alerts)
+    check_master(alerts)
+    check_health(alerts)
+    check_scheduler(alerts)
+    check_radio(alerts)
+
     payload = {
-        "updated_at": now_iso(),
+        "updated_at": now_utc().isoformat(timespec="seconds"),
         "alert_count": len(alerts),
-        "alerts": alerts
+        "alerts": alerts,
     }
 
-    with open(ALERTS_FILE, "w", encoding="utf-8") as f:
-        json.dump(payload, f, indent=4, ensure_ascii=False)
+    return payload
 
 
 def main():
-    health = load_health()
-    alerts = build_alerts(health)
-    save_alerts(alerts)
+    payload = build_alerts()
+    save_json(ALERTS_FILE, payload)
 
     print("ALERTS generado correctamente")
-    print(f"Alertas activas: {len(alerts)}")
+    print(f"Alertas activas: {payload['alert_count']}")
     print(f"Archivo: {ALERTS_FILE}")
 
 
