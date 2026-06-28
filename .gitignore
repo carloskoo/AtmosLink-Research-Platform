@@ -19,3 +19,10 @@ SQLite/
 *.db-shm
 
 config/telegram.yaml
+
+Backups/
+SQLite/
+logs/
+runtime/
+config/telegram.yaml
+venv/
