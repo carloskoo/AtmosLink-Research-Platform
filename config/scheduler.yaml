@@ -74,3 +74,11 @@ tasks:
       - python3
       - -m
       - weather_station.notifications.notification_engine
+  
+  remote_backup:
+    enabled: true
+    interval_seconds: 900
+    command:
+      - python3
+      - -m
+      - weather_station.backup.remote_backup
