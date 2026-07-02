@@ -2,7 +2,20 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-from weather_station.config.config import DB_FILE
+from weather_station.config.settings import load_config
+
+
+CONFIG = load_config()
+
+DB_FILE = CONFIG["database"]["sqlite"]
+
+STATION_ID = CONFIG.get("station", {}).get("id", "UNKNOWN")
+STATION_NAME = CONFIG.get("station", {}).get("name", "Unknown station")
+RADIO_ROLE = CONFIG.get("station", {}).get(
+    "role",
+    CONFIG.get("radio_link", {}).get("local_role", "UNKNOWN")
+)
+
 
 def init_db():
     Path(DB_FILE).parent.mkdir(parents=True, exist_ok=True)
@@ -17,6 +30,10 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp_utc TEXT NOT NULL,
             timestamp_local TEXT NOT NULL,
+
+            station_id TEXT,
+            station_name TEXT,
+            radio_role TEXT,
 
             t_s INTEGER,
 
@@ -44,8 +61,33 @@ def init_db():
         )
     """)
 
+    existing_cols = [
+        r[1] for r in cur.execute("PRAGMA table_info(weather_local)").fetchall()
+    ]
+
+    for col, col_type in [
+        ("station_id", "TEXT"),
+        ("station_name", "TEXT"),
+        ("radio_role", "TEXT"),
+    ]:
+        if col not in existing_cols:
+            cur.execute(f"ALTER TABLE weather_local ADD COLUMN {col} {col_type}")
+
+    cur.execute("""
+        UPDATE weather_local
+        SET station_id = ?,
+            station_name = ?,
+            radio_role = ?
+        WHERE station_id IS NULL
+    """, (
+        STATION_ID,
+        STATION_NAME,
+        RADIO_ROLE,
+    ))
+
     conn.commit()
     conn.close()
+
 
 def insert_weather(row: dict):
     timestamp_utc = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -58,6 +100,9 @@ def insert_weather(row: dict):
         INSERT INTO weather_local (
             timestamp_utc,
             timestamp_local,
+            station_id,
+            station_name,
+            radio_role,
             t_s,
             temp_avg_C,
             temp_min_C,
@@ -76,10 +121,13 @@ def insert_weather(row: dict):
             bme_ok,
             rain_ok
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         timestamp_utc,
         timestamp_local,
+        STATION_ID,
+        STATION_NAME,
+        RADIO_ROLE,
         row["t_s"],
         row["temp_avg_C"],
         row["temp_min_C"],
