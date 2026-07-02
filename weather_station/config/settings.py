@@ -8,6 +8,7 @@ DEFAULT_CONFIG_FILE = Path("Config/station.yaml")
 STATION_CONFIG_MAP = {
     "CU01": Path("Config/station_cu01.yaml"),
     "SJ01": Path("Config/station_sj01.yaml"),
+    "SJ01_WINDOWS": Path("Config/station_sj01_windows.yaml"),
 }
 
 

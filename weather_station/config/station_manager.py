@@ -8,6 +8,7 @@ def get_station_context():
     station = cfg.get("station", {})
     radio = cfg.get("radio_link", {})
     site = cfg.get("site", {})
+    serial = cfg.get("serial", {})
 
     station_id = station.get("id", "UNKNOWN")
     station_name = station.get("name", "Unknown station")
@@ -21,6 +22,10 @@ def get_station_context():
         "radio_role": radio_role,
         "local_role": local_role,
         "timezone": station.get("timezone", "America/Lima"),
+        "deployment_mode": station.get("deployment_mode", "field"),
+        "serial_port": serial.get("port"),
+        "serial_baudrate": serial.get("baudrate"),
+        "serial_timeout": serial.get("timeout"),
         "latitude": site.get("latitude"),
         "longitude": site.get("longitude"),
         "altitude_m": site.get("altitude_m"),
