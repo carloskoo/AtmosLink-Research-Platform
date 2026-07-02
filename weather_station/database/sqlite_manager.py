@@ -2,19 +2,16 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-from weather_station.config.settings import load_config
+from weather_station.config.station_manager import get_station_context
 
 
-CONFIG = load_config()
+STATION_CONTEXT = get_station_context()
 
-DB_FILE = CONFIG["database"]["sqlite"]
+DB_FILE = STATION_CONTEXT["database"]
 
-STATION_ID = CONFIG.get("station", {}).get("id", "UNKNOWN")
-STATION_NAME = CONFIG.get("station", {}).get("name", "Unknown station")
-RADIO_ROLE = CONFIG.get("station", {}).get(
-    "role",
-    CONFIG.get("radio_link", {}).get("local_role", "UNKNOWN")
-)
+STATION_ID = STATION_CONTEXT["station_id"]
+STATION_NAME = STATION_CONTEXT["station_name"]
+RADIO_ROLE = STATION_CONTEXT["radio_role"]
 
 
 def init_db():

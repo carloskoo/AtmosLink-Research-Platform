@@ -5,10 +5,12 @@ import numpy as np
 import pandas as pd
 
 from weather_station.config.settings import load_config
+from weather_station.config.station_manager import get_station_context
 
 
 CONFIG = load_config()
-DB_FILE = CONFIG["database"]["sqlite"]
+STATION_CONTEXT = get_station_context()
+DB_FILE = STATION_CONTEXT["database"]
 
 
 def table_exists(conn, table_name):
@@ -492,10 +494,10 @@ def build_master():
             master[col] = None
 
     if "station_id" not in master.columns:
-        master["station_id"] = CONFIG.get("station", {}).get("id", "UNKNOWN")
+        master["station_id"] = STATION_CONTEXT["station_id"]
 
     if "station_name" not in master.columns:
-        master["station_name"] = CONFIG.get("station", {}).get("name", "Unknown station")
+        master["station_name"] = STATION_CONTEXT["station_name"]
 
     if "radio_role" not in master.columns:
         master["radio_role"] = CONFIG.get("station", {}).get(
@@ -503,10 +505,10 @@ def build_master():
             CONFIG.get("radio_link", {}).get("local_role", "UNKNOWN")
         )
 
-    master["station_id"] = master["station_id"].fillna(CONFIG.get("station", {}).get("id", "UNKNOWN"))
-    master["station_name"] = master["station_name"].fillna(CONFIG.get("station", {}).get("name", "Unknown station"))
+    master["station_id"] = master["station_id"].fillna(STATION_CONTEXT["station_id"])
+    master["station_name"] = master["station_name"].fillna(STATION_CONTEXT["station_name"])
     master["radio_role"] = master["radio_role"].fillna(
-        CONFIG.get("station", {}).get("role", CONFIG.get("radio_link", {}).get("local_role", "UNKNOWN"))
+        STATION_CONTEXT["radio_role"]
     )
 
     master["master_timestamp_local"] = master["bucket_minute"].astype(str)

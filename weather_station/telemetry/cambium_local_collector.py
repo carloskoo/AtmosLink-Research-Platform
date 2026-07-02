@@ -5,16 +5,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from weather_station.config.settings import load_config
+from weather_station.config.station_manager import get_station_context
 
 CONFIG = load_config()
+STATION_CONTEXT = get_station_context()
 
-STATION_ID = CONFIG.get("station", {}).get("id", "UNKNOWN")
-STATION_NAME = CONFIG.get("station", {}).get("name", "Unknown station")
-RADIO_ROLE = CONFIG.get("station", {}).get("role", CONFIG.get("radio_link", {}).get("local_role", "UNKNOWN"))
-LOCAL_ROLE = CONFIG.get("radio_link", {}).get("local_role", RADIO_ROLE)
+STATION_ID = STATION_CONTEXT["station_id"]
+STATION_NAME = STATION_CONTEXT["station_name"]
+RADIO_ROLE = STATION_CONTEXT["radio_role"]
+LOCAL_ROLE = STATION_CONTEXT["local_role"]
 
-AP_IP = CONFIG["radio_link"]["ap_ip"]
-SM_IP = CONFIG["radio_link"]["sm_ip"]
+AP_IP = STATION_CONTEXT["ap_ip"]
+SM_IP = STATION_CONTEXT["sm_ip"]
 SSH_USER = CONFIG["radio_link"]["ssh_user"]
 PASSFILE = CONFIG["radio_link"]["passfile"]
 DB_FILE = CONFIG["database"]["sqlite"]
