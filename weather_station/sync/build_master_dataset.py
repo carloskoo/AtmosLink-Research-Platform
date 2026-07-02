@@ -99,6 +99,9 @@ def prepare_weather(df):
 
     cols = [
         "bucket_minute",
+        "station_id",
+        "station_name",
+        "radio_role",
         "timestamp_utc",
         "timestamp_local",
         "temp_avg_C",
@@ -125,6 +128,9 @@ def prepare_weather(df):
     rename = {
         "timestamp_utc": "weather_timestamp_utc",
         "timestamp_local": "weather_timestamp_local",
+        "station_id": "station_id",
+        "station_name": "station_name",
+        "radio_role": "radio_role",
         "temp_avg_C": "local_temp_avg_c",
         "temp_min_C": "local_temp_min_c",
         "temp_max_C": "local_temp_max_c",
@@ -167,6 +173,10 @@ def prepare_radio(df):
 
     cols = [
         "bucket_minute",
+        "station_id",
+        "station_name",
+        "radio_role",
+        "local_role",
         "timestamp_utc",
         "timestamp_local",
         "mcs_dl",
@@ -191,6 +201,10 @@ def prepare_radio(df):
     rename = {
         "timestamp_utc": "radio_timestamp_utc",
         "timestamp_local": "radio_timestamp_local",
+        "station_id": "radio_station_id",
+        "station_name": "radio_station_name",
+        "radio_role": "radio_role_from_radio",
+        "local_role": "radio_local_role",
         "mcs_dl": "radio_mcs_dl",
         "mcs_ul": "radio_mcs_ul",
         "snr_dl": "radio_snr_dl",
@@ -401,6 +415,10 @@ def build_master():
     master = weather.copy()
 
     expected_radio_cols = [
+        "radio_station_id",
+        "radio_station_name",
+        "radio_role_from_radio",
+        "radio_local_role",
         "radio_timestamp_utc",
         "radio_timestamp_local",
         "radio_mcs_dl",
@@ -472,6 +490,24 @@ def build_master():
     for col in expected_nasa_cols:
         if col not in master.columns:
             master[col] = None
+
+    if "station_id" not in master.columns:
+        master["station_id"] = CONFIG.get("station", {}).get("id", "UNKNOWN")
+
+    if "station_name" not in master.columns:
+        master["station_name"] = CONFIG.get("station", {}).get("name", "Unknown station")
+
+    if "radio_role" not in master.columns:
+        master["radio_role"] = CONFIG.get("station", {}).get(
+            "role",
+            CONFIG.get("radio_link", {}).get("local_role", "UNKNOWN")
+        )
+
+    master["station_id"] = master["station_id"].fillna(CONFIG.get("station", {}).get("id", "UNKNOWN"))
+    master["station_name"] = master["station_name"].fillna(CONFIG.get("station", {}).get("name", "Unknown station"))
+    master["radio_role"] = master["radio_role"].fillna(
+        CONFIG.get("station", {}).get("role", CONFIG.get("radio_link", {}).get("local_role", "UNKNOWN"))
+    )
 
     master["master_timestamp_local"] = master["bucket_minute"].astype(str)
     master["master_timestamp_hour"] = master["bucket_hour"].astype(str)
