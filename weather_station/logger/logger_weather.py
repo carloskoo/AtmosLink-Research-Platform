@@ -5,12 +5,16 @@ import serial
 from serial import SerialException
 
 from weather_station.config.config import (
-    SERIAL_PORT,
-    BAUD_RATE,
-    SERIAL_TIMEOUT,
     LOG_FILE,
     RECONNECT_DELAY_SECONDS,
 )
+from weather_station.config.station_manager import get_station_context
+
+STATION_CONTEXT = get_station_context()
+
+SERIAL_PORT = STATION_CONTEXT.get("serial_port") or "/dev/ttyUSB0"
+BAUD_RATE = STATION_CONTEXT.get("serial_baudrate") or 115200
+SERIAL_TIMEOUT = STATION_CONTEXT.get("serial_timeout") or 2
 from weather_station.acquisition.parser import parse_weather_line
 from weather_station.database.sqlite_manager import init_db, insert_weather
 from weather_station.database.csv_writer import init_csv, append_csv
@@ -99,6 +103,8 @@ def run_logger():
     init_csv()
 
     print("Logger meteorológico iniciado")
+    print(f"Estación: {STATION_CONTEXT['station_id']} | {STATION_CONTEXT['station_name']}")
+    print(f"Modo: {STATION_CONTEXT.get('deployment_mode')}")
     print(f"Puerto: {SERIAL_PORT}")
     logging.info("Logger iniciado")
 
