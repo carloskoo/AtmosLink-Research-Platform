@@ -25,7 +25,7 @@ tasks:
     command:
       - python3
       - -m
-      - weather_station.logger.weather_logger
+      - weather_station.logger.logger_weather
 
   radio_collector:
     enabled: false
@@ -33,7 +33,7 @@ tasks:
     command:
       - python3
       - -m
-      - weather_station.radio.radio_collector
+      - weather_station.telemetry.cambium_local_collector
 
   era5_downloader:
     enabled: false
