@@ -8,6 +8,11 @@ from weather_station.config.settings import load_config
 
 CONFIG = load_config()
 
+STATION_ID = CONFIG.get("station", {}).get("id", "UNKNOWN")
+STATION_NAME = CONFIG.get("station", {}).get("name", "Unknown station")
+RADIO_ROLE = CONFIG.get("station", {}).get("role", CONFIG.get("radio_link", {}).get("local_role", "UNKNOWN"))
+LOCAL_ROLE = CONFIG.get("radio_link", {}).get("local_role", RADIO_ROLE)
+
 AP_IP = CONFIG["radio_link"]["ap_ip"]
 SM_IP = CONFIG["radio_link"]["sm_ip"]
 SSH_USER = CONFIG["radio_link"]["ssh_user"]
@@ -43,6 +48,10 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp_utc TEXT NOT NULL,
             timestamp_local TEXT NOT NULL,
+            station_id TEXT,
+            station_name TEXT,
+            radio_role TEXT,
+            local_role TEXT,
             source TEXT,
             ap_ip TEXT,
             sm_ip TEXT,
@@ -68,6 +77,17 @@ def init_db():
         )
     """)
 
+    # Migración ligera para bases existentes
+    existing_cols = [r[1] for r in cur.execute("PRAGMA table_info(radio_link_local)").fetchall()]
+    for col, col_type in [
+        ("station_id", "TEXT"),
+        ("station_name", "TEXT"),
+        ("radio_role", "TEXT"),
+        ("local_role", "TEXT"),
+    ]:
+        if col not in existing_cols:
+            cur.execute(f"ALTER TABLE radio_link_local ADD COLUMN {col} {col_type}")
+
     conn.commit()
     conn.close()
 
@@ -82,16 +102,24 @@ def save_status(note, error=""):
         INSERT INTO radio_link_local (
             timestamp_utc,
             timestamp_local,
+            station_id,
+            station_name,
+            radio_role,
+            local_role,
             source,
             ap_ip,
             sm_ip,
             note,
             error
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         timestamp_utc,
         timestamp_local,
+        STATION_ID,
+        STATION_NAME,
+        RADIO_ROLE,
+        LOCAL_ROLE,
         "local_ssh",
         AP_IP,
         SM_IP,
@@ -200,6 +228,10 @@ def collect_once():
         INSERT INTO radio_link_local (
             timestamp_utc,
             timestamp_local,
+            station_id,
+            station_name,
+            radio_role,
+            local_role,
             source,
             ap_ip,
             sm_ip,
@@ -223,10 +255,14 @@ def collect_once():
             note,
             error
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         timestamp_utc,
         timestamp_local,
+        STATION_ID,
+        STATION_NAME,
+        RADIO_ROLE,
+        LOCAL_ROLE,
         "local_ssh",
         AP_IP,
         SM_IP,
@@ -261,6 +297,9 @@ def run_daemon():
     init_db()
 
     print("AtmosLink RadioLink Collector iniciado")
+    print(f"Config: {CONFIG.get('_config_file', 'unknown')}")
+    print(f"Station: {STATION_ID} | {STATION_NAME}")
+    print(f"Role: {RADIO_ROLE} | Local role: {LOCAL_ROLE}")
     print(f"AP: {AP_IP}")
     print(f"SM: {SM_IP}")
     print(f"Intervalo: {INTERVAL_SECONDS} s")
