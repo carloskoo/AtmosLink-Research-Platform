@@ -19,4 +19,4 @@ radio_link:
   ssh_timeout_seconds: 15
 
 database:
-  sqlite: SQLite/weather_local.db
+  sqlite: SQLite/SJ01/weather_local.db
