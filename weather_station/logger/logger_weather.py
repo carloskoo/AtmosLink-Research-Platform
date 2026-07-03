@@ -1,5 +1,6 @@
 import logging
 import time
+from pathlib import Path
 
 import serial
 from serial import SerialException
@@ -41,6 +42,8 @@ VALID_RANGES = {
 
 
 def setup_logging():
+    Path(LOG_FILE).parent.mkdir(parents=True, exist_ok=True)
+
     logging.basicConfig(
         filename=LOG_FILE,
         level=logging.INFO,
