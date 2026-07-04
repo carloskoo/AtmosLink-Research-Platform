@@ -222,6 +222,30 @@
 
 
 
+
+  <div class="section-title">Scientific Health Score</div>
+  <div class="grid">
+    <div class="card">
+      <div class="label">Score científico</div>
+      <div class="value"><span id="scientificScore">--</span> <span class="unit">%</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Estado científico</div>
+      <div class="value" id="scientificStatus">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Validez del dataset</div>
+      <div class="value"><span id="scientificValidity">--</span> <span class="unit">%</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Mensaje científico</div>
+      <div class="value" id="scientificMessage" style="font-size:18px;">--</div>
+    </div>
+  </div>
+
   <div class="section-title">Estado general del sistema</div>
   <div class="grid">
     <div class="card">
@@ -398,6 +422,28 @@ async function updateCoreStatus() {
   setText("radioMatched", summary.radio_matched_records);
 
 
+
+
+  const scientific = data.scientific_health || {};
+
+  setText("scientificScore", scientific.score ?? "--");
+  setText("scientificValidity", scientific.validity_percent ?? "--");
+  setText("scientificMessage", scientific.message || "--");
+
+  const scientificStatus = document.getElementById("scientificStatus");
+  if (scientificStatus) {
+    scientificStatus.textContent = (scientific.status || "--").toUpperCase();
+
+    if (scientific.status === "ok") {
+      scientificStatus.className = "value ok";
+    } else if (scientific.status === "warning") {
+      scientificStatus.className = "value warning";
+    } else if (scientific.status === "critical") {
+      scientificStatus.className = "value bad";
+    } else {
+      scientificStatus.className = "value warning";
+    }
+  }
 
   const healthChecks = (data.health || {}).checks || {};
   const registryTasks = (data.registry || {}).tasks || {};
