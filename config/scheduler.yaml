@@ -141,3 +141,10 @@ tasks:
     - python3
     - -m
     - weather_station.analytics.scientific_agreement_index
+  atmospheric_corridor:
+    enabled: true
+    interval_seconds: 300
+    command:
+    - python3
+    - -m
+    - weather_station.analytics.atmospheric_corridor
