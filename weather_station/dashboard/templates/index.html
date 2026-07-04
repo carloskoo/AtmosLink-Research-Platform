@@ -220,6 +220,30 @@
   <div class="chart-card"><div class="chart-title">Precipitación: Local vs ERA5 vs NASA POWER</div><canvas id="rainCompareChart"></canvas></div>
   <div class="chart-card"><div class="chart-title">Viento: Local vs NASA POWER</div><canvas id="windChart"></canvas></div>
 
+
+  <div class="section-title">Control de calidad científico</div>
+  <div class="grid">
+    <div class="card">
+      <div class="label">Estado QC</div>
+      <div class="value" id="qcStatus">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Problemas críticos</div>
+      <div class="value" id="qcCritical">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Advertencias</div>
+      <div class="value" id="qcWarning">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Mensaje QC</div>
+      <div class="value" id="qcMessage" style="font-size:18px;">--</div>
+    </div>
+  </div>
+
   <div class="section-title">Scheduler y salud del sistema</div>
   <div class="card">
     <div class="label">Última actualización del núcleo</div>
@@ -331,6 +355,13 @@ async function updateCoreStatus() {
   setText("era5Matched", summary.era5_matched_records);
   setText("nasaMatched", summary.nasa_matched_records);
   setText("radioMatched", summary.radio_matched_records);
+
+
+  const qc = data.qc_summary || {};
+  setText("qcStatus", qc.status || "--");
+  setText("qcCritical", qc.critical ?? "--");
+  setText("qcWarning", qc.warning ?? "--");
+  setText("qcMessage", qc.message || "--");
 
   const health = data.health || {};
   setText("coreUpdated", health.updated_at || "--");
