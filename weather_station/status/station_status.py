@@ -57,8 +57,16 @@ def main():
     last = None
     if table_exists(cur, "weather_local"):
         last = cur.execute("""
-            SELECT timestamp_local, temp_avg_C, hum_avg_pct, pres_avg_hPa,
-                   rain_total_mm, pulses_total
+            SELECT timestamp_local,
+                   temp_avg_C,
+                   hum_avg_pct,
+                   pres_avg_hPa,
+                   rain_total_mm,
+                   pulses_total,
+                   wind_speed_ms,
+                   wind_direction_deg,
+                   wind_gust_ms,
+                   wind_ok
             FROM weather_local
             ORDER BY id DESC
             LIMIT 1
@@ -99,6 +107,10 @@ def main():
         print(f"Pressure        : {last[3]} hPa")
         print(f"Rain total      : {last[4]} mm")
         print(f"Pulses total    : {last[5]}")
+        print(f"Wind speed      : {last[6]} m/s")
+        print(f"Wind direction  : {last[7]} °")
+        print(f"Wind gust       : {last[8]} m/s")
+        print(f"Wind OK         : {last[9]}")
     else:
         status = "NO_WEATHER_DATA"
 
