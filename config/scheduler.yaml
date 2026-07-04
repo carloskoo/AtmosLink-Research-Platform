@@ -107,3 +107,11 @@ tasks:
       - -m
       - weather_station.qc.master_quality_check
 
+  qc_summary:
+    enabled: true
+    interval_seconds: 300
+    command:
+      - python3
+      - -m
+      - weather_station.qc.qc_summary
+
