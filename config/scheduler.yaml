@@ -99,3 +99,11 @@ tasks:
       - -m
       - weather_station.analytics.enrich_master_dataset
 
+  master_quality_check:
+    enabled: true
+    interval_seconds: 300
+    command:
+      - python3
+      - -m
+      - weather_station.qc.master_quality_check
+
