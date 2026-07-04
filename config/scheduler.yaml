@@ -91,3 +91,11 @@ tasks:
       - -m
       - weather_station.sync.station_sync
 
+  enrich_master_dataset:
+    enabled: true
+    interval_seconds: 300
+    command:
+      - python3
+      - -m
+      - weather_station.analytics.enrich_master_dataset
+
