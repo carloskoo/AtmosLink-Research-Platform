@@ -233,6 +233,30 @@
     <div class="card"><div class="label">Estado radio</div><div class="value" id="radioNote">Pendiente</div></div>
   </div>
 
+
+  <div class="section-title">Scientific Agreement Index</div>
+  <div class="grid">
+    <div class="card">
+      <div class="label">Agreement Index</div>
+      <div class="value"><span id="agreementIndex">--</span> <span class="unit">%</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Nivel</div>
+      <div class="value" id="agreementLevel">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Bloques válidos</div>
+      <div class="value" id="agreementBlocks">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Mensaje</div>
+      <div class="value" id="agreementMessage" style="font-size:18px;">--</div>
+    </div>
+  </div>
+
   <div class="section-title">Comparación científica Local vs NASA / ERA5</div>
   <div class="card">
     <div class="label">Estado comparación</div>
@@ -564,6 +588,28 @@ async function updateCoreStatus() {
 
 
 
+
+
+  const agreement = data.scientific_agreement || {};
+
+  setText("agreementIndex", agreement.agreement_index ?? "--");
+  setText("agreementBlocks", agreement.valid_blocks ?? "--");
+  setText("agreementMessage", agreement.message || "--");
+
+  const agreementLevel = document.getElementById("agreementLevel");
+  if (agreementLevel) {
+    agreementLevel.textContent = (agreement.level || agreement.status || "--").toUpperCase();
+
+    if (agreement.status === "ok") {
+      agreementLevel.className = "value ok";
+    } else if (agreement.status === "warning") {
+      agreementLevel.className = "value warning";
+    } else if (agreement.status === "critical") {
+      agreementLevel.className = "value bad";
+    } else {
+      agreementLevel.className = "value warning";
+    }
+  }
 
   const comparison = data.scientific_comparison || {};
   const comparisonRows = comparison.comparisons || [];

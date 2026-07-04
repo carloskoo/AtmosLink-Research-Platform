@@ -18,6 +18,7 @@ QC_SUMMARY_FILE = RUNTIME_DIR / "qc_summary.json"
 SCIENTIFIC_HEALTH_FILE = RUNTIME_DIR / "scientific_health_score.json"
 SCIENTIFIC_RELIABILITY_FILE = RUNTIME_DIR / "scientific_reliability.json"
 SCIENTIFIC_COMPARISON_FILE = RUNTIME_DIR / "scientific_comparison.json"
+SCIENTIFIC_AGREEMENT_FILE = RUNTIME_DIR / "scientific_agreement_index.json"
 
 app = Flask(__name__)
 
@@ -349,6 +350,7 @@ def api_core_status():
         "scientific_health": load_json(SCIENTIFIC_HEALTH_FILE),
         "scientific_reliability": load_json(SCIENTIFIC_RELIABILITY_FILE),
         "scientific_comparison": load_json(SCIENTIFIC_COMPARISON_FILE),
+        "scientific_agreement": load_json(SCIENTIFIC_AGREEMENT_FILE),
         "master_summary": get_master_summary(),
     })
 
