@@ -245,6 +245,29 @@
 
 
 
+
+  <div class="section-title">Comparación científica Local vs NASA / ERA5</div>
+  <div class="card">
+    <div class="label">Estado comparación</div>
+    <div class="value" id="comparisonStatus">--</div>
+    <div class="label" id="comparisonMessage" style="margin-top:8px;">--</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Fuente</th>
+          <th>Registros</th>
+          <th>MAE</th>
+          <th>RMSE</th>
+          <th>Bias</th>
+          <th>Correlación</th>
+        </tr>
+      </thead>
+      <tbody id="comparisonTable"></tbody>
+    </table>
+  </div>
+
   <div class="section-title">Scientific Reliability</div>
   <div class="grid">
     <div class="card">
@@ -520,6 +543,54 @@ async function updateCoreStatus() {
 
 
 
+
+
+  const comparison = data.scientific_comparison || {};
+  const comparisonRows = comparison.comparisons || [];
+
+  const comparisonStatus = document.getElementById("comparisonStatus");
+  if (comparisonStatus) {
+    comparisonStatus.textContent = (comparison.status || "--").toUpperCase();
+
+    if (comparison.status === "ok") {
+      comparisonStatus.className = "value ok";
+    } else if (comparison.status === "warning") {
+      comparisonStatus.className = "value warning";
+    } else if (comparison.status === "critical") {
+      comparisonStatus.className = "value bad";
+    } else {
+      comparisonStatus.className = "value warning";
+    }
+  }
+
+  setText("comparisonMessage", comparison.message || "--");
+
+  const comparisonTable = document.getElementById("comparisonTable");
+  if (comparisonTable) {
+    comparisonTable.innerHTML = "";
+
+    const visibleRows = comparisonRows.filter(r => (r.records || 0) > 0);
+
+    if (visibleRows.length === 0) {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td colspan="7">Sin datos suficientes para comparación científica.</td>`;
+      comparisonTable.appendChild(row);
+    } else {
+      visibleRows.forEach(r => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${r.label || r.metric || "--"}</td>
+          <td>${r.source || "--"}</td>
+          <td>${r.records ?? "--"}</td>
+          <td>${r.mae ?? "--"} ${r.unit || ""}</td>
+          <td>${r.rmse ?? "--"} ${r.unit || ""}</td>
+          <td>${r.bias ?? "--"} ${r.unit || ""}</td>
+          <td>${r.correlation ?? "--"}</td>
+        `;
+        comparisonTable.appendChild(row);
+      });
+    }
+  }
 
   const reliability = data.scientific_reliability || {};
 
