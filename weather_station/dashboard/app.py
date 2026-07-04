@@ -16,6 +16,7 @@ TASK_REGISTRY_FILE = RUNTIME_DIR / "task_registry.json"
 ALERTS_FILE = RUNTIME_DIR / "alerts.json"
 QC_SUMMARY_FILE = RUNTIME_DIR / "qc_summary.json"
 SCIENTIFIC_HEALTH_FILE = RUNTIME_DIR / "scientific_health_score.json"
+SCIENTIFIC_RELIABILITY_FILE = RUNTIME_DIR / "scientific_reliability.json"
 
 app = Flask(__name__)
 
@@ -235,6 +236,7 @@ def api_core_status():
         "alerts": load_json(ALERTS_FILE),
         "qc_summary": load_json(QC_SUMMARY_FILE),
         "scientific_health": load_json(SCIENTIFIC_HEALTH_FILE),
+        "scientific_reliability": load_json(SCIENTIFIC_RELIABILITY_FILE),
         "master_summary": get_master_summary(),
     })
 

@@ -223,6 +223,30 @@
 
 
 
+
+  <div class="section-title">Scientific Reliability</div>
+  <div class="grid">
+    <div class="card">
+      <div class="label">Reliability</div>
+      <div class="value"><span id="reliabilityPercent">--</span> <span class="unit">%</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Estado</div>
+      <div class="value" id="reliabilityStatus">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Completitud master</div>
+      <div class="value"><span id="masterCompleteness">--</span> <span class="unit">%</span></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Registros descartados</div>
+      <div class="value" id="discardedEstimate">--</div>
+    </div>
+  </div>
+
   <div class="section-title">Scientific Health Score</div>
   <div class="grid">
     <div class="card">
@@ -423,6 +447,28 @@ async function updateCoreStatus() {
 
 
 
+
+
+  const reliability = data.scientific_reliability || {};
+
+  setText("reliabilityPercent", reliability.reliability_percent ?? "--");
+  setText("masterCompleteness", reliability.master_completeness_percent ?? "--");
+  setText("discardedEstimate", reliability.discarded_estimate ?? "--");
+
+  const reliabilityStatus = document.getElementById("reliabilityStatus");
+  if (reliabilityStatus) {
+    reliabilityStatus.textContent = (reliability.status || "--").toUpperCase();
+
+    if (reliability.status === "ok") {
+      reliabilityStatus.className = "value ok";
+    } else if (reliability.status === "warning") {
+      reliabilityStatus.className = "value warning";
+    } else if (reliability.status === "critical") {
+      reliabilityStatus.className = "value bad";
+    } else {
+      reliabilityStatus.className = "value warning";
+    }
+  }
 
   const scientific = data.scientific_health || {};
 
