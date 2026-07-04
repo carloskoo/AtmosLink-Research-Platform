@@ -123,3 +123,11 @@ tasks:
       - -m
       - weather_station.analytics.scientific_health_score
 
+  scientific_reliability:
+    enabled: true
+    interval_seconds: 300
+    command:
+      - python3
+      - -m
+      - weather_station.analytics.scientific_reliability
+
