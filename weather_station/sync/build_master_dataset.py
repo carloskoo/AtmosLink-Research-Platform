@@ -120,6 +120,10 @@ def prepare_weather(df):
         "rain_total_mm",
         "pulses_delta",
         "pulses_total",
+        "wind_speed_ms",
+        "wind_direction_deg",
+        "wind_gust_ms",
+        "wind_ok",
         "bme_ok",
         "rain_ok",
     ]
@@ -147,6 +151,10 @@ def prepare_weather(df):
         "rain_total_mm": "local_rain_total_mm",
         "pulses_delta": "local_pulses_delta",
         "pulses_total": "local_pulses_total",
+        "wind_speed_ms": "local_wind_speed_ms",
+        "wind_direction_deg": "local_wind_direction_deg",
+        "wind_gust_ms": "local_wind_gust_ms",
+        "wind_ok": "local_wind_ok",
         "bme_ok": "local_bme_ok",
         "rain_ok": "local_rain_ok",
     }

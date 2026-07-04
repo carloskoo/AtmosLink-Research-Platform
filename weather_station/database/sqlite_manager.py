@@ -53,8 +53,13 @@ def init_db():
             pulses_delta INTEGER,
             pulses_total INTEGER,
 
+            wind_speed_ms REAL,
+            wind_direction_deg REAL,
+            wind_gust_ms REAL,
+
             bme_ok INTEGER,
-            rain_ok INTEGER
+            rain_ok INTEGER,
+            wind_ok INTEGER
         )
     """)
 
@@ -81,6 +86,20 @@ def init_db():
         STATION_NAME,
         RADIO_ROLE,
     ))
+
+    existing_cols = [r[1] for r in cur.execute("PRAGMA table_info(weather_local)").fetchall()]
+
+    for col, col_type in [
+        ("station_id", "TEXT"),
+        ("station_name", "TEXT"),
+        ("radio_role", "TEXT"),
+        ("wind_speed_ms", "REAL"),
+        ("wind_direction_deg", "REAL"),
+        ("wind_gust_ms", "REAL"),
+        ("wind_ok", "INTEGER"),
+    ]:
+        if col not in existing_cols:
+            cur.execute(f"ALTER TABLE weather_local ADD COLUMN {col} {col_type}")
 
     conn.commit()
     conn.close()

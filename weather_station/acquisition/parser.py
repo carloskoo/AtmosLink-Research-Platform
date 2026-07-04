@@ -1,3 +1,6 @@
+from weather_station.sensors.weather_schema import ensure_weather_defaults
+
+
 COLUMNS = [
     "t_s",
     "temp_avg_C",
@@ -48,7 +51,7 @@ def parse_wscsv(parts):
     dew = calc_dew_point_c(temp_c, hum_pct)
     vapor = calc_vapor_pressure_hpa(temp_c, hum_pct)
 
-    return {
+    return ensure_weather_defaults({
         "t_s": int(uptime_ms / 1000),
         "temp_avg_C": temp_c,
         "temp_min_C": temp_c,
@@ -66,14 +69,14 @@ def parse_wscsv(parts):
         "pulses_total": tips,
         "bme_ok": 1,
         "rain_ok": 1,
-    }
+    })
 
 
 def parse_legacy_csv(parts):
     if len(parts) != len(COLUMNS):
         raise ValueError(f"Numero de columnas incorrecto: {len(parts)}")
 
-    return {
+    return ensure_weather_defaults({
         "t_s": int(parts[0]),
         "temp_avg_C": float(parts[1]),
         "temp_min_C": float(parts[2]),
@@ -91,7 +94,7 @@ def parse_legacy_csv(parts):
         "pulses_total": int(parts[14]),
         "bme_ok": int(parts[15]),
         "rain_ok": int(parts[16]),
-    }
+    })
 
 
 def parse_weather_line(line: str):
