@@ -36,8 +36,12 @@ VALID_RANGES = {
     "rain_total_mm": (0, 100000),
     "pulses_delta": (0, 1000000),
     "pulses_total": (0, 1000000000),
+    "wind_speed_ms": (0, 100),
+    "wind_direction_deg": (0, 360),
+    "wind_gust_ms": (0, 150),
     "bme_ok": (0, 1),
     "rain_ok": (0, 1),
+    "wind_ok": (0, 1),
 }
 
 
@@ -70,6 +74,8 @@ def validate_weather_row(row):
         value = row.get(field)
 
         if value is None:
+            if field.startswith("wind_"):
+                continue
             return False, f"valor nulo en {field}"
 
         try:
