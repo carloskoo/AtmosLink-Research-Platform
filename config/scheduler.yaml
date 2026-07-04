@@ -1,141 +1,129 @@
 scheduler:
   loop_sleep_seconds: 5
   task_timeout_seconds: 300
-
 tasks:
   sync_master_dataset:
     enabled: true
     interval_seconds: 60
     command:
-      - python3
-      - -m
-      - weather_station.sync.build_master_dataset
-
+    - python3
+    - -m
+    - weather_station.sync.build_master_dataset
   telegram_alert_sender:
     enabled: true
     interval_seconds: 60
     command:
-      - python3
-      - -m
-      - weather_station.notifications.telegram_alert_sender
-  
+    - python3
+    - -m
+    - weather_station.notifications.telegram_alert_sender
   weather_logger:
     enabled: false
     interval_seconds: 60
     command:
-      - python3
-      - -m
-      - weather_station.logger.logger_weather
-
+    - python3
+    - -m
+    - weather_station.logger.logger_weather
   radio_collector:
     enabled: false
     interval_seconds: 60
     command:
-      - python3
-      - -m
-      - weather_station.telemetry.cambium_local_collector
-
+    - python3
+    - -m
+    - weather_station.telemetry.cambium_local_collector
   era5_downloader:
-    enabled: false
+    enabled: true
     interval_seconds: 86400
     command:
-      - python3
-      - -m
-      - weather_station.era5.era5_downloader
-
+    - python3
+    - -m
+    - weather_station.weather_sources.era5_incremental_downloader
+    - --backfill-days
+    - '10'
+    - --safety-lag-days
+    - '7'
+    - --max-days
+    - '3'
   nasa_power_downloader:
     enabled: true
     interval_seconds: 86400
     command:
-      - python3
-      - -m
-      - weather_station.weather_sources.nasa_power_downloader
-
+    - python3
+    - -m
+    - weather_station.weather_sources.nasa_power_downloader
   daily_backup:
     enabled: true
     interval_seconds: 21600
     command:
-      - python3
-      - -m
-      - weather_station.backup.local_backup
-
+    - python3
+    - -m
+    - weather_station.backup.local_backup
   health_monitor:
     enabled: true
     interval_seconds: 60
     command:
-      - python3
-      - -m
-      - weather_station.health.health_monitor
-
+    - python3
+    - -m
+    - weather_station.health.health_monitor
   notification_engine:
     enabled: true
     interval_seconds: 60
     command:
-      - python3
-      - -m
-      - weather_station.notifications.notification_engine
-  
+    - python3
+    - -m
+    - weather_station.notifications.notification_engine
   remote_backup:
     enabled: true
     interval_seconds: 900
     command:
-      - python3
-      - -m
-      - weather_station.backup.remote_backup
-
+    - python3
+    - -m
+    - weather_station.backup.remote_backup
   station_sync:
     enabled: true
     interval_seconds: 300
     command:
-      - python3
-      - -m
-      - weather_station.sync.station_sync
-
+    - python3
+    - -m
+    - weather_station.sync.station_sync
   enrich_master_dataset:
     enabled: true
     interval_seconds: 300
     command:
-      - python3
-      - -m
-      - weather_station.analytics.enrich_master_dataset
-
+    - python3
+    - -m
+    - weather_station.analytics.enrich_master_dataset
   master_quality_check:
     enabled: true
     interval_seconds: 300
     command:
-      - python3
-      - -m
-      - weather_station.qc.master_quality_check
-
+    - python3
+    - -m
+    - weather_station.qc.master_quality_check
   qc_summary:
     enabled: true
     interval_seconds: 300
     command:
-      - python3
-      - -m
-      - weather_station.qc.qc_summary
-
+    - python3
+    - -m
+    - weather_station.qc.qc_summary
   scientific_health_score:
     enabled: true
     interval_seconds: 300
     command:
-      - python3
-      - -m
-      - weather_station.analytics.scientific_health_score
-
+    - python3
+    - -m
+    - weather_station.analytics.scientific_health_score
   scientific_reliability:
     enabled: true
     interval_seconds: 300
     command:
-      - python3
-      - -m
-      - weather_station.analytics.scientific_reliability
-
+    - python3
+    - -m
+    - weather_station.analytics.scientific_reliability
   build_station_observations:
     enabled: true
     interval_seconds: 300
     command:
-      - python3
-      - -m
-      - weather_station.sync.build_station_observations
-
+    - python3
+    - -m
+    - weather_station.sync.build_station_observations
