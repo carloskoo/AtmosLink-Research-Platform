@@ -255,6 +255,23 @@
       </thead>
       <tbody id="comparisonTable"></tbody>
     </table>
+
+    <div class="label" style="margin-top:18px;">Fuente recomendada por variable</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Fuente recomendada</th>
+          <th>Calidad</th>
+          <th>Registros</th>
+          <th>MAE</th>
+          <th>Correlación</th>
+          <th>Mensaje</th>
+        </tr>
+      </thead>
+      <tbody id="recommendationTable"></tbody>
+    </table>
+
   </div>
 
 
@@ -593,6 +610,36 @@ async function updateCoreStatus() {
           <td>${r.interpretation || "--"}</td>
         `;
         comparisonTable.appendChild(row);
+      });
+    }
+  }
+
+
+  const recommendationRows = comparison.recommendations || [];
+  const recommendationTable = document.getElementById("recommendationTable");
+
+  if (recommendationTable) {
+    recommendationTable.innerHTML = "";
+
+    if (recommendationRows.length === 0) {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td colspan="7">Sin recomendación disponible.</td>`;
+      recommendationTable.appendChild(row);
+    } else {
+      recommendationRows.forEach(r => {
+        const qualityClass = r.quality === "good" ? "ok" : r.quality === "moderate" ? "warning" : "bad";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${r.label || "--"}</td>
+          <td>${r.recommended_source || "--"}</td>
+          <td class="${qualityClass}">${(r.quality || "--").toUpperCase()}</td>
+          <td>${r.records ?? "--"}</td>
+          <td>${r.mae ?? "--"} ${r.unit || ""}</td>
+          <td>${r.correlation ?? "--"}</td>
+          <td>${r.message || "--"}</td>
+        `;
+        recommendationTable.appendChild(row);
       });
     }
   }
