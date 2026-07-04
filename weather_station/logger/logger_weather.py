@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from pathlib import Path
 
@@ -10,15 +11,25 @@ from weather_station.config.config import (
     RECONNECT_DELAY_SECONDS,
 )
 from weather_station.config.station_manager import get_station_context
+from weather_station.acquisition.parser import parse_weather_line
+from weather_station.database.sqlite_manager import init_db, insert_weather
+from weather_station.database.csv_writer import init_csv, append_csv
+from weather_station.sensors.wind_rs485 import read_wind_sensor, reading_to_weather_fields
+
 
 STATION_CONTEXT = get_station_context()
 
 SERIAL_PORT = STATION_CONTEXT.get("serial_port") or "/dev/ttyUSB0"
 BAUD_RATE = STATION_CONTEXT.get("serial_baudrate") or 115200
 SERIAL_TIMEOUT = STATION_CONTEXT.get("serial_timeout") or 2
-from weather_station.acquisition.parser import parse_weather_line
-from weather_station.database.sqlite_manager import init_db, insert_weather
-from weather_station.database.csv_writer import init_csv, append_csv
+
+WIND_ENABLED = os.getenv("ATMOSLINK_WIND_ENABLED", "0") == "1"
+WIND_PORT = os.getenv("ATMOSLINK_WIND_PORT", "/dev/ttyUSB1")
+WIND_BAUDRATE = int(os.getenv("ATMOSLINK_WIND_BAUDRATE", "4800"))
+WIND_SLAVE_ID = int(os.getenv("ATMOSLINK_WIND_SLAVE_ID", "1"))
+WIND_START_REGISTER = int(os.getenv("ATMOSLINK_WIND_START_REGISTER", "0"))
+WIND_QUANTITY = int(os.getenv("ATMOSLINK_WIND_QUANTITY", "3"))
+WIND_TIMEOUT = float(os.getenv("ATMOSLINK_WIND_TIMEOUT", "2.0"))
 
 
 VALID_RANGES = {
@@ -55,15 +66,31 @@ def setup_logging():
     )
 
 
+def get_wind_fields():
+    if not WIND_ENABLED:
+        return {
+            "wind_speed_ms": None,
+            "wind_direction_deg": None,
+            "wind_gust_ms": None,
+            "wind_ok": 0,
+        }
+
+    reading = read_wind_sensor(
+        port=WIND_PORT,
+        baudrate=WIND_BAUDRATE,
+        slave_id=WIND_SLAVE_ID,
+        start_register=WIND_START_REGISTER,
+        quantity=WIND_QUANTITY,
+        timeout=WIND_TIMEOUT,
+    )
+
+    if reading.wind_ok != 1:
+        logging.warning(f"Lectura de viento no válida: {reading.error}")
+
+    return reading_to_weather_fields(reading)
+
+
 def validate_weather_row(row):
-    """
-    Valida rangos físicos y consistencia básica antes de guardar datos.
-
-    Retorna:
-        (True, "ok") si el registro es válido.
-        (False, "motivo") si debe descartarse.
-    """
-
     if not isinstance(row, dict):
         return False, "row no es diccionario"
 
@@ -114,7 +141,14 @@ def run_logger():
     print("Logger meteorológico iniciado")
     print(f"Estación: {STATION_CONTEXT['station_id']} | {STATION_CONTEXT['station_name']}")
     print(f"Modo: {STATION_CONTEXT.get('deployment_mode')}")
-    print(f"Puerto: {SERIAL_PORT}")
+    print(f"Puerto clima: {SERIAL_PORT}")
+    print(f"Viento RS485 habilitado: {WIND_ENABLED}")
+
+    if WIND_ENABLED:
+        print(f"Puerto viento: {WIND_PORT}")
+        print(f"Baudrate viento: {WIND_BAUDRATE}")
+        print(f"Slave ID viento: {WIND_SLAVE_ID}")
+
     logging.info("Logger iniciado")
 
     while True:
@@ -139,6 +173,9 @@ def run_logger():
 
                         if row is None:
                             continue
+
+                        wind_fields = get_wind_fields()
+                        row.update(wind_fields)
 
                         valid, reason = validate_weather_row(row)
 
