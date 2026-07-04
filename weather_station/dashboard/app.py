@@ -51,6 +51,22 @@ def get_connection():
     return conn
 
 
+def clean_timestamp(value):
+    if value is None:
+        return None
+
+    value = str(value)
+    value = value.replace("T", " ")
+
+    if value.endswith("-05:00"):
+        value = value[:-6]
+
+    if value.endswith("+00:00"):
+        value = value[:-6]
+
+    return value
+
+
 def select_expr(columns, column_name, alias=None):
     alias = alias or column_name
 
@@ -97,7 +113,7 @@ def get_latest():
     d["station_name"] = d.get("station_name")
     d["radio_role"] = d.get("radio_role")
 
-    d["timestamp_local"] = d.get("master_timestamp_local")
+    d["timestamp_local"] = clean_timestamp(d.get("local_timestamp_local") or d.get("master_timestamp_local"))
     d["temp_avg_C"] = d.get("local_temp_avg_c")
     d["hum_avg_pct"] = d.get("local_hum_avg_pct")
     d["pres_avg_hPa"] = d.get("local_press_hpa")
