@@ -56,18 +56,6 @@
       font-size: 15px;
     }
 
-    .status-warning {
-      color: var(--warning);
-      font-weight: bold;
-      font-size: 15px;
-    }
-
-    .status-bad {
-      color: var(--bad);
-      font-weight: bold;
-      font-size: 15px;
-    }
-
     .section-title {
       font-size: 20px;
       margin: 28px 0 14px 0;
@@ -157,7 +145,7 @@
 <header>
   <div>
     <h1>AtmosLink Scientific Dashboard</h1>
-    <div class="subtitle">Local Weather · ERA5 · NASA POWER · Radio Link Ready</div>
+    <div class="subtitle">Local Weather · Wind RS485 Ready · ERA5 · NASA POWER · Radio Link</div>
   </div>
   <div class="status-ok" id="systemStatus">● ONLINE</div>
 </header>
@@ -165,421 +153,189 @@
 <main>
 
   <div class="section-title">Resumen científico</div>
-
   <div class="grid">
-    <div class="card">
-      <div class="label">Última observación</div>
-      <div class="value" id="timestamp" style="font-size:20px;">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">Registros master</div>
-      <div class="value" id="masterRecords">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">ERA5 emparejados</div>
-      <div class="value" id="era5Matched">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">NASA emparejados</div>
-      <div class="value" id="nasaMatched">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">Radio emparejados</div>
-      <div class="value" id="radioMatched">--</div>
-    </div>
+    <div class="card"><div class="label">Última observación</div><div class="value" id="timestamp" style="font-size:20px;">--</div></div>
+    <div class="card"><div class="label">Registros master</div><div class="value" id="masterRecords">--</div></div>
+    <div class="card"><div class="label">ERA5 emparejados</div><div class="value" id="era5Matched">--</div></div>
+    <div class="card"><div class="label">NASA emparejados</div><div class="value" id="nasaMatched">--</div></div>
+    <div class="card"><div class="label">Radio emparejados</div><div class="value" id="radioMatched">--</div></div>
   </div>
 
   <div class="section-title">Estación meteorológica local</div>
-
   <div class="grid">
-    <div class="card">
-      <div class="label">Temperatura local</div>
-      <div class="value"><span id="temp">--</span> <span class="unit">°C</span></div>
-    </div>
+    <div class="card"><div class="label">Temperatura local</div><div class="value"><span id="temp">--</span> <span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">Humedad relativa local</div><div class="value"><span id="hum">--</span> <span class="unit">%</span></div></div>
+    <div class="card"><div class="label">Presión local</div><div class="value"><span id="pres">--</span> <span class="unit">hPa</span></div></div>
+    <div class="card"><div class="label">Punto de rocío local</div><div class="value"><span id="dew">--</span> <span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">Presión de vapor local</div><div class="value"><span id="vapor">--</span> <span class="unit">hPa</span></div></div>
+    <div class="card"><div class="label">Lluvia última hora</div><div class="value"><span id="rain1h">--</span> <span class="unit">mm</span></div></div>
+    <div class="card"><div class="label">Lluvia acumulada</div><div class="value"><span id="raintotal">--</span> <span class="unit">mm</span></div></div>
+    <div class="card"><div class="label">BME280</div><div class="value" id="bme">--</div></div>
+    <div class="card"><div class="label">Pluviómetro</div><div class="value" id="rainok">--</div></div>
+  </div>
 
-    <div class="card">
-      <div class="label">Humedad relativa local</div>
-      <div class="value"><span id="hum">--</span> <span class="unit">%</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Presión local</div>
-      <div class="value"><span id="pres">--</span> <span class="unit">hPa</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Punto de rocío local</div>
-      <div class="value"><span id="dew">--</span> <span class="unit">°C</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Presión de vapor local</div>
-      <div class="value"><span id="vapor">--</span> <span class="unit">hPa</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Lluvia última hora</div>
-      <div class="value"><span id="rain1h">--</span> <span class="unit">mm</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Lluvia acumulada</div>
-      <div class="value"><span id="raintotal">--</span> <span class="unit">mm</span></div>
-    </div>
-
-
-    <div class="card">
-      <div class="label">Velocidad del viento</div>
-      <div class="value"><span id="windSpeed">--</span> <span class="unit">m/s</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Dirección del viento</div>
-      <div class="value"><span id="windDirection">--</span> <span class="unit">°</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Ráfaga de viento</div>
-      <div class="value"><span id="windGust">--</span> <span class="unit">m/s</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Anemómetro RS485</div>
-      <div class="value" id="windOk">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">BME280</div>
-      <div class="value" id="bme">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">Pluviómetro</div>
-      <div class="value" id="rainok">--</div>
-    </div>
+  <div class="section-title">Viento local RS485</div>
+  <div class="grid">
+    <div class="card"><div class="label">Velocidad del viento</div><div class="value"><span id="windSpeed">--</span> <span class="unit">m/s</span></div></div>
+    <div class="card"><div class="label">Dirección del viento</div><div class="value"><span id="windDirection">--</span> <span class="unit">°</span></div></div>
+    <div class="card"><div class="label">Ráfaga máxima</div><div class="value"><span id="windGust">--</span> <span class="unit">m/s</span></div></div>
+    <div class="card"><div class="label">Anemómetro</div><div class="value" id="windOk">--</div></div>
   </div>
 
   <div class="section-title">ERA5</div>
-
   <div class="grid">
-    <div class="card">
-      <div class="label">ERA5 temperatura</div>
-      <div class="value"><span id="era5Temp">--</span> <span class="unit">°C</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">ERA5 humedad relativa</div>
-      <div class="value"><span id="era5Rh">--</span> <span class="unit">%</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">ERA5 punto de rocío</div>
-      <div class="value"><span id="era5Dew">--</span> <span class="unit">°C</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">ERA5 lluvia</div>
-      <div class="value"><span id="era5Rain">--</span> <span class="unit">mm</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">ERA5 presión</div>
-      <div class="value"><span id="era5Press">--</span> <span class="unit">hPa</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">ERA5 viento</div>
-      <div class="value"><span id="era5Wind">--</span> <span class="unit">m/s</span></div>
-    </div>
+    <div class="card"><div class="label">ERA5 temperatura</div><div class="value"><span id="era5Temp">--</span> <span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">ERA5 humedad relativa</div><div class="value"><span id="era5Rh">--</span> <span class="unit">%</span></div></div>
+    <div class="card"><div class="label">ERA5 punto de rocío</div><div class="value"><span id="era5Dew">--</span> <span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">ERA5 lluvia</div><div class="value"><span id="era5Rain">--</span> <span class="unit">mm</span></div></div>
+    <div class="card"><div class="label">ERA5 presión</div><div class="value"><span id="era5Press">--</span> <span class="unit">hPa</span></div></div>
+    <div class="card"><div class="label">ERA5 viento</div><div class="value"><span id="era5Wind">--</span> <span class="unit">m/s</span></div></div>
   </div>
 
   <div class="section-title">NASA POWER</div>
-
   <div class="grid">
-    <div class="card">
-      <div class="label">NASA temperatura</div>
-      <div class="value"><span id="nasaTemp">--</span> <span class="unit">°C</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">NASA punto de rocío</div>
-      <div class="value"><span id="nasaDew">--</span> <span class="unit">°C</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">NASA humedad relativa</div>
-      <div class="value"><span id="nasaRh">--</span> <span class="unit">%</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">NASA lluvia</div>
-      <div class="value"><span id="nasaRain">--</span> <span class="unit">mm</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">NASA presión</div>
-      <div class="value"><span id="nasaPress">--</span> <span class="unit">hPa</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">NASA viento 10 m</div>
-      <div class="value"><span id="nasaWind">--</span> <span class="unit">m/s</span></div>
-    </div>
+    <div class="card"><div class="label">NASA temperatura</div><div class="value"><span id="nasaTemp">--</span> <span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">NASA punto de rocío</div><div class="value"><span id="nasaDew">--</span> <span class="unit">°C</span></div></div>
+    <div class="card"><div class="label">NASA humedad relativa</div><div class="value"><span id="nasaRh">--</span> <span class="unit">%</span></div></div>
+    <div class="card"><div class="label">NASA lluvia</div><div class="value"><span id="nasaRain">--</span> <span class="unit">mm</span></div></div>
+    <div class="card"><div class="label">NASA presión</div><div class="value"><span id="nasaPress">--</span> <span class="unit">hPa</span></div></div>
+    <div class="card"><div class="label">NASA viento 10 m</div><div class="value"><span id="nasaWind">--</span> <span class="unit">m/s</span></div></div>
   </div>
 
   <div class="section-title">Radioenlace Cambium</div>
-
   <div class="grid">
-    <div class="card">
-      <div class="label">SNR DL</div>
-      <div class="value"><span id="radioSnrDl">--</span> <span class="unit">dB</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">SNR UL</div>
-      <div class="value"><span id="radioSnrUl">--</span> <span class="unit">dB</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">RSSI DL</div>
-      <div class="value"><span id="radioRssiDl">--</span> <span class="unit">dBm</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">MCS DL</div>
-      <div class="value" id="radioMcsDl">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">DL Rate</div>
-      <div class="value"><span id="radioDlRate">--</span> <span class="unit">Mbps</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Estado radio</div>
-      <div class="value" id="radioNote">Pendiente</div>
-    </div>
+    <div class="card"><div class="label">SNR DL</div><div class="value"><span id="snrDl">--</span> <span class="unit">dB</span></div></div>
+    <div class="card"><div class="label">SNR UL</div><div class="value"><span id="snrUl">--</span> <span class="unit">dB</span></div></div>
+    <div class="card"><div class="label">RSSI DL</div><div class="value"><span id="rssiDl">--</span> <span class="unit">dBm</span></div></div>
+    <div class="card"><div class="label">MCS DL</div><div class="value"><span id="mcsDl">--</span></div></div>
+    <div class="card"><div class="label">DL Rate</div><div class="value"><span id="dlRate">--</span> <span class="unit">Mbps</span></div></div>
+    <div class="card"><div class="label">Estado radio</div><div class="value" id="radioNote">Pendiente</div></div>
   </div>
 
   <div class="section-title">Comparaciones temporales</div>
 
-  <div class="chart-card">
-    <div class="chart-title">Temperatura: Local vs ERA5 vs NASA POWER</div>
-    <canvas id="tempCompareChart"></canvas>
-  </div>
+  <div class="chart-card"><div class="chart-title">Temperatura: Local vs ERA5 vs NASA POWER</div><canvas id="tempCompareChart"></canvas></div>
+  <div class="chart-card"><div class="chart-title">Humedad relativa: Local vs ERA5 vs NASA POWER</div><canvas id="humidityCompareChart"></canvas></div>
+  <div class="chart-card"><div class="chart-title">Presión: Local vs ERA5 vs NASA POWER</div><canvas id="pressureCompareChart"></canvas></div>
+  <div class="chart-card"><div class="chart-title">Precipitación: Local vs ERA5 vs NASA POWER</div><canvas id="rainCompareChart"></canvas></div>
+  <div class="chart-card"><div class="chart-title">Viento: Local vs NASA POWER</div><canvas id="windChart"></canvas></div>
 
-  <div class="chart-card">
-    <div class="chart-title">Punto de rocío: Local vs ERA5 vs NASA POWER</div>
-    <canvas id="dewCompareChart"></canvas>
-  </div>
+  <div class="section-title">Scheduler y salud del sistema</div>
+  <div class="card">
+    <div class="label">Última actualización del núcleo</div>
+    <div class="value" id="coreUpdated" style="font-size:20px;">--</div>
 
-  <div class="chart-card">
-    <div class="chart-title">Humedad: Local vs ERA5 vs NASA POWER</div>
-    <canvas id="humidityCompareChart"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title">Presión: Local vs ERA5 vs NASA POWER</div>
-    <canvas id="pressureCompareChart"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title">Precipitación: Local vs ERA5 vs NASA POWER</div>
-    <canvas id="rainCompareChart"></canvas>
-  </div>
-
-  <div class="section-title">AtmosLink Core Status</div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="label">Estado general</div>
-      <div class="value" id="coreOverall">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">Alertas activas</div>
-      <div class="value" id="coreAlerts">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">SQLite</div>
-      <div class="value" id="coreSqlite">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">Internet</div>
-      <div class="value" id="coreInternet">--</div>
-    </div>
-
-    <div class="card">
-      <div class="label">CPU</div>
-      <div class="value"><span id="coreCpu">--</span> <span class="unit">%</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">RAM</div>
-      <div class="value"><span id="coreRam">--</span> <span class="unit">%</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Disco libre</div>
-      <div class="value"><span id="coreDisk">--</span> <span class="unit">%</span></div>
-    </div>
-
-    <div class="card">
-      <div class="label">Última revisión</div>
-      <div class="value" id="coreUpdated" style="font-size:18px;">--</div>
-    </div>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-title">Scheduler Tasks</div>
     <table>
       <thead>
         <tr>
           <th>Tarea</th>
           <th>Estado</th>
-          <th>Habilitada</th>
+          <th>Activa</th>
           <th>Última ejecución</th>
           <th>Duración</th>
           <th>Fallos</th>
         </tr>
       </thead>
-      <tbody id="taskTable">
-        <tr>
-          <td colspan="6">Cargando tareas...</td>
-        </tr>
-      </tbody>
+      <tbody id="taskTable"></tbody>
     </table>
   </div>
 
 </main>
 
 <footer>
-  AtmosLink Research Platform · Scientific Data Acquisition and Fusion System
+  AtmosLink Research Platform · Scientific Weather and Radio Link Monitoring
 </footer>
 
-
-  <div class="chart-card">
-    <div class="chart-title">Viento local</div>
-    <canvas id="windChart"></canvas>
-  </div>
-
 <script>
-let tempCompareChart;
-let dewCompareChart;
-let humidityCompareChart;
-let pressureCompareChart;
+let tempCompareChart = null;
+let humidityCompareChart = null;
+let pressureCompareChart = null;
+let rainCompareChart = null;
 let windChart = null;
-let rainCompareChart;
-
-function formatTime(ts) {
-  if (!ts) return "--";
-  return ts.replace("T", " ").substring(0, 19);
-}
 
 function valueOrDash(v) {
-  return v === null || v === undefined || v === "" ? "--" : v;
+  if (v === null || v === undefined || v === "") return "--";
+  return v;
 }
 
 function setText(id, value) {
-  document.getElementById(id).innerText = valueOrDash(value);
+  const el = document.getElementById(id);
+  if (el) el.textContent = valueOrDash(value);
+}
+
+function setStatus(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  if (value === 1) {
+    el.textContent = "OK";
+    el.className = "value ok";
+  } else if (value === 0) {
+    el.textContent = "SIN DATO";
+    el.className = "value warning";
+  } else {
+    el.textContent = "--";
+    el.className = "value warning";
+  }
 }
 
 async function updateLatest() {
   const r = await fetch("/api/latest");
-  const d = await r.json();
+  const data = await r.json();
 
-  if (!d || !d.timestamp_local) {
-    document.getElementById("systemStatus").innerText = "● SIN DATOS";
-    document.getElementById("systemStatus").className = "status-bad";
-    return;
-  }
+  setText("timestamp", data.timestamp_local);
+  setText("temp", data.temp_avg_C);
+  setText("hum", data.hum_avg_pct);
+  setText("pres", data.pres_avg_hPa);
+  setText("dew", data.dew_point_C);
+  setText("vapor", data.vapor_pressure_hPa);
+  setText("rain1h", data.rain_1h_mm);
+  setText("raintotal", data.rain_total_mm);
 
-  document.getElementById("systemStatus").innerText = "● ONLINE";
-  document.getElementById("systemStatus").className = "status-ok";
+  setStatus("bme", data.bme_ok);
+  setStatus("rainok", data.rain_ok);
 
-  setText("timestamp", formatTime(d.timestamp_local));
+  setText("windSpeed", data.wind_speed_ms);
+  setText("windDirection", data.wind_direction_deg);
+  setText("windGust", data.wind_gust_ms);
+  setStatus("windOk", data.wind_ok);
 
-  setText("temp", d.temp_avg_C);
-  setText("hum", d.hum_avg_pct);
-  setText("pres", d.pres_avg_hPa);
-  setText("dew", d.dew_point_C);
-  setText("vapor", d.vapor_pressure_hPa);
-  setText("rain1h", d.rain_1h_mm);
-  setText("raintotal", d.rain_total_mm);
+  setText("era5Temp", data.era5_temp_c);
+  setText("era5Rh", data.era5_rh_pct);
+  setText("era5Dew", data.era5_dewpoint_c);
+  setText("era5Rain", data.era5_precip_mm);
+  setText("era5Press", data.era5_press_hpa);
+  setText("era5Wind", data.era5_wind_ms);
 
-  document.getElementById("bme").innerHTML =
-    d.bme_ok === 1 ? "<span class='ok'>OK</span>" : "<span class='bad'>FALLA</span>";
+  setText("nasaTemp", data.nasa_temp_c);
+  setText("nasaDew", data.nasa_dewpoint_c);
+  setText("nasaRh", data.nasa_rh_pct);
+  setText("nasaRain", data.nasa_precip_mm);
+  setText("nasaPress", data.nasa_press_hpa);
+  setText("nasaWind", data.nasa_wind10m_ms);
 
-  document.getElementById("rainok").innerHTML =
-    d.rain_ok === 1 ? "<span class='ok'>OK</span>" : "<span class='bad'>FALLA</span>";
-
-  setText("era5Temp", d.era5_temp_c);
-  setText("era5Rh", d.era5_rh_pct);
-  setText("era5Dew", d.era5_dewpoint_c);
-  setText("era5Rain", d.era5_precip_mm);
-  setText("era5Press", d.era5_press_hpa);
-  setText("era5Wind", d.era5_wind_ms);
-
-  setText("nasaTemp", d.nasa_temp_c);
-  setText("nasaDew", d.nasa_dewpoint_c);
-  setText("nasaRh", d.nasa_rh_pct);
-  setText("nasaRain", d.nasa_precip_mm);
-  setText("nasaPress", d.nasa_press_hpa);
-  setText("nasaWind", d.nasa_wind10m_ms);
-
-  setText("radioSnrDl", d.radio_snr_dl);
-  setText("radioSnrUl", d.radio_snr_ul);
-  setText("radioRssiDl", d.radio_sta_dl_rssi);
-  setText("radioMcsDl", d.radio_mcs_dl);
-  setText("radioDlRate", d.radio_dl_rate);
-  setText("radioNote", d.radio_note || "Pendiente");
+  setText("snrDl", data.radio_snr_dl);
+  setText("snrUl", data.radio_snr_ul);
+  setText("rssiDl", data.radio_sta_dl_rssi);
+  setText("mcsDl", data.radio_mcs_dl);
+  setText("dlRate", data.radio_dl_rate);
+  setText("radioNote", data.radio_note || "Pendiente");
 }
 
 async function updateCoreStatus() {
   const r = await fetch("/api/core/status");
-  const d = await r.json();
+  const data = await r.json();
 
-  const health = d.health || {};
-  const checks = health.checks || {};
-  const alerts = d.alerts || {};
-  const registry = d.registry || {};
-  const summary = d.master_summary || {};
-
+  const summary = data.master_summary || {};
   setText("masterRecords", summary.total_records);
   setText("era5Matched", summary.era5_matched_records);
   setText("nasaMatched", summary.nasa_matched_records);
   setText("radioMatched", summary.radio_matched_records);
 
-  const overall = health.overall_status || "--";
-  const alertCount = alerts.alert_count ?? "--";
+  const health = data.health || {};
+  setText("coreUpdated", health.updated_at || "--");
 
-  document.getElementById("coreOverall").innerHTML =
-    overall === "HEALTHY" ? "<span class='ok'>HEALTHY</span>" :
-    overall === "WARNING" ? "<span class='warning'>WARNING</span>" :
-    overall === "ERROR" ? "<span class='bad'>ERROR</span>" :
-    "--";
-
-  document.getElementById("coreAlerts").innerHTML =
-    alertCount === 0 ? "<span class='ok'>0</span>" : "<span class='warning'>" + alertCount + "</span>";
-
-  document.getElementById("coreSqlite").innerHTML =
-    checks.sqlite && checks.sqlite.status === "ok" ? "<span class='ok'>OK</span>" : "<span class='bad'>FALLA</span>";
-
-  document.getElementById("coreInternet").innerHTML =
-    checks.internet && checks.internet.status === "ok" ? "<span class='ok'>OK</span>" : "<span class='warning'>WARNING</span>";
-
-  setText("coreCpu", checks.cpu_memory && checks.cpu_memory.cpu_percent !== undefined ? checks.cpu_memory.cpu_percent : "--");
-  setText("coreRam", checks.cpu_memory && checks.cpu_memory.memory_percent !== undefined ? checks.cpu_memory.memory_percent : "--");
-  setText("coreDisk", checks.disk && checks.disk.free_percent !== undefined ? checks.disk.free_percent : "--");
-  setText("coreUpdated", health.updated_at ? formatTime(health.updated_at) : "--");
-
-  const tasks = registry.tasks || {};
+  const tasks = (data.registry || {}).tasks || {};
   const tbody = document.getElementById("taskTable");
   tbody.innerHTML = "";
 
@@ -609,26 +365,15 @@ function makeLineChart(canvasId, existingChart, labels, datasets) {
 
   return new Chart(document.getElementById(canvasId), {
     type: "line",
-    data: {
-      labels: labels,
-      datasets: datasets
-    },
+    data: { labels, datasets },
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          labels: { color: "#f9fafb" }
-        }
+        legend: { labels: { color: "#f9fafb" } }
       },
       scales: {
-        x: {
-          ticks: { color: "#9ca3af" },
-          grid: { color: "#374151" }
-        },
-        y: {
-          ticks: { color: "#9ca3af" },
-          grid: { color: "#374151" }
-        }
+        x: { ticks: { color: "#9ca3af" }, grid: { color: "#374151" } },
+        y: { ticks: { color: "#9ca3af" }, grid: { color: "#374151" } }
       }
     }
   });
@@ -640,180 +385,35 @@ async function updateCharts() {
 
   const labels = data.map(x => (x.master_timestamp_local || "").substring(11, 16));
 
-  tempCompareChart = makeLineChart(
-    "tempCompareChart",
-    tempCompareChart,
-    labels,
-    [
-      {
-        label: "Local °C",
-        data: data.map(x => x.local_temp_avg_c),
-        borderColor: "#38bdf8",
-        backgroundColor: "rgba(56,189,248,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "ERA5 °C",
-        data: data.map(x => x.era5_temp_c),
-        borderColor: "#f59e0b",
-        backgroundColor: "rgba(245,158,11,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "NASA °C",
-        data: data.map(x => x.nasa_temp_c),
-        borderColor: "#22c55e",
-        backgroundColor: "rgba(34,197,94,0.15)",
-        tension: 0.25
-      }
-    ]
-  );
+  tempCompareChart = makeLineChart("tempCompareChart", tempCompareChart, labels, [
+    { label: "Local °C", data: data.map(x => x.local_temp_avg_c), borderColor: "#38bdf8", backgroundColor: "rgba(56,189,248,0.15)", tension: 0.25 },
+    { label: "ERA5 °C", data: data.map(x => x.era5_temp_c), borderColor: "#f59e0b", backgroundColor: "rgba(245,158,11,0.15)", tension: 0.25 },
+    { label: "NASA °C", data: data.map(x => x.nasa_temp_c), borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.15)", tension: 0.25 }
+  ]);
 
-  dewCompareChart = makeLineChart(
-    "dewCompareChart",
-    dewCompareChart,
-    labels,
-    [
-      {
-        label: "Local °C",
-        data: data.map(x => x.local_dew_point_c),
-        borderColor: "#38bdf8",
-        backgroundColor: "rgba(56,189,248,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "ERA5 °C",
-        data: data.map(x => x.era5_dewpoint_c),
-        borderColor: "#f59e0b",
-        backgroundColor: "rgba(245,158,11,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "NASA °C",
-        data: data.map(x => x.nasa_dewpoint_c),
-        borderColor: "#22c55e",
-        backgroundColor: "rgba(34,197,94,0.15)",
-        tension: 0.25
-      }
-    ]
-  );
+  humidityCompareChart = makeLineChart("humidityCompareChart", humidityCompareChart, labels, [
+    { label: "Local %", data: data.map(x => x.local_hum_avg_pct), borderColor: "#38bdf8", backgroundColor: "rgba(56,189,248,0.15)", tension: 0.25 },
+    { label: "ERA5 %", data: data.map(x => x.era5_rh_pct), borderColor: "#f59e0b", backgroundColor: "rgba(245,158,11,0.15)", tension: 0.25 },
+    { label: "NASA %", data: data.map(x => x.nasa_rh_pct), borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.15)", tension: 0.25 }
+  ]);
 
-  humidityCompareChart = makeLineChart(
-    "humidityCompareChart",
-    humidityCompareChart,
-    labels,
-    [
-      {
-        label: "Local %",
-        data: data.map(x => x.local_hum_avg_pct),
-        borderColor: "#38bdf8",
-        backgroundColor: "rgba(56,189,248,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "ERA5 %",
-        data: data.map(x => x.era5_rh_pct),
-        borderColor: "#f59e0b",
-        backgroundColor: "rgba(245,158,11,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "NASA %",
-        data: data.map(x => x.nasa_rh_pct),
-        borderColor: "#22c55e",
-        backgroundColor: "rgba(34,197,94,0.15)",
-        tension: 0.25
-      }
-    ]
-  );
+  pressureCompareChart = makeLineChart("pressureCompareChart", pressureCompareChart, labels, [
+    { label: "Local hPa", data: data.map(x => x.local_press_hpa), borderColor: "#38bdf8", backgroundColor: "rgba(56,189,248,0.15)", tension: 0.25 },
+    { label: "ERA5 hPa", data: data.map(x => x.era5_press_hpa), borderColor: "#f59e0b", backgroundColor: "rgba(245,158,11,0.15)", tension: 0.25 },
+    { label: "NASA hPa", data: data.map(x => x.nasa_press_hpa), borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.15)", tension: 0.25 }
+  ]);
 
-  pressureCompareChart = makeLineChart(
-    "pressureCompareChart",
-    pressureCompareChart,
-    labels,
-    [
-      {
-        label: "Local hPa",
-        data: data.map(x => x.local_press_hpa),
-        borderColor: "#38bdf8",
-        backgroundColor: "rgba(56,189,248,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "ERA5 hPa",
-        data: data.map(x => x.era5_press_hpa),
-        borderColor: "#f59e0b",
-        backgroundColor: "rgba(245,158,11,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "NASA hPa",
-        data: data.map(x => x.nasa_press_hpa),
-        borderColor: "#22c55e",
-        backgroundColor: "rgba(34,197,94,0.15)",
-        tension: 0.25
-      }
-    ]
-  );
+  rainCompareChart = makeLineChart("rainCompareChart", rainCompareChart, labels, [
+    { label: "Local mm/h", data: data.map(x => x.local_rain_1h_mm), borderColor: "#38bdf8", backgroundColor: "rgba(56,189,248,0.15)", tension: 0.25 },
+    { label: "ERA5 mm", data: data.map(x => x.era5_precip_mm), borderColor: "#f59e0b", backgroundColor: "rgba(245,158,11,0.15)", tension: 0.25 },
+    { label: "NASA mm", data: data.map(x => x.nasa_precip_mm), borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.15)", tension: 0.25 }
+  ]);
 
-  rainCompareChart = makeLineChart(
-    "rainCompareChart",
-    rainCompareChart,
-    labels,
-    [
-      {
-        label: "Local mm/h",
-        data: data.map(x => x.local_rain_1h_mm),
-        borderColor: "#38bdf8",
-        backgroundColor: "rgba(56,189,248,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "ERA5 mm",
-        data: data.map(x => x.era5_precip_mm),
-        borderColor: "#f59e0b",
-        backgroundColor: "rgba(245,158,11,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "NASA mm",
-        data: data.map(x => x.nasa_precip_mm),
-        borderColor: "#22c55e",
-        backgroundColor: "rgba(34,197,94,0.15)",
-        tension: 0.25
-      }
-    ]
-  );
-
-
-  windChart = makeLineChart(
-    "windChart",
-    windChart,
-    labels,
-    [
-      {
-        label: "Velocidad local m/s",
-        data: data.map(x => x.local_wind_speed_ms),
-        borderColor: "#38bdf8",
-        backgroundColor: "rgba(56,189,248,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "Ráfaga local m/s",
-        data: data.map(x => x.local_wind_gust_ms),
-        borderColor: "#f59e0b",
-        backgroundColor: "rgba(245,158,11,0.15)",
-        tension: 0.25
-      },
-      {
-        label: "NASA viento 10m m/s",
-        data: data.map(x => x.nasa_wind10m_ms),
-        borderColor: "#22c55e",
-        backgroundColor: "rgba(34,197,94,0.15)",
-        tension: 0.25
-      }
-    ]
-  );
+  windChart = makeLineChart("windChart", windChart, labels, [
+    { label: "Viento local m/s", data: data.map(x => x.local_wind_speed_ms), borderColor: "#38bdf8", backgroundColor: "rgba(56,189,248,0.15)", tension: 0.25 },
+    { label: "Ráfaga local m/s", data: data.map(x => x.local_wind_gust_ms), borderColor: "#f59e0b", backgroundColor: "rgba(245,158,11,0.15)", tension: 0.25 },
+    { label: "NASA viento 10 m", data: data.map(x => x.nasa_wind10m_ms), borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.15)", tension: 0.25 }
+  ]);
 }
 
 updateLatest();
