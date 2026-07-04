@@ -113,6 +113,60 @@ def compute_pair_stats(df, local_col, external_col, metric):
     }
 
 
+
+def build_recommendations(rows):
+    recommendations = []
+
+    grouped = {}
+    for r in rows:
+        if r.get("records", 0) > 0:
+            grouped.setdefault(r["metric"], []).append(r)
+
+    for metric, items in grouped.items():
+        label = items[0]["label"]
+
+        def score(item):
+            mae = item.get("mae")
+            corr = item.get("correlation")
+            records = item.get("records", 0)
+
+            if mae is None:
+                return -999999
+
+            value = 0
+            value += records * 0.001
+            value -= mae * 10
+
+            if corr is not None:
+                value += corr * 20
+
+            if item.get("quality") == "good":
+                value += 30
+            elif item.get("quality") == "moderate":
+                value += 10
+            elif item.get("quality") == "poor":
+                value -= 20
+
+            return value
+
+        best = sorted(items, key=score, reverse=True)[0]
+
+        recommendations.append({
+            "metric": metric,
+            "label": label,
+            "recommended_source": best["source"],
+            "quality": best.get("quality"),
+            "records": best.get("records"),
+            "mae": best.get("mae"),
+            "rmse": best.get("rmse"),
+            "bias": best.get("bias"),
+            "correlation": best.get("correlation"),
+            "unit": best.get("unit"),
+            "message": f"Para {label}, la fuente recomendada es {best['source']} con MAE={best.get('mae')} {best.get('unit')} y correlación={best.get('correlation')}."
+        })
+
+    return recommendations
+
 def build_scientific_comparison():
     payload = {
         "updated_at": datetime.now().isoformat(timespec="seconds"),
@@ -121,6 +175,7 @@ def build_scientific_comparison():
         "database": str(DB_FILE),
         "status": "unknown",
         "comparisons": [],
+        "recommendations": [],
         "summary": "",
         "message": "",
     }
@@ -160,6 +215,7 @@ def build_scientific_comparison():
     poor = [r for r in valid if r["quality"] == "poor"]
 
     payload["comparisons"] = rows
+    payload["recommendations"] = build_recommendations(rows)
 
     if not valid:
         payload["status"] = "warning"
