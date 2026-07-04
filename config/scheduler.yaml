@@ -131,3 +131,11 @@ tasks:
       - -m
       - weather_station.analytics.scientific_reliability
 
+  build_station_observations:
+    enabled: true
+    interval_seconds: 300
+    command:
+      - python3
+      - -m
+      - weather_station.sync.build_station_observations
+
