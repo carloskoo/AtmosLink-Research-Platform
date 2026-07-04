@@ -173,6 +173,41 @@ def get_history(limit=120):
     return data
 
 
+def get_stations_latest():
+    if not DB_FILE.exists():
+        return []
+
+    conn = get_connection()
+
+    if not table_exists(conn, "station_observations"):
+        conn.close()
+        return []
+
+    rows = conn.execute("""
+        SELECT so.*
+        FROM station_observations so
+        INNER JOIN (
+            SELECT source_station_id, MAX(timestamp_local) AS max_timestamp
+            FROM station_observations
+            GROUP BY source_station_id
+        ) latest
+        ON so.source_station_id = latest.source_station_id
+        AND so.timestamp_local = latest.max_timestamp
+        ORDER BY so.source_station_id
+    """).fetchall()
+
+    conn.close()
+
+    data = []
+
+    for row in rows:
+        d = dict(row)
+        d["timestamp_local"] = clean_timestamp(d.get("timestamp_local"))
+        data.append(d)
+
+    return data
+
+
 def get_master_summary():
     if not DB_FILE.exists():
         return {}
@@ -219,6 +254,11 @@ def api_latest():
 @app.route("/api/history")
 def api_history():
     return jsonify(get_history())
+
+
+@app.route("/api/stations/latest")
+def api_stations_latest():
+    return jsonify(get_stations_latest())
 
 
 @app.route("/api/master/summary")
