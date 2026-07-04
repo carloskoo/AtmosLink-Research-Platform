@@ -13,11 +13,50 @@ def table_exists(cur, table_name):
     return row is not None
 
 
+def get_columns(cur, table_name):
+    if not table_exists(cur, table_name):
+        return []
+    return [r[1] for r in cur.execute(f"PRAGMA table_info({table_name})").fetchall()]
+
+
 def parse_dt(value):
     try:
         return datetime.fromisoformat(value)
     except Exception:
         return None
+
+
+def safe_last_weather(cur):
+    cols = get_columns(cur, "weather_local")
+
+    wanted = [
+        "timestamp_local",
+        "temp_avg_C",
+        "hum_avg_pct",
+        "pres_avg_hPa",
+        "rain_total_mm",
+        "pulses_total",
+        "wind_speed_ms",
+        "wind_direction_deg",
+        "wind_gust_ms",
+        "wind_ok",
+    ]
+
+    select_parts = []
+    for col in wanted:
+        if col in cols:
+            select_parts.append(col)
+        else:
+            select_parts.append(f"NULL AS {col}")
+
+    query = f"""
+        SELECT {', '.join(select_parts)}
+        FROM weather_local
+        ORDER BY id DESC
+        LIMIT 1
+    """
+
+    return cur.execute(query).fetchone()
 
 
 def main():
@@ -56,21 +95,7 @@ def main():
 
     last = None
     if table_exists(cur, "weather_local"):
-        last = cur.execute("""
-            SELECT timestamp_local,
-                   temp_avg_C,
-                   hum_avg_pct,
-                   pres_avg_hPa,
-                   rain_total_mm,
-                   pulses_total,
-                   wind_speed_ms,
-                   wind_direction_deg,
-                   wind_gust_ms,
-                   wind_ok
-            FROM weather_local
-            ORDER BY id DESC
-            LIMIT 1
-        """).fetchone()
+        last = safe_last_weather(cur)
 
     max_rain = (None, None)
     if table_exists(cur, "weather_local"):
