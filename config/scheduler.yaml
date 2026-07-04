@@ -83,4 +83,11 @@ tasks:
       - -m
       - weather_station.backup.remote_backup
 
- 
+  station_sync:
+    enabled: true
+    interval_seconds: 300
+    command:
+      - python3
+      - -m
+      - weather_station.sync.station_sync
+
