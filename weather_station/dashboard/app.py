@@ -14,6 +14,7 @@ RUNTIME_DIR = BASE_DIR / "runtime"
 HEALTH_FILE = RUNTIME_DIR / "health_status.json"
 TASK_REGISTRY_FILE = RUNTIME_DIR / "task_registry.json"
 ALERTS_FILE = RUNTIME_DIR / "alerts.json"
+QC_SUMMARY_FILE = RUNTIME_DIR / "qc_summary.json"
 
 app = Flask(__name__)
 
@@ -252,6 +253,7 @@ def api_core_status():
         "health": load_json(HEALTH_FILE),
         "registry": load_json(TASK_REGISTRY_FILE),
         "alerts": load_json(ALERTS_FILE),
+        "qc_summary": load_json(QC_SUMMARY_FILE),
         "master_summary": get_master_summary()
     })
 
