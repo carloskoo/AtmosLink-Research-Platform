@@ -221,6 +221,47 @@
   <div class="chart-card"><div class="chart-title">Viento: Local vs NASA POWER</div><canvas id="windChart"></canvas></div>
 
 
+
+  <div class="section-title">Estado general del sistema</div>
+  <div class="grid">
+    <div class="card">
+      <div class="label">SQLite</div>
+      <div class="value" id="statusSQLite">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Scheduler</div>
+      <div class="value" id="statusScheduler">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Telegram / Alertas</div>
+      <div class="value" id="statusAlerts">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Internet</div>
+      <div class="value" id="statusInternet">--</div>
+    </div>
+  </div>
+
+  <div class="section-title">Alertas activas</div>
+  <div class="card">
+    <div class="label">Cantidad de alertas</div>
+    <div class="value" id="alertCount">--</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Severidad</th>
+          <th>Alerta</th>
+          <th>Mensaje</th>
+        </tr>
+      </thead>
+      <tbody id="alertsTable"></tbody>
+    </table>
+  </div>
+
   <div class="section-title">Control de calidad científico</div>
   <div class="grid">
     <div class="card">
@@ -355,6 +396,69 @@ async function updateCoreStatus() {
   setText("era5Matched", summary.era5_matched_records);
   setText("nasaMatched", summary.nasa_matched_records);
   setText("radioMatched", summary.radio_matched_records);
+
+
+
+  const healthChecks = (data.health || {}).checks || {};
+  const registryTasks = (data.registry || {}).tasks || {};
+  const alertsPayload = data.alerts || {};
+  const alerts = alertsPayload.alerts || [];
+
+  function setSystemStatus(id, status) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const normalized = String(status || "--").toLowerCase();
+
+    if (normalized === "ok" || normalized === "completed" || normalized === "running") {
+      el.textContent = "OK";
+      el.className = "value ok";
+    } else if (normalized === "warning" || normalized === "disabled" || normalized === "no_data") {
+      el.textContent = "WARNING";
+      el.className = "value warning";
+    } else if (normalized === "critical" || normalized === "failed" || normalized === "error" || normalized === "timeout") {
+      el.textContent = "CRITICAL";
+      el.className = "value bad";
+    } else {
+      el.textContent = "--";
+      el.className = "value warning";
+    }
+  }
+
+  setSystemStatus("statusSQLite", (healthChecks.sqlite || {}).status);
+  setSystemStatus("statusInternet", (healthChecks.internet || {}).status);
+  setSystemStatus("statusScheduler", (registryTasks.sync_master_dataset || {}).status);
+  setSystemStatus("statusAlerts", (registryTasks.notification_engine || {}).status);
+
+  setText("alertCount", alertsPayload.alert_count ?? alerts.length ?? "--");
+
+  const alertsTable = document.getElementById("alertsTable");
+  if (alertsTable) {
+    alertsTable.innerHTML = "";
+
+    if (alerts.length === 0) {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td class="ok">OK</td><td>Sin alertas</td><td>No hay alertas activas.</td>`;
+      alertsTable.appendChild(row);
+    } else {
+      alerts.forEach(alert => {
+        const sev = alert.severity || "--";
+        let colorClass = "";
+
+        if (sev === "critical") colorClass = "bad";
+        else if (sev === "warning") colorClass = "warning";
+        else if (sev === "ok") colorClass = "ok";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="${colorClass}">${sev}</td>
+          <td>${alert.title || alert.id || "--"}</td>
+          <td>${alert.message || "--"}</td>
+        `;
+        alertsTable.appendChild(row);
+      });
+    }
+  }
 
 
   const qc = data.qc_summary || {};
