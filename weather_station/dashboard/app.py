@@ -313,9 +313,106 @@ def get_master_summary():
     return d
 
 
+def latest_rows_by_site(conn, table_name, site_column="site_tag"):
+    if not table_exists(conn, table_name):
+        return {}
+
+    rows = conn.execute(f"""
+        SELECT t.*
+        FROM {table_name} t
+        INNER JOIN (
+            SELECT {site_column}, MAX(timestamp_local) AS max_timestamp
+            FROM {table_name}
+            GROUP BY {site_column}
+        ) latest
+        ON t.{site_column} = latest.{site_column}
+        AND t.timestamp_local = latest.max_timestamp
+        ORDER BY t.{site_column}
+    """).fetchall()
+
+    data = {}
+
+    for row in rows:
+        d = dict(row)
+        d["timestamp_local"] = clean_timestamp(d.get("timestamp_local"))
+        data[d.get(site_column)] = d
+
+    return data
+
+
+def get_api_v2_overview():
+    conn = get_connection()
+
+    payload = {
+        "station": STATION_CONTEXT,
+        "database": str(DB_FILE),
+        "local": {},
+        "nasa": {},
+        "era5": {},
+        "radio": {},
+        "scientific": {
+            "health": load_json(SCIENTIFIC_HEALTH_FILE),
+            "reliability": load_json(SCIENTIFIC_RELIABILITY_FILE),
+            "comparison": load_json(SCIENTIFIC_COMPARISON_FILE),
+            "agreement": load_json(SCIENTIFIC_AGREEMENT_FILE),
+            "qc": load_json(QC_SUMMARY_FILE),
+        },
+        "system": {
+            "health": load_json(HEALTH_FILE),
+            "registry": load_json(TASK_REGISTRY_FILE),
+            "alerts": load_json(ALERTS_FILE),
+            "master_summary": get_master_summary(),
+        },
+    }
+
+    if table_exists(conn, "station_observations"):
+        rows = conn.execute("""
+            SELECT so.*
+            FROM station_observations so
+            INNER JOIN (
+                SELECT source_station_id, MAX(timestamp_local) AS max_timestamp
+                FROM station_observations
+                GROUP BY source_station_id
+            ) latest
+            ON so.source_station_id = latest.source_station_id
+            AND so.timestamp_local = latest.max_timestamp
+            ORDER BY so.source_station_id
+        """).fetchall()
+
+        for row in rows:
+            d = dict(row)
+            d["timestamp_local"] = clean_timestamp(d.get("timestamp_local"))
+            payload["local"][d.get("source_station_id")] = d
+
+    payload["nasa"] = latest_rows_by_site(conn, "nasa_power_hourly", "site_tag")
+    payload["era5"] = latest_rows_by_site(conn, "era5_land_hourly", "site_tag")
+
+    if table_exists(conn, "radio_link_local"):
+        row = conn.execute("""
+            SELECT *
+            FROM radio_link_local
+            ORDER BY id DESC
+            LIMIT 1
+        """).fetchone()
+
+        if row:
+            d = dict(row)
+            if "timestamp_local" in d:
+                d["timestamp_local"] = clean_timestamp(d.get("timestamp_local"))
+            payload["radio"]["latest"] = d
+
+    conn.close()
+    return payload
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/api/v2/overview")
+def api_v2_overview():
+    return jsonify(get_api_v2_overview())
 
 
 @app.route("/api/latest")
