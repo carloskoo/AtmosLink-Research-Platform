@@ -22,7 +22,6 @@ app = Flask(__name__)
 def load_json(path):
     if not path.exists():
         return {}
-
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -30,18 +29,26 @@ def load_json(path):
         return {}
 
 
+def clean_timestamp(value):
+    if value is None:
+        return None
+    value = str(value).replace("T", " ")
+    if value.endswith("-05:00") or value.endswith("+00:00"):
+        value = value[:-6]
+    return value
+
+
 def table_exists(conn, table_name):
-    query = """
+    q = """
     SELECT name FROM sqlite_master
     WHERE type='table' AND name=?
     """
-    return conn.execute(query, (table_name,)).fetchone() is not None
+    return conn.execute(q, (table_name,)).fetchone() is not None
 
 
 def get_columns(conn, table_name):
     if not table_exists(conn, table_name):
         return []
-
     return [r[1] for r in conn.execute(f"PRAGMA table_info({table_name})").fetchall()]
 
 
@@ -51,30 +58,11 @@ def get_connection():
     return conn
 
 
-def clean_timestamp(value):
-    if value is None:
-        return None
-
-    value = str(value)
-    value = value.replace("T", " ")
-
-    if value.endswith("-05:00"):
-        value = value[:-6]
-
-    if value.endswith("+00:00"):
-        value = value[:-6]
-
-    return value
-
-
 def select_expr(columns, column_name, alias=None):
     alias = alias or column_name
-
     if column_name in columns:
         return f"{column_name} AS {alias}"
-
     return f"NULL AS {alias}"
-
 
 
 def get_latest():
@@ -87,9 +75,7 @@ def get_latest():
         conn.close()
         return {}
 
-    cur = conn.cursor()
-
-    cur.execute("""
+    row = conn.execute("""
         SELECT *
         FROM weather_local
         WHERE temp_avg_C BETWEEN -30 AND 60
@@ -100,35 +86,18 @@ def get_latest():
           AND rain_ok = 1
         ORDER BY id DESC
         LIMIT 1
-    """)
+    """).fetchone()
 
-    row = cur.fetchone()
     conn.close()
 
     if row is None:
         return {}
 
     d = dict(row)
-
     d["timestamp_local"] = clean_timestamp(d.get("timestamp_local"))
-    d["temp_avg_C"] = d.get("temp_avg_C")
-    d["hum_avg_pct"] = d.get("hum_avg_pct")
-    d["pres_avg_hPa"] = d.get("pres_avg_hPa")
-    d["dew_point_C"] = d.get("dew_point_C")
-    d["vapor_pressure_hPa"] = d.get("vapor_pressure_hPa")
-    d["rain_1min_mm"] = d.get("rain_1min_mm")
-    d["rain_1h_mm"] = d.get("rain_1h_mm")
-    d["rain_total_mm"] = d.get("rain_total_mm")
-
-    d["wind_speed_ms"] = d.get("wind_speed_ms")
-    d["wind_direction_deg"] = d.get("wind_direction_deg")
-    d["wind_gust_ms"] = d.get("wind_gust_ms")
-    d["wind_ok"] = d.get("wind_ok")
-
-    d["bme_ok"] = d.get("bme_ok")
-    d["rain_ok"] = d.get("rain_ok")
 
     return d
+
 
 def get_history(limit=120):
     if not DB_FILE.exists():
@@ -185,27 +154,21 @@ def get_history(limit=120):
         "radio_note",
     ]
 
-    query = f"""
-        SELECT
-            {", ".join(selected)}
+    rows = conn.execute(f"""
+        SELECT {", ".join(selected)}
         FROM master_observations
-        WHERE local_temp_avg_c BETWEEN -30 AND 60
-          AND local_hum_avg_pct BETWEEN 0 AND 100
-          AND local_press_hpa BETWEEN 500 AND 1100
-          AND local_rain_1h_mm >= 0
-          AND local_bme_ok = 1
-          AND local_rain_ok = 1
         ORDER BY bucket_minute DESC
         LIMIT ?
-    """
+    """, (limit,)).fetchall()
 
-    cur = conn.cursor()
-    cur.execute(query, (limit,))
-
-    rows = cur.fetchall()
     conn.close()
 
-    return [dict(r) for r in rows][::-1]
+    data = [dict(r) for r in rows][::-1]
+
+    for row in data:
+        row["master_timestamp_local"] = clean_timestamp(row.get("master_timestamp_local"))
+
+    return data
 
 
 def get_master_summary():
@@ -218,9 +181,7 @@ def get_master_summary():
         conn.close()
         return {}
 
-    cur = conn.cursor()
-
-    cur.execute("""
+    row = conn.execute("""
         SELECT
             COUNT(*) AS total_records,
             MIN(master_timestamp_local) AS first_record,
@@ -229,12 +190,18 @@ def get_master_summary():
             COUNT(nasa_timestamp_local) AS nasa_matched_records,
             COUNT(radio_timestamp_local) AS radio_matched_records
         FROM master_observations
-    """)
+    """).fetchone()
 
-    row = cur.fetchone()
     conn.close()
 
-    return dict(row) if row else {}
+    if not row:
+        return {}
+
+    d = dict(row)
+    d["first_record"] = clean_timestamp(d.get("first_record"))
+    d["last_record"] = clean_timestamp(d.get("last_record"))
+
+    return d
 
 
 @app.route("/")
@@ -266,7 +233,7 @@ def api_core_status():
         "registry": load_json(TASK_REGISTRY_FILE),
         "alerts": load_json(ALERTS_FILE),
         "qc_summary": load_json(QC_SUMMARY_FILE),
-        "master_summary": get_master_summary()
+        "master_summary": get_master_summary(),
     })
 
 
