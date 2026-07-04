@@ -18,7 +18,14 @@ TASK_REGISTRY_FILE = RUNTIME_DIR / "task_registry.json"
 
 MAX_WEATHER_AGE_MINUTES = 5
 MAX_MASTER_AGE_MINUTES = 5
+
 RAIN_INTENSE_MM_H = 10.0
+
+WIND_SPEED_WARNING_MS = 10.0
+WIND_SPEED_CRITICAL_MS = 17.0
+WIND_GUST_WARNING_MS = 15.0
+WIND_GUST_CRITICAL_MS = 22.0
+
 DISK_FREE_CRITICAL_PCT = 10.0
 DISK_FREE_WARNING_PCT = 20.0
 CPU_WARNING_PCT = 90.0
@@ -162,9 +169,8 @@ def check_weather(alerts):
             "El último registro indica rain_ok diferente de 1."
         )
 
-    rain_1h = row.get("rain_1h_mm")
     try:
-        rain_1h = float(rain_1h)
+        rain_1h = float(row.get("rain_1h_mm"))
         if rain_1h >= RAIN_INTENSE_MM_H:
             add_alert(
                 alerts,
@@ -172,6 +178,67 @@ def check_weather(alerts):
                 "warning",
                 "Lluvia intensa detectada",
                 f"Lluvia última hora: {rain_1h:.2f} mm."
+            )
+    except Exception:
+        pass
+
+    check_wind(alerts, row)
+
+
+def check_wind(alerts, row):
+    wind_ok = row.get("wind_ok")
+
+    if wind_ok in [None, "", 0]:
+        return
+
+    if wind_ok != 1:
+        add_alert(
+            alerts,
+            "WIND_SENSOR_NOT_OK",
+            "warning",
+            "Anemómetro con falla",
+            "El último registro indica wind_ok diferente de 1."
+        )
+        return
+
+    try:
+        wind_speed = float(row.get("wind_speed_ms"))
+        if wind_speed >= WIND_SPEED_CRITICAL_MS:
+            add_alert(
+                alerts,
+                "WIND_SPEED_CRITICAL",
+                "critical",
+                "Viento crítico detectado",
+                f"Velocidad del viento: {wind_speed:.2f} m/s."
+            )
+        elif wind_speed >= WIND_SPEED_WARNING_MS:
+            add_alert(
+                alerts,
+                "WIND_SPEED_WARNING",
+                "warning",
+                "Viento elevado detectado",
+                f"Velocidad del viento: {wind_speed:.2f} m/s."
+            )
+    except Exception:
+        pass
+
+    try:
+        wind_gust = float(row.get("wind_gust_ms"))
+        if wind_gust >= WIND_GUST_CRITICAL_MS:
+            add_alert(
+                alerts,
+                "WIND_GUST_CRITICAL",
+                "critical",
+                "Ráfaga crítica detectada",
+                f"Ráfaga máxima: {wind_gust:.2f} m/s."
+            )
+        elif wind_gust >= WIND_GUST_WARNING_MS:
+            add_alert(
+                alerts,
+                "WIND_GUST_WARNING",
+                "warning",
+                "Ráfaga elevada detectada",
+                f"Ráfaga máxima: {wind_gust:.2f} m/s."
             )
     except Exception:
         pass
@@ -228,10 +295,8 @@ def check_health(alerts):
         )
 
     disk = checks.get("disk", {})
-    free_pct = disk.get("free_percent")
-
     try:
-        free_pct = float(free_pct)
+        free_pct = float(disk.get("free_percent"))
         if free_pct < DISK_FREE_CRITICAL_PCT:
             add_alert(
                 alerts,
@@ -260,21 +325,21 @@ def check_health(alerts):
                 alerts,
                 "CPU_HIGH",
                 "warning",
-                "CPU elevada",
-                f"Uso de CPU: {cpu:.2f}%."
+                "Uso alto de CPU",
+                f"CPU: {cpu:.2f}%."
             )
     except Exception:
         pass
 
     try:
-        ram = float(cpu_memory.get("memory_percent"))
+        ram = float(cpu_memory.get("ram_percent"))
         if ram >= RAM_WARNING_PCT:
             add_alert(
                 alerts,
                 "RAM_HIGH",
                 "warning",
-                "RAM elevada",
-                f"Uso de RAM: {ram:.2f}%."
+                "Uso alto de RAM",
+                f"RAM: {ram:.2f}%."
             )
     except Exception:
         pass
