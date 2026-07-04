@@ -52,12 +52,12 @@ tasks:
       - weather_station.weather_sources.nasa_power_downloader
 
   daily_backup:
-    enabled: false
-    interval_seconds: 86400
+    enabled: true
+    interval_seconds: 21600
     command:
       - python3
       - -m
-      - weather_station.backup.backup_database
+      - weather_station.backup.local_backup
 
   health_monitor:
     enabled: true
