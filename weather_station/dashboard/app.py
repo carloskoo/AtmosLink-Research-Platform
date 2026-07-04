@@ -76,13 +76,14 @@ def select_expr(columns, column_name, alias=None):
     return f"NULL AS {alias}"
 
 
+
 def get_latest():
     if not DB_FILE.exists():
         return {}
 
     conn = get_connection()
 
-    if not table_exists(conn, "master_observations"):
+    if not table_exists(conn, "weather_local"):
         conn.close()
         return {}
 
@@ -90,14 +91,14 @@ def get_latest():
 
     cur.execute("""
         SELECT *
-        FROM master_observations
-        WHERE local_temp_avg_c BETWEEN -30 AND 60
-          AND local_hum_avg_pct BETWEEN 0 AND 100
-          AND local_press_hpa BETWEEN 500 AND 1100
-          AND local_rain_1h_mm >= 0
-          AND local_bme_ok = 1
-          AND local_rain_ok = 1
-        ORDER BY bucket_minute DESC
+        FROM weather_local
+        WHERE temp_avg_C BETWEEN -30 AND 60
+          AND hum_avg_pct BETWEEN 0 AND 100
+          AND pres_avg_hPa BETWEEN 500 AND 1100
+          AND rain_1h_mm >= 0
+          AND bme_ok = 1
+          AND rain_ok = 1
+        ORDER BY id DESC
         LIMIT 1
     """)
 
@@ -109,30 +110,25 @@ def get_latest():
 
     d = dict(row)
 
-    d["station_id"] = d.get("station_id")
-    d["station_name"] = d.get("station_name")
-    d["radio_role"] = d.get("radio_role")
+    d["timestamp_local"] = clean_timestamp(d.get("timestamp_local"))
+    d["temp_avg_C"] = d.get("temp_avg_C")
+    d["hum_avg_pct"] = d.get("hum_avg_pct")
+    d["pres_avg_hPa"] = d.get("pres_avg_hPa")
+    d["dew_point_C"] = d.get("dew_point_C")
+    d["vapor_pressure_hPa"] = d.get("vapor_pressure_hPa")
+    d["rain_1min_mm"] = d.get("rain_1min_mm")
+    d["rain_1h_mm"] = d.get("rain_1h_mm")
+    d["rain_total_mm"] = d.get("rain_total_mm")
 
-    d["timestamp_local"] = clean_timestamp(d.get("local_timestamp_local") or d.get("master_timestamp_local"))
-    d["temp_avg_C"] = d.get("local_temp_avg_c")
-    d["hum_avg_pct"] = d.get("local_hum_avg_pct")
-    d["pres_avg_hPa"] = d.get("local_press_hpa")
-    d["dew_point_C"] = d.get("local_dew_point_c")
-    d["vapor_pressure_hPa"] = d.get("local_vapor_pressure_hpa")
-    d["rain_1min_mm"] = d.get("local_rain_1min_mm")
-    d["rain_1h_mm"] = d.get("local_rain_1h_mm")
-    d["rain_total_mm"] = d.get("local_rain_total_mm")
+    d["wind_speed_ms"] = d.get("wind_speed_ms")
+    d["wind_direction_deg"] = d.get("wind_direction_deg")
+    d["wind_gust_ms"] = d.get("wind_gust_ms")
+    d["wind_ok"] = d.get("wind_ok")
 
-    d["wind_speed_ms"] = d.get("local_wind_speed_ms")
-    d["wind_direction_deg"] = d.get("local_wind_direction_deg")
-    d["wind_gust_ms"] = d.get("local_wind_gust_ms")
-    d["wind_ok"] = d.get("local_wind_ok")
-
-    d["bme_ok"] = d.get("local_bme_ok")
-    d["rain_ok"] = d.get("local_rain_ok")
+    d["bme_ok"] = d.get("bme_ok")
+    d["rain_ok"] = d.get("rain_ok")
 
     return d
-
 
 def get_history(limit=120):
     if not DB_FILE.exists():
