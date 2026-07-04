@@ -249,6 +249,8 @@
           <th>RMSE</th>
           <th>Bias</th>
           <th>Correlación</th>
+          <th>Calidad</th>
+          <th>Interpretación</th>
         </tr>
       </thead>
       <tbody id="comparisonTable"></tbody>
@@ -564,7 +566,7 @@ async function updateCoreStatus() {
     }
   }
 
-  setText("comparisonMessage", comparison.message || "--");
+  setText("comparisonMessage", (comparison.message || "--") + " " + (comparison.summary || ""));
 
   const comparisonTable = document.getElementById("comparisonTable");
   if (comparisonTable) {
@@ -574,7 +576,7 @@ async function updateCoreStatus() {
 
     if (visibleRows.length === 0) {
       const row = document.createElement("tr");
-      row.innerHTML = `<td colspan="7">Sin datos suficientes para comparación científica.</td>`;
+      row.innerHTML = `<td colspan="9">Sin datos suficientes para comparación científica.</td>`;
       comparisonTable.appendChild(row);
     } else {
       visibleRows.forEach(r => {
@@ -587,6 +589,8 @@ async function updateCoreStatus() {
           <td>${r.rmse ?? "--"} ${r.unit || ""}</td>
           <td>${r.bias ?? "--"} ${r.unit || ""}</td>
           <td>${r.correlation ?? "--"}</td>
+          <td class="${r.quality === "good" ? "ok" : r.quality === "moderate" ? "warning" : "bad"}">${(r.quality || "--").toUpperCase()}</td>
+          <td>${r.interpretation || "--"}</td>
         `;
         comparisonTable.appendChild(row);
       });
