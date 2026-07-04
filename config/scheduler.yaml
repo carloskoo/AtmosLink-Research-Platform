@@ -115,3 +115,11 @@ tasks:
       - -m
       - weather_station.qc.qc_summary
 
+  scientific_health_score:
+    enabled: true
+    interval_seconds: 300
+    command:
+      - python3
+      - -m
+      - weather_station.analytics.scientific_health_score
+
