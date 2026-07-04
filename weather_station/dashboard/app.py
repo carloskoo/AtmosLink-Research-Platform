@@ -67,39 +67,109 @@ def select_expr(columns, column_name, alias=None):
     return f"NULL AS {alias}"
 
 
+
 def get_latest():
     if not DB_FILE.exists():
         return {}
 
     conn = get_connection()
 
-    if not table_exists(conn, "weather_local"):
+    if not table_exists(conn, "master_observations"):
         conn.close()
         return {}
 
-    row = conn.execute("""
+    latest_local = conn.execute("""
         SELECT *
-        FROM weather_local
-        WHERE temp_avg_C BETWEEN -30 AND 60
-          AND hum_avg_pct BETWEEN 0 AND 100
-          AND pres_avg_hPa BETWEEN 500 AND 1100
-          AND rain_1h_mm >= 0
-          AND bme_ok = 1
-          AND rain_ok = 1
-        ORDER BY id DESC
+        FROM master_observations
+        WHERE local_temp_avg_c IS NOT NULL
+        ORDER BY bucket_minute DESC
+        LIMIT 1
+    """).fetchone()
+
+    latest_nasa = conn.execute("""
+        SELECT *
+        FROM master_observations
+        WHERE nasa_timestamp_local IS NOT NULL
+        ORDER BY bucket_minute DESC
+        LIMIT 1
+    """).fetchone()
+
+    latest_era5 = conn.execute("""
+        SELECT *
+        FROM master_observations
+        WHERE era5_timestamp_local IS NOT NULL
+        ORDER BY bucket_minute DESC
+        LIMIT 1
+    """).fetchone()
+
+    latest_radio = conn.execute("""
+        SELECT *
+        FROM master_observations
+        WHERE radio_timestamp_local IS NOT NULL
+        ORDER BY bucket_minute DESC
         LIMIT 1
     """).fetchone()
 
     conn.close()
 
-    if row is None:
+    if latest_local is None:
         return {}
 
-    d = dict(row)
-    d["timestamp_local"] = clean_timestamp(d.get("timestamp_local"))
+    local = dict(latest_local)
+    d = dict(local)
+
+    d["timestamp_local"] = clean_timestamp(local.get("master_timestamp_local"))
+
+    d["temp_avg_C"] = local.get("local_temp_avg_c")
+    d["hum_avg_pct"] = local.get("local_hum_avg_pct")
+    d["pres_avg_hPa"] = local.get("local_press_hpa")
+    d["dew_point_C"] = local.get("local_dew_point_c")
+    d["vapor_pressure_hPa"] = local.get("local_vapor_pressure_hpa")
+    d["rain_1min_mm"] = local.get("local_rain_1min_mm")
+    d["rain_1h_mm"] = local.get("local_rain_1h_mm")
+    d["rain_total_mm"] = local.get("local_rain_total_mm")
+    d["bme_ok"] = local.get("local_bme_ok")
+    d["rain_ok"] = local.get("local_rain_ok")
+
+    d["wind_speed_ms"] = local.get("local_wind_speed_ms")
+    d["wind_direction_deg"] = local.get("local_wind_direction_deg")
+    d["wind_gust_ms"] = local.get("local_wind_gust_ms")
+    d["wind_ok"] = local.get("local_wind_ok")
+
+    if latest_nasa is not None:
+        nasa = dict(latest_nasa)
+        d["nasa_timestamp_local"] = clean_timestamp(nasa.get("nasa_timestamp_local"))
+        d["nasa_temp_c"] = nasa.get("nasa_temp_c")
+        d["nasa_dewpoint_c"] = nasa.get("nasa_dewpoint_c")
+        d["nasa_rh_pct"] = nasa.get("nasa_rh_pct")
+        d["nasa_precip_mm"] = nasa.get("nasa_precip_mm")
+        d["nasa_press_hpa"] = nasa.get("nasa_press_hpa")
+        d["nasa_wind10m_ms"] = nasa.get("nasa_wind10m_ms")
+
+    if latest_era5 is not None:
+        era5 = dict(latest_era5)
+        d["era5_timestamp_local"] = clean_timestamp(era5.get("era5_timestamp_local"))
+        d["era5_temp_c"] = era5.get("era5_temp_c")
+        d["era5_dewpoint_c"] = era5.get("era5_dewpoint_c")
+        d["era5_rh_pct"] = era5.get("era5_rh_pct")
+        d["era5_precip_mm"] = era5.get("era5_precip_mm")
+        d["era5_press_hpa"] = era5.get("era5_press_hpa")
+        d["era5_wind_ms"] = era5.get("era5_wind_ms")
+
+    if latest_radio is not None:
+        radio = dict(latest_radio)
+        d["radio_timestamp_local"] = clean_timestamp(radio.get("radio_timestamp_local"))
+        d["radio_mcs_dl"] = radio.get("radio_mcs_dl")
+        d["radio_mcs_ul"] = radio.get("radio_mcs_ul")
+        d["radio_snr_dl"] = radio.get("radio_snr_dl")
+        d["radio_snr_ul"] = radio.get("radio_snr_ul")
+        d["radio_sta_dl_rssi"] = radio.get("radio_sta_dl_rssi")
+        d["radio_sta_ul_rssi"] = radio.get("radio_sta_ul_rssi")
+        d["radio_dl_rate"] = radio.get("radio_dl_rate")
+        d["radio_ul_rate"] = radio.get("radio_ul_rate")
+        d["radio_note"] = radio.get("radio_note")
 
     return d
-
 
 def get_history(limit=120):
     if not DB_FILE.exists():
