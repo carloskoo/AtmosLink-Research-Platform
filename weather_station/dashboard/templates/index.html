@@ -161,6 +161,27 @@
     <div class="card"><div class="label">Radio emparejados</div><div class="value" id="radioMatched">--</div></div>
   </div>
 
+
+  <div class="section-title">Estaciones AtmosLink</div>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Estación</th>
+          <th>Rol</th>
+          <th>Última observación</th>
+          <th>Temperatura</th>
+          <th>Humedad</th>
+          <th>Presión</th>
+          <th>Lluvia</th>
+          <th>Viento</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="stationsTable"></tbody>
+    </table>
+  </div>
+
   <div class="section-title">Estación meteorológica local</div>
   <div class="grid">
     <div class="card"><div class="label">Temperatura local</div><div class="value"><span id="temp">--</span> <span class="unit">°C</span></div></div>
@@ -391,6 +412,57 @@ function setStatus(id, value) {
     el.className = "value warning";
   }
 }
+
+
+async function updateStationsLatest() {
+  const r = await fetch("/api/stations/latest");
+  const stations = await r.json();
+
+  const tbody = document.getElementById("stationsTable");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  if (!stations || stations.length === 0) {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td colspan="9">Sin estaciones registradas.</td>`;
+    tbody.appendChild(row);
+    return;
+  }
+
+  stations.forEach(st => {
+    const bmeOk = st.bme_ok === 1;
+    const rainOk = st.rain_ok === 1;
+    const windOk = st.wind_ok === 1;
+
+    let status = "OK";
+    let colorClass = "ok";
+
+    if (!bmeOk || !rainOk) {
+      status = "WARNING";
+      colorClass = "warning";
+    }
+
+    const windText = windOk
+      ? `${valueOrDash(st.wind_speed_ms)} m/s · ${valueOrDash(st.wind_direction_deg)}°`
+      : "SIN DATO";
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${st.source_station_id || st.station_id || "--"}</td>
+      <td>${st.radio_role || "--"}</td>
+      <td>${st.timestamp_local || "--"}</td>
+      <td>${valueOrDash(st.temp_avg_C)} °C</td>
+      <td>${valueOrDash(st.hum_avg_pct)} %</td>
+      <td>${valueOrDash(st.pres_avg_hPa)} hPa</td>
+      <td>${valueOrDash(st.rain_total_mm)} mm</td>
+      <td>${windText}</td>
+      <td class="${colorClass}">${status}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
 
 async function updateLatest() {
   const r = await fetch("/api/latest");
@@ -643,10 +715,12 @@ async function updateCharts() {
   ]);
 }
 
+updateStationsLatest();
 updateLatest();
 updateCoreStatus();
 updateCharts();
 
+setInterval(updateStationsLatest, 5000);
 setInterval(updateLatest, 5000);
 setInterval(updateCoreStatus, 10000);
 setInterval(updateCharts, 15000);
