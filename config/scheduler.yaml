@@ -127,3 +127,10 @@ tasks:
     - python3
     - -m
     - weather_station.sync.build_station_observations
+  scientific_comparison:
+    enabled: true
+    interval_seconds: 300
+    command:
+    - python3
+    - -m
+    - weather_station.analytics.scientific_comparison
