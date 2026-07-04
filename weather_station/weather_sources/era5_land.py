@@ -6,7 +6,10 @@ import cdsapi
 import pandas as pd
 import xarray as xr
 
-DB_FILE = "SQLite/weather_local.db"
+from weather_station.config.station_manager import get_station_context
+
+STATION_CONTEXT = get_station_context()
+DB_FILE = STATION_CONTEXT["database"]
 ERA_CACHE_DIR = "Data/external/era5_cache"
 
 LIMA_TZ = timezone(timedelta(hours=-5))
