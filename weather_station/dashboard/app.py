@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify
 import sqlite3
+from datetime import datetime
 import json
 from pathlib import Path
 
@@ -70,6 +71,54 @@ def select_expr(columns, column_name, alias=None):
     return f"NULL AS {alias}"
 
 
+
+
+def parse_dashboard_datetime(value):
+    if not value:
+        return None
+    try:
+        value = str(value).replace("Z", "+00:00")
+        dt = datetime.fromisoformat(value)
+        if dt.tzinfo is not None:
+            dt = dt.replace(tzinfo=None)
+        return dt
+    except Exception:
+        return None
+
+
+def age_payload(reference_ts, source_ts):
+    ref = parse_dashboard_datetime(reference_ts)
+    src = parse_dashboard_datetime(source_ts)
+
+    if not ref or not src:
+        return {
+            "age_hours": None,
+            "age_days": None,
+            "age_label": "--",
+            "freshness": "unknown",
+        }
+
+    delta_hours = max((ref - src).total_seconds() / 3600.0, 0)
+    delta_days = delta_hours / 24.0
+
+    if delta_hours < 24:
+        label = f"hace {delta_hours:.1f} h"
+    else:
+        label = f"hace {delta_days:.1f} días"
+
+    if delta_days <= 2:
+        freshness = "fresh"
+    elif delta_days <= 7:
+        freshness = "expected_delay"
+    else:
+        freshness = "stale"
+
+    return {
+        "age_hours": round(delta_hours, 2),
+        "age_days": round(delta_days, 2),
+        "age_label": label,
+        "freshness": freshness,
+    }
 
 def get_latest():
     if not DB_FILE.exists():
