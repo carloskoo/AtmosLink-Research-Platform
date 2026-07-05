@@ -257,6 +257,31 @@
     </div>
   </div>
 
+
+  <div class="section-title">Corredor atmosférico AP–MID–SM</div>
+
+  <div class="card">
+    <div class="label">Estado del corredor</div>
+    <div class="value" id="corridorStatus">--</div>
+    <div class="label" id="corridorMessage" style="margin-top:8px;">--</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Fuente</th>
+          <th>Variable</th>
+          <th>AP Cuñacales</th>
+          <th>Mid-Link</th>
+          <th>SM San José</th>
+          <th>Δ AP→MID</th>
+          <th>Δ MID→SM</th>
+          <th>Δ AP→SM</th>
+        </tr>
+      </thead>
+      <tbody id="corridorTable"></tbody>
+    </table>
+  </div>
+
   <div class="section-title">Comparación científica Local vs NASA / ERA5</div>
   <div class="card">
     <div class="label">Estado comparación</div>
@@ -589,6 +614,63 @@ async function updateCoreStatus() {
 
 
 
+
+
+  const corridor = data.atmospheric_corridor || {};
+
+  const corridorStatus = document.getElementById("corridorStatus");
+  if (corridorStatus) {
+    corridorStatus.textContent = (corridor.status || "--").toUpperCase();
+
+    if (corridor.status === "ok") {
+      corridorStatus.className = "value ok";
+    } else if (corridor.status === "warning") {
+      corridorStatus.className = "value warning";
+    } else if (corridor.status === "critical") {
+      corridorStatus.className = "value bad";
+    } else {
+      corridorStatus.className = "value warning";
+    }
+  }
+
+  setText("corridorMessage", corridor.message || "--");
+
+  const corridorTable = document.getElementById("corridorTable");
+  if (corridorTable) {
+    corridorTable.innerHTML = "";
+
+    const sources = corridor.sources || {};
+    let rowsAdded = 0;
+
+    Object.entries(sources).forEach(([sourceName, sourceData]) => {
+      const gradients = sourceData.gradients || [];
+
+      gradients.forEach(g => {
+        const unit = g.unit || "";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${sourceName}</td>
+          <td>${g.label || g.variable || "--"}</td>
+          <td>${g.ap_value ?? "--"} ${unit}</td>
+          <td>${g.mid_value ?? "--"} ${unit}</td>
+          <td>${g.sm_value ?? "--"} ${unit}</td>
+          <td>${g.gradient_ap_to_mid ?? "--"} ${unit}</td>
+          <td>${g.gradient_mid_to_sm ?? "--"} ${unit}</td>
+          <td>${g.gradient_ap_to_sm ?? "--"} ${unit}</td>
+        `;
+
+        corridorTable.appendChild(row);
+        rowsAdded += 1;
+      });
+    });
+
+    if (rowsAdded === 0) {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td colspan="8">Sin datos suficientes para construir el corredor atmosférico.</td>`;
+      corridorTable.appendChild(row);
+    }
+  }
 
   const agreement = data.scientific_agreement || {};
 

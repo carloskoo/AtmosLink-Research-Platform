@@ -19,6 +19,7 @@ SCIENTIFIC_HEALTH_FILE = RUNTIME_DIR / "scientific_health_score.json"
 SCIENTIFIC_RELIABILITY_FILE = RUNTIME_DIR / "scientific_reliability.json"
 SCIENTIFIC_COMPARISON_FILE = RUNTIME_DIR / "scientific_comparison.json"
 SCIENTIFIC_AGREEMENT_FILE = RUNTIME_DIR / "scientific_agreement_index.json"
+ATMOSPHERIC_CORRIDOR_FILE = RUNTIME_DIR / "atmospheric_corridor.json"
 
 app = Flask(__name__)
 
@@ -454,6 +455,7 @@ def api_core_status():
         "scientific_reliability": load_json(SCIENTIFIC_RELIABILITY_FILE),
         "scientific_comparison": load_json(SCIENTIFIC_COMPARISON_FILE),
         "scientific_agreement": load_json(SCIENTIFIC_AGREEMENT_FILE),
+        "atmospheric_corridor": load_json(ATMOSPHERIC_CORRIDOR_FILE),
         "master_summary": get_master_summary(),
     })
 
