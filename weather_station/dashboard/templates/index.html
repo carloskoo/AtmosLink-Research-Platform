@@ -302,6 +302,25 @@
       </select>
     </div>
 
+    <div class="grid" style="margin-top:12px; margin-bottom:12px;">
+      <div class="card">
+        <div class="label">Δ AP→MID</div>
+        <div class="value"><span id="profileGradApMid">--</span></div>
+      </div>
+      <div class="card">
+        <div class="label">Δ MID→SM</div>
+        <div class="value"><span id="profileGradMidSm">--</span></div>
+      </div>
+      <div class="card">
+        <div class="label">Δ AP→SM</div>
+        <div class="value"><span id="profileGradApSm">--</span></div>
+      </div>
+      <div class="card">
+        <div class="label">Perfil altitudinal</div>
+        <div class="value" style="font-size:18px;">2730 m → 3190 m → 3650 m</div>
+      </div>
+    </div>
+
     <canvas id="corridorProfileChart"></canvas>
   </div>
 
@@ -625,6 +644,7 @@ async function updateLatest() {
 
 let corridorProfileChart = null;
 
+
 function renderCorridorProfile(data) {
   const corridor = data.atmospheric_corridor || {};
   const sourceSelect = document.getElementById("corridorProfileSource");
@@ -643,14 +663,24 @@ function renderCorridorProfile(data) {
 
   if (!selected) return;
 
-  const labels = ["AP Cuñacales", "Mid-Link", "SM San José"];
+  const unit = selected.unit || "";
+
+  setText("profileGradApMid", selected.gradient_ap_to_mid !== null && selected.gradient_ap_to_mid !== undefined ? `${selected.gradient_ap_to_mid} ${unit}` : "--");
+  setText("profileGradMidSm", selected.gradient_mid_to_sm !== null && selected.gradient_mid_to_sm !== undefined ? `${selected.gradient_mid_to_sm} ${unit}` : "--");
+  setText("profileGradApSm", selected.gradient_ap_to_sm !== null && selected.gradient_ap_to_sm !== undefined ? `${selected.gradient_ap_to_sm} ${unit}` : "--");
+
+  const labels = [
+    ["AP Cuñacales", "2730 m"],
+    ["Mid-Link", "3190 m"],
+    ["SM San José", "3650 m"]
+  ];
+
   const values = [
     selected.ap_value,
     selected.mid_value,
     selected.sm_value
   ];
 
-  const unit = selected.unit || "";
   const label = `${sourceName} · ${selected.label || variableKey} ${unit}`;
 
   if (corridorProfileChart) {
@@ -667,29 +697,50 @@ function renderCorridorProfile(data) {
         borderColor: "#38bdf8",
         backgroundColor: "rgba(56,189,248,0.15)",
         tension: 0.25,
-        pointRadius: 6,
-        pointHoverRadius: 8
+        pointRadius: 7,
+        pointHoverRadius: 9,
+        spanGaps: false
       }]
     },
     options: {
       responsive: true,
       plugins: {
-        legend: { labels: { color: "#f9fafb" } }
+        legend: {
+          labels: {
+            color: "#f9fafb"
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const value = context.raw;
+              if (value === null || value === undefined) return "Sin dato";
+              return `${context.dataset.label}: ${value} ${unit}`;
+            }
+          }
+        }
       },
       scales: {
         x: {
-          ticks: { color: "#9ca3af" },
-          grid: { color: "#374151" }
+          ticks: {
+            color: "#9ca3af"
+          },
+          grid: {
+            color: "#374151"
+          }
         },
         y: {
-          ticks: { color: "#9ca3af" },
-          grid: { color: "#374151" }
+          ticks: {
+            color: "#9ca3af"
+          },
+          grid: {
+            color: "#374151"
+          }
         }
       }
     }
   });
 }
-
 
 async function updateCoreStatus() {
   const r = await fetch("/api/core/status");
