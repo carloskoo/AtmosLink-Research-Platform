@@ -10,38 +10,15 @@ STATION_CONTEXT = get_station_context()
 DB_FILE = Path(STATION_CONTEXT["database"])
 OUTPUT_FILE = Path("runtime/atmospheric_corridor.json")
 
-
 SITE_ORDER = ["AP_CUNACALES", "MID_LINK", "SM_SAN_JOSE"]
 
-
 VARIABLES = [
-    {
-        "key": "temp_c",
-        "label": "Temperatura",
-        "unit": "°C",
-    },
-    {
-        "key": "rh_pct",
-        "label": "Humedad relativa",
-        "unit": "%",
-    },
-    {
-        "key": "press_hpa",
-        "label": "Presión",
-        "unit": "hPa",
-    },
-    {
-        "key": "precip_mm",
-        "label": "Precipitación",
-        "unit": "mm",
-    },
-    {
-        "key": "wind_ms",
-        "label": "Viento",
-        "unit": "m/s",
-    },
+    {"key": "temp_c", "label": "Temperatura", "unit": "°C"},
+    {"key": "rh_pct", "label": "Humedad relativa", "unit": "%"},
+    {"key": "press_hpa", "label": "Presión", "unit": "hPa"},
+    {"key": "precip_mm", "label": "Precipitación", "unit": "mm"},
+    {"key": "wind_ms", "label": "Viento", "unit": "m/s"},
 ]
-
 
 SOURCE_TABLES = {
     "ERA5": {
@@ -69,42 +46,42 @@ SOURCE_TABLES = {
 
 def table_exists(conn, table_name):
     return conn.execute(
-        """
-        SELECT name FROM sqlite_master
-        WHERE type='table' AND name=?
-        """,
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
         (table_name,),
     ).fetchone() is not None
 
 
 def get_columns(conn, table_name):
-    if not table_exists(conn, table_name):
-        return []
     return [r[1] for r in conn.execute(f"PRAGMA table_info({table_name})").fetchall()]
 
 
-def latest_by_site(conn, table_name):
+def latest_valid_by_site(conn, table_name, source_columns):
     if not table_exists(conn, table_name):
         return {}
 
-    rows = conn.execute(f"""
+    available_columns = get_columns(conn, table_name)
+    valid_cols = [c for c in source_columns.values() if c in available_columns]
+
+    if not valid_cols:
+        return {}
+
+    valid_condition = " OR ".join([f"{c} IS NOT NULL" for c in valid_cols])
+
+    query = f"""
         SELECT t.*
         FROM {table_name} t
         INNER JOIN (
             SELECT site_tag, MAX(timestamp_local) AS max_timestamp
             FROM {table_name}
-            WHERE temp_c IS NOT NULL
-               OR rh_pct IS NOT NULL
-               OR press_hpa IS NOT NULL
-               OR precip_mm IS NOT NULL
-               OR wind10m_ms IS NOT NULL
-               OR wind_ms IS NOT NULL
+            WHERE {valid_condition}
             GROUP BY site_tag
         ) latest
         ON t.site_tag = latest.site_tag
         AND t.timestamp_local = latest.max_timestamp
-    """).fetchall()
+        ORDER BY t.site_tag
+    """
 
+    rows = conn.execute(query).fetchall()
     return {dict(r)["site_tag"]: dict(r) for r in rows}
 
 
@@ -123,61 +100,47 @@ def safe_value(row, column):
         return None
 
 
-def build_source_corridor(source_name, source_cfg, rows_by_site, available_columns):
+def build_source_corridor(source_name, cfg, rows_by_site):
     points = {}
 
     for site in SITE_ORDER:
         row = rows_by_site.get(site)
+
         point = {
             "site_tag": site,
             "timestamp_local": row.get("timestamp_local") if row else None,
         }
 
         for var in VARIABLES:
-            column = source_cfg["columns"].get(var["key"])
-
-            if column in available_columns:
-                point[var["key"]] = safe_value(row, column)
-            else:
-                point[var["key"]] = None
+            column = cfg["columns"].get(var["key"])
+            point[var["key"]] = safe_value(row, column)
 
         points[site] = point
 
     gradients = []
 
     for var in VARIABLES:
-        ap_value = points["AP_CUNACALES"].get(var["key"])
-        sm_value = points["SM_SAN_JOSE"].get(var["key"])
-        mid_value = points["MID_LINK"].get(var["key"])
+        key = var["key"]
 
-        gradient_ap_sm = None
-        gradient_ap_mid = None
-        gradient_mid_sm = None
-
-        if ap_value is not None and sm_value is not None:
-            gradient_ap_sm = round(sm_value - ap_value, 3)
-
-        if ap_value is not None and mid_value is not None:
-            gradient_ap_mid = round(mid_value - ap_value, 3)
-
-        if mid_value is not None and sm_value is not None:
-            gradient_mid_sm = round(sm_value - mid_value, 3)
+        ap = points["AP_CUNACALES"].get(key)
+        mid = points["MID_LINK"].get(key)
+        sm = points["SM_SAN_JOSE"].get(key)
 
         gradients.append({
-            "variable": var["key"],
+            "variable": key,
             "label": var["label"],
             "unit": var["unit"],
-            "ap_value": ap_value,
-            "mid_value": mid_value,
-            "sm_value": sm_value,
-            "gradient_ap_to_mid": gradient_ap_mid,
-            "gradient_mid_to_sm": gradient_mid_sm,
-            "gradient_ap_to_sm": gradient_ap_sm,
+            "ap_value": ap,
+            "mid_value": mid,
+            "sm_value": sm,
+            "gradient_ap_to_mid": round(mid - ap, 3) if ap is not None and mid is not None else None,
+            "gradient_mid_to_sm": round(sm - mid, 3) if mid is not None and sm is not None else None,
+            "gradient_ap_to_sm": round(sm - ap, 3) if ap is not None and sm is not None else None,
         })
 
     valid_points = sum(
         1 for site in SITE_ORDER
-        if points.get(site) and any(points[site].get(v["key"]) is not None for v in VARIABLES)
+        if any(points[site].get(v["key"]) is not None for v in VARIABLES)
     )
 
     return {
@@ -218,19 +181,11 @@ def build_atmospheric_corridor():
                 "valid_points": 0,
                 "points": {},
                 "gradients": [],
-                "message": f"No existe la tabla {table_name}.",
             }
             continue
 
-        rows_by_site = latest_by_site(conn, table_name)
-        columns = get_columns(conn, table_name)
-
-        source_payload = build_source_corridor(
-            source_name=source_name,
-            source_cfg=cfg,
-            rows_by_site=rows_by_site,
-            available_columns=columns,
-        )
+        rows_by_site = latest_valid_by_site(conn, table_name, cfg["columns"])
+        source_payload = build_source_corridor(source_name, cfg, rows_by_site)
 
         payload["sources"][source_name] = source_payload
 
@@ -261,10 +216,9 @@ def main():
         json.dump(payload, f, indent=4, ensure_ascii=False)
 
     print("ATMOSPHERIC CORRIDOR generado correctamente")
-    print(f"Estación : {payload['station_id']} | {payload['station_name']}")
-    print(f"Estado   : {payload['status']}")
-    print(f"Mensaje  : {payload['message']}")
-    print(f"Archivo  : {OUTPUT_FILE}")
+    print(f"Estado  : {payload['status']}")
+    print(f"Mensaje : {payload['message']}")
+    print(f"Archivo : {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":
