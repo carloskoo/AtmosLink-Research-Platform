@@ -6,18 +6,28 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from weather_station.config.settings import load_config
+from weather_station.config.station_manager import get_station_context
 
 
-CONFIG = load_config()
-DB_FILE = CONFIG["database"]["sqlite"]
+STATION_CONTEXT = get_station_context()
+DB_FILE = STATION_CONTEXT["database"]
 
 NASA_POWER_BASE_URL = "https://power.larc.nasa.gov/api/temporal/hourly/point"
 
-SITE_TAG = "MID_LINK"
-
-LATITUDE = CONFIG.get("site", {}).get("latitude", -7.15)
-LONGITUDE = CONFIG.get("site", {}).get("longitude", -78.50)
+SITES = {
+    "AP_CUNACALES": {
+        "lat": -6.69240,
+        "lon": -78.51418,
+    },
+    "MID_LINK": {
+        "lat": (-6.69240 + -6.76387) / 2.0,
+        "lon": (-78.51418 + -78.60154) / 2.0,
+    },
+    "SM_SAN_JOSE": {
+        "lat": -6.76387,
+        "lon": -78.60154,
+    },
+}
 
 PARAMETERS = [
     "T2M",
@@ -38,28 +48,28 @@ def parse_args():
         "--start",
         type=str,
         default=None,
-        help="Fecha inicial en formato YYYYMMDD. Ejemplo: 20260620"
+        help="Fecha inicial en formato YYYYMMDD. Ejemplo: 20260620",
     )
 
     parser.add_argument(
         "--end",
         type=str,
         default=None,
-        help="Fecha final en formato YYYYMMDD. Ejemplo: 20260625"
+        help="Fecha final en formato YYYYMMDD. Ejemplo: 20260625",
     )
 
     parser.add_argument(
         "--days",
         type=int,
         default=10,
-        help="Cantidad de días a descargar en modo automático. Por defecto: 10"
+        help="Cantidad de días a descargar en modo automático. Por defecto: 10",
     )
 
     parser.add_argument(
         "--lag-days",
         type=int,
         default=2,
-        help="Retraso asumido de disponibilidad NASA POWER. Por defecto: 2 días"
+        help="Retraso asumido de disponibilidad NASA POWER. Por defecto: 2 días",
     )
 
     return parser.parse_args()
@@ -74,19 +84,6 @@ def validate_yyyymmdd(value):
 
 
 def automatic_date_range(days=10, lag_days=2):
-    """
-    Descarga una ventana móvil de datos disponibles.
-
-    NASA POWER puede tener retraso de disponibilidad para meteorología.
-    Por eso, por defecto se descarga desde hoy - lag_days - days + 1
-    hasta hoy - lag_days.
-
-    Ejemplo:
-    Si hoy es 2026-06-27, days=10 y lag_days=2:
-    start = 2026-06-16
-    end   = 2026-06-25
-    """
-
     if days < 1:
         days = 1
 
@@ -118,12 +115,12 @@ def resolve_date_range(args):
     return automatic_date_range(days=args.days, lag_days=args.lag_days)
 
 
-def build_url(start_date, end_date):
+def build_url(start_date, end_date, lat, lon):
     query = {
         "parameters": ",".join(PARAMETERS),
         "community": "AG",
-        "longitude": LONGITUDE,
-        "latitude": LATITUDE,
+        "longitude": lon,
+        "latitude": lat,
         "start": start_date,
         "end": end_date,
         "format": "JSON",
@@ -133,13 +130,13 @@ def build_url(start_date, end_date):
     return NASA_POWER_BASE_URL + "?" + urllib.parse.urlencode(query)
 
 
-def fetch_nasa_power(start_date, end_date):
-    url = build_url(start_date, end_date)
+def fetch_nasa_power(start_date, end_date, site_tag, lat, lon):
+    url = build_url(start_date, end_date, lat, lon)
 
     print("Descargando NASA POWER")
-    print(f"Rango: {start_date} a {end_date}")
-    print(f"Sitio: {SITE_TAG}")
-    print(f"Lat/Lon: {LATITUDE}, {LONGITUDE}")
+    print(f"Rango  : {start_date} a {end_date}")
+    print(f"Sitio  : {site_tag}")
+    print(f"Lat/Lon: {lat}, {lon}")
     print(url)
 
     with urllib.request.urlopen(url, timeout=120) as response:
@@ -152,11 +149,6 @@ def fetch_nasa_power(start_date, end_date):
 
 
 def parse_power_timestamp(ts):
-    """
-    NASA POWER hourly timestamp: YYYYMMDDHH.
-    Ejemplo: 2026062500
-    """
-
     dt = datetime.strptime(ts, "%Y%m%d%H").replace(tzinfo=timezone.utc)
 
     timestamp_utc = dt.isoformat(timespec="seconds")
@@ -230,7 +222,7 @@ def is_valid_record(temp_c, dewpoint_c, rh_pct, precip_mm, press_hpa, wind10m_ms
     return True
 
 
-def save_to_sqlite(payload):
+def save_to_sqlite(payload, site_tag, lat, lon):
     parameters = payload.get("properties", {}).get("parameter", {})
 
     if not parameters:
@@ -269,7 +261,7 @@ def save_to_sqlite(payload):
             rh_pct,
             precip_mm,
             press_hpa,
-            wind10m_ms
+            wind10m_ms,
         ):
             skipped += 1
             continue
@@ -309,9 +301,9 @@ def save_to_sqlite(payload):
         """, (
             timestamp_utc,
             timestamp_local,
-            SITE_TAG,
-            LATITUDE,
-            LONGITUDE,
+            site_tag,
+            lat,
+            lon,
             temp_c,
             dewpoint_c,
             rh_pct,
@@ -329,6 +321,7 @@ def save_to_sqlite(payload):
     conn.close()
 
     print("NASA POWER guardado correctamente")
+    print(f"Sitio: {site_tag}")
     print(f"Registros recibidos: {len(timestamps)}")
     print(f"Registros procesados: {processed}")
     print(f"Registros descartados por calidad: {skipped}")
@@ -339,8 +332,25 @@ def main():
     args = parse_args()
     start_date, end_date = resolve_date_range(args)
 
-    payload = fetch_nasa_power(start_date, end_date)
-    save_to_sqlite(payload)
+    print("NASA POWER multi-site downloader")
+    print(f"Estación contexto : {STATION_CONTEXT['station_id']} | {STATION_CONTEXT['station_name']}")
+    print(f"Base SQLite       : {DB_FILE}")
+
+    for site_tag, cfg in SITES.items():
+        payload = fetch_nasa_power(
+            start_date=start_date,
+            end_date=end_date,
+            site_tag=site_tag,
+            lat=cfg["lat"],
+            lon=cfg["lon"],
+        )
+
+        save_to_sqlite(
+            payload=payload,
+            site_tag=site_tag,
+            lat=cfg["lat"],
+            lon=cfg["lon"],
+        )
 
 
 if __name__ == "__main__":
