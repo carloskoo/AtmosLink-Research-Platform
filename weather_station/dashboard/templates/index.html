@@ -843,17 +843,28 @@ async function updateCoreStatus() {
 
       gradients.forEach(g => {
         const unit = g.unit || "";
+        const dec = unit === "mm" ? 3 : 2;
+
+        const isNasa = sourceName.toUpperCase().includes("NASA");
+
+        const apText = isNasa ? "No aplicado" : (g.ap_value !== null && g.ap_value !== undefined ? `${fmt(g.ap_value, dec)} ${unit}` : "--");
+        const midText = g.mid_value !== null && g.mid_value !== undefined ? `${fmt(g.mid_value, dec)} ${unit}` : "--";
+        const smText = isNasa ? "No aplicado" : (g.sm_value !== null && g.sm_value !== undefined ? `${fmt(g.sm_value, dec)} ${unit}` : "--");
+
+        const gradApMid = isNasa ? "No aplicado" : (g.gradient_ap_to_mid !== null && g.gradient_ap_to_mid !== undefined ? `${fmt(g.gradient_ap_to_mid, dec)} ${unit}` : "--");
+        const gradMidSm = isNasa ? "No aplicado" : (g.gradient_mid_to_sm !== null && g.gradient_mid_to_sm !== undefined ? `${fmt(g.gradient_mid_to_sm, dec)} ${unit}` : "--");
+        const gradApSm = isNasa ? "No aplicado" : (g.gradient_ap_to_sm !== null && g.gradient_ap_to_sm !== undefined ? `${fmt(g.gradient_ap_to_sm, dec)} ${unit}` : "--");
 
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${sourceName}</td>
           <td>${g.label || g.variable || "--"}</td>
-          <td>${g.ap_value !== null && g.ap_value !== undefined ? fmt(g.ap_value, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
-          <td>${g.mid_value !== null && g.mid_value !== undefined ? fmt(g.mid_value, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
-          <td>${g.sm_value !== null && g.sm_value !== undefined ? fmt(g.sm_value, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
-          <td>${g.gradient_ap_to_mid !== null && g.gradient_ap_to_mid !== undefined ? fmt(g.gradient_ap_to_mid, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
-          <td>${g.gradient_mid_to_sm !== null && g.gradient_mid_to_sm !== undefined ? fmt(g.gradient_mid_to_sm, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
-          <td>${g.gradient_ap_to_sm !== null && g.gradient_ap_to_sm !== undefined ? fmt(g.gradient_ap_to_sm, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
+          <td>${apText}</td>
+          <td>${midText}</td>
+          <td>${smText}</td>
+          <td>${gradApMid}</td>
+          <td>${gradMidSm}</td>
+          <td>${gradApSm}</td>
         `;
 
         corridorTable.appendChild(row);
