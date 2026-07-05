@@ -323,6 +323,12 @@ def latest_rows_by_site(conn, table_name, site_column="site_tag"):
         INNER JOIN (
             SELECT {site_column}, MAX(timestamp_local) AS max_timestamp
             FROM {table_name}
+            WHERE temp_c IS NOT NULL
+               OR rh_pct IS NOT NULL
+               OR press_hpa IS NOT NULL
+               OR precip_mm IS NOT NULL
+               OR wind10m_ms IS NOT NULL
+               OR wind_ms IS NOT NULL
             GROUP BY {site_column}
         ) latest
         ON t.{site_column} = latest.{site_column}
