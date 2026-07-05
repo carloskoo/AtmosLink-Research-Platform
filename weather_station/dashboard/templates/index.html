@@ -282,6 +282,29 @@
     </table>
   </div>
 
+
+  <div class="section-title">Perfil longitudinal del corredor atmosférico</div>
+  <div class="chart-card">
+    <div class="chart-title">AP Cuñacales → Mid-Link → SM San José</div>
+
+    <div style="display:flex; gap:12px; margin-bottom:12px;">
+      <select id="corridorProfileSource">
+        <option value="ERA5">ERA5</option>
+        <option value="NASA">NASA POWER</option>
+      </select>
+
+      <select id="corridorProfileVariable">
+        <option value="temp_c">Temperatura</option>
+        <option value="rh_pct">Humedad relativa</option>
+        <option value="press_hpa">Presión</option>
+        <option value="precip_mm">Precipitación</option>
+        <option value="wind_ms">Viento</option>
+      </select>
+    </div>
+
+    <canvas id="corridorProfileChart"></canvas>
+  </div>
+
   <div class="section-title">Comparación científica Local vs NASA / ERA5</div>
   <div class="card">
     <div class="label">Estado comparación</div>
@@ -599,6 +622,75 @@ async function updateLatest() {
   setText("radioNote", data.radio_note || "Pendiente");
 }
 
+
+let corridorProfileChart = null;
+
+function renderCorridorProfile(data) {
+  const corridor = data.atmospheric_corridor || {};
+  const sourceSelect = document.getElementById("corridorProfileSource");
+  const variableSelect = document.getElementById("corridorProfileVariable");
+  const canvas = document.getElementById("corridorProfileChart");
+
+  if (!sourceSelect || !variableSelect || !canvas) return;
+
+  const sourceName = sourceSelect.value;
+  const variableKey = variableSelect.value;
+
+  const source = (corridor.sources || {})[sourceName] || {};
+  const gradients = source.gradients || [];
+
+  const selected = gradients.find(g => g.variable === variableKey);
+
+  if (!selected) return;
+
+  const labels = ["AP Cuñacales", "Mid-Link", "SM San José"];
+  const values = [
+    selected.ap_value,
+    selected.mid_value,
+    selected.sm_value
+  ];
+
+  const unit = selected.unit || "";
+  const label = `${sourceName} · ${selected.label || variableKey} ${unit}`;
+
+  if (corridorProfileChart) {
+    corridorProfileChart.destroy();
+  }
+
+  corridorProfileChart = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: label,
+        data: values,
+        borderColor: "#38bdf8",
+        backgroundColor: "rgba(56,189,248,0.15)",
+        tension: 0.25,
+        pointRadius: 6,
+        pointHoverRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: "#f9fafb" } }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#9ca3af" },
+          grid: { color: "#374151" }
+        },
+        y: {
+          ticks: { color: "#9ca3af" },
+          grid: { color: "#374151" }
+        }
+      }
+    }
+  });
+}
+
+
 async function updateCoreStatus() {
   const r = await fetch("/api/core/status");
   const data = await r.json();
@@ -671,6 +763,8 @@ async function updateCoreStatus() {
       corridorTable.appendChild(row);
     }
   }
+
+  renderCorridorProfile(data);
 
   const agreement = data.scientific_agreement || {};
 
@@ -965,6 +1059,13 @@ async function updateCharts() {
     { label: "NASA viento 10 m", data: data.map(x => x.nasa_wind10m_ms), borderColor: "#22c55e", backgroundColor: "rgba(34,197,94,0.15)", tension: 0.25 }
   ]);
 }
+
+
+document.addEventListener("change", function(e) {
+  if (e.target && (e.target.id === "corridorProfileSource" || e.target.id === "corridorProfileVariable")) {
+    updateCoreStatus();
+  }
+});
 
 updateStationsLatest();
 updateLatest();
