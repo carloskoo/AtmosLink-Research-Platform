@@ -333,35 +333,6 @@ def get_master_summary():
     return d
 
 
-
-def get_stations_latest():
-    if not DB_FILE.exists():
-        return []
-
-    conn = get_connection()
-
-    if not table_exists(conn, "station_observations"):
-        conn.close()
-        return []
-
-    rows = conn.execute("""
-        SELECT so.*
-        FROM station_observations so
-        INNER JOIN (
-            SELECT source_station_id, MAX(timestamp_local) AS max_timestamp
-            FROM station_observations
-            GROUP BY source_station_id
-        ) latest
-        ON so.source_station_id = latest.source_station_id
-        AND so.timestamp_local = latest.max_timestamp
-        ORDER BY so.source_station_id
-    """).fetchall()
-
-    data = [dict(r) for r in rows]
-    conn.close()
-    return data
-
-
 def latest_rows_by_site(conn, table_name, site_column="site_tag"):
     if not table_exists(conn, table_name):
         return {}
