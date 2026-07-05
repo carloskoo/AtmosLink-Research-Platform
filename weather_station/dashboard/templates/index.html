@@ -684,7 +684,12 @@ async function updateLatest() {
   setText("nasaRh", fmtPct(data.nasa_rh_pct));
   setText("nasaRain", fmtRain(data.nasa_precip_mm));
   setText("nasaPress", fmtPressure(data.nasa_press_hpa));
-  setText("nasaWind", fmtWind(data.nasa_wind10m_ms));
+  setText("nasaWind", fmtWind(data.nasa_wind10m_ms));\n
+  setText("era5Timestamp", "Última observación: " + (data.era5_timestamp_local || "--"));
+  setText("era5Delay", "Retraso: " + (data.era5_age_label || "--"));
+  setText("nasaTimestamp", "Última observación: " + (data.nasa_timestamp_local || "--"));
+  setText("nasaDelay", "Retraso: " + (data.nasa_age_label || "--"));
+
 
   setText("snrDl", data.radio_snr_dl);
   setText("snrUl", data.radio_snr_ul);
