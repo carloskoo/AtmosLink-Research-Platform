@@ -223,7 +223,8 @@ def get_latest():
 
     return d
 
-def get_history(limit=120):
+
+def get_history(limit=180):
     if not DB_FILE.exists():
         return []
 
@@ -233,102 +234,71 @@ def get_history(limit=120):
         conn.close()
         return []
 
-    columns = get_columns(conn, "master_observations")
+    query = """
+        SELECT
+            master_timestamp_local,
+            master_timestamp_hour,
 
-    selected = [
-        "master_timestamp_local",
-        "master_timestamp_hour",
+            local_temp_avg_c,
+            local_hum_avg_pct,
+            local_press_hpa,
+            local_dew_point_c,
+            local_vapor_pressure_hpa,
+            local_rain_1min_mm,
+            local_rain_1h_mm,
+            local_rain_total_mm,
+            local_wind_speed_ms,
+            local_wind_direction_deg,
+            local_wind_gust_ms,
+            local_wind_ok,
 
-        "local_temp_avg_c",
-        "local_hum_avg_pct",
-        "local_press_hpa",
-        "local_dew_point_c",
-        "local_vapor_pressure_hpa",
-        "local_rain_1min_mm",
-        "local_rain_1h_mm",
-        "local_rain_total_mm",
+            era5_temp_c,
+            era5_dewpoint_c,
+            era5_rh_pct,
+            era5_precip_mm,
+            era5_press_hpa,
+            era5_wind_ms,
 
-        select_expr(columns, "local_wind_speed_ms"),
-        select_expr(columns, "local_wind_direction_deg"),
-        select_expr(columns, "local_wind_gust_ms"),
-        select_expr(columns, "local_wind_ok"),
+            nasa_temp_c,
+            nasa_dewpoint_c,
+            nasa_rh_pct,
+            nasa_precip_mm,
+            nasa_press_hpa,
+            nasa_wind10m_ms,
 
-        "era5_temp_c",
-        "era5_dewpoint_c",
-        "era5_rh_pct",
-        "era5_precip_mm",
-        "era5_press_hpa",
-        "era5_wind_ms",
-
-        "nasa_temp_c",
-        "nasa_dewpoint_c",
-        "nasa_rh_pct",
-        "nasa_precip_mm",
-        "nasa_press_hpa",
-        "nasa_wind10m_ms",
-
-        "radio_mcs_dl",
-        "radio_mcs_ul",
-        "radio_snr_dl",
-        "radio_snr_ul",
-        "radio_sta_dl_rssi",
-        "radio_sta_ul_rssi",
-        "radio_dl_rate",
-        "radio_ul_rate",
-        "radio_note",
-    ]
-
-    rows = conn.execute(f"""
-        SELECT {", ".join(selected)}
+            radio_snr_dl,
+            radio_snr_ul,
+            radio_sta_dl_rssi,
+            radio_sta_ul_rssi,
+            radio_mcs_dl,
+            radio_mcs_ul,
+            radio_dl_rate,
+            radio_ul_rate,
+            radio_note
         FROM master_observations
+        WHERE era5_temp_c IS NOT NULL
+           OR nasa_temp_c IS NOT NULL
+           OR era5_press_hpa IS NOT NULL
+           OR nasa_press_hpa IS NOT NULL
         ORDER BY bucket_minute DESC
         LIMIT ?
-    """, (limit,)).fetchall()
+    """
+
+    rows = conn.execute(query, (limit,)).fetchall()
+
+    if not rows:
+        rows = conn.execute("""
+            SELECT *
+            FROM master_observations
+            ORDER BY bucket_minute DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
+
+    data = [dict(r) for r in rows]
+    data.reverse()
 
     conn.close()
-
-    data = [dict(r) for r in rows][::-1]
-
-    for row in data:
-        row["master_timestamp_local"] = clean_timestamp(row.get("master_timestamp_local"))
-
     return data
-
-
-def get_stations_latest():
-    if not DB_FILE.exists():
-        return []
-
-    conn = get_connection()
-
-    if not table_exists(conn, "station_observations"):
-        conn.close()
-        return []
-
-    rows = conn.execute("""
-        SELECT so.*
-        FROM station_observations so
-        INNER JOIN (
-            SELECT source_station_id, MAX(timestamp_local) AS max_timestamp
-            FROM station_observations
-            GROUP BY source_station_id
-        ) latest
-        ON so.source_station_id = latest.source_station_id
-        AND so.timestamp_local = latest.max_timestamp
-        ORDER BY so.source_station_id
-    """).fetchall()
-
-    conn.close()
-
-    data = []
-
-    for row in rows:
-        d = dict(row)
-        d["timestamp_local"] = clean_timestamp(d.get("timestamp_local"))
-        data.append(d)
-
-    return data
-
 
 def get_master_summary():
     if not DB_FILE.exists():
