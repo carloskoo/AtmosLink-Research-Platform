@@ -203,8 +203,14 @@
     <div class="card"><div class="label">Anemómetro</div><div class="value" id="windOk">--</div></div>
   </div>
 
-  <div class="section-title">ERA5-Land (Corredor · Mid-Link)</div>
-  <div class="label" id="era5Timestamp" style="margin-left:8px; margin-bottom:8px;">Último ERA5-Land: -- · Lat -6.728135 / Lon -78.557860 / Alt. aprox. 3190 m</div>
+  <div class="section-title">ERA5-Land</div>
+  <div class="card" style="margin-bottom:12px;">
+    <div class="label">Punto de comparación</div>
+    <div class="value" style="font-size:18px;">Mid-Link del corredor AP–SM</div>
+    <div class="label" id="era5Timestamp" style="margin-top:8px;">Última observación: --</div>
+    <div class="label" id="era5Delay" style="margin-top:4px;">Retraso: --</div>
+    <div class="label" style="margin-top:4px;">Ubicación: Lat -6.728135 · Lon -78.557860 · Alt. aprox. 3190 m</div>
+  </div>
   <div class="grid">
     <div class="card"><div class="label">ERA5 temperatura</div><div class="value"><span id="era5Temp">--</span> <span class="unit">°C</span></div></div>
     <div class="card"><div class="label">ERA5 humedad relativa</div><div class="value"><span id="era5Rh">--</span> <span class="unit">%</span></div></div>
@@ -214,8 +220,14 @@
     <div class="card"><div class="label">ERA5 viento</div><div class="value"><span id="era5Wind">--</span> <span class="unit">m/s</span></div></div>
   </div>
 
-  <div class="section-title">NASA POWER (Corredor · Mid-Link)</div>
-  <div class="label" id="nasaTimestamp" style="margin-left:8px; margin-bottom:8px;">Último NASA POWER: -- · Lat -6.728135 / Lon -78.557860 / Alt. aprox. 3190 m</div>
+  <div class="section-title">NASA POWER</div>
+  <div class="card" style="margin-bottom:12px;">
+    <div class="label">Punto de comparación</div>
+    <div class="value" style="font-size:18px;">Mid-Link del corredor AP–SM</div>
+    <div class="label" id="nasaTimestamp" style="margin-top:8px;">Última observación: --</div>
+    <div class="label" id="nasaDelay" style="margin-top:4px;">Retraso: --</div>
+    <div class="label" style="margin-top:4px;">Ubicación: Lat -6.728135 · Lon -78.557860 · Alt. aprox. 3190 m</div>
+  </div>
   <div class="grid">
     <div class="card"><div class="label">NASA temperatura</div><div class="value"><span id="nasaTemp">--</span> <span class="unit">°C</span></div></div>
     <div class="card"><div class="label">NASA punto de rocío</div><div class="value"><span id="nasaDew">--</span> <span class="unit">°C</span></div></div>
@@ -261,6 +273,16 @@
 
 
   <div class="section-title">Corredor atmosférico AP–MID–SM</div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <div class="label">Nota metodológica</div>
+    <div class="value" style="font-size:16px; line-height:1.5;">
+      ERA5-Land representa el corredor atmosférico en tres puntos: AP Cuñacales, Mid-Link y SM San José.
+      NASA POWER se usa como fuente externa de contraste para el punto Mid-Link del corredor.
+    </div>
+  </div>
+
+
 
   <div class="card">
     <div class="label">Estado del corredor</div>
