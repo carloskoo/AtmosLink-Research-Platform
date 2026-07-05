@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import math
 from datetime import datetime
 from pathlib import Path
 
@@ -25,7 +26,7 @@ SOURCE_TABLES = {
         "table": "era5_land_hourly",
         "columns": {
             "temp_c": "temp_c",
-            "rh_pct": "rh_pct",
+            "rh_pct": "rh_pct_calc",
             "press_hpa": "press_hpa",
             "precip_mm": "precip_mm",
             "wind_ms": "wind_ms",
@@ -43,6 +44,23 @@ SOURCE_TABLES = {
     },
 }
 
+
+
+def calc_relative_humidity_pct(temp_c, dewpoint_c):
+    if temp_c is None or dewpoint_c is None:
+        return None
+
+    try:
+        temp_c = float(temp_c)
+        dewpoint_c = float(dewpoint_c)
+
+        es = 6.112 * math.exp((17.67 * temp_c) / (temp_c + 243.5))
+        e = 6.112 * math.exp((17.67 * dewpoint_c) / (dewpoint_c + 243.5))
+
+        rh = 100.0 * e / es
+        return max(0.0, min(100.0, rh))
+    except Exception:
+        return None
 
 def table_exists(conn, table_name):
     return conn.execute(
@@ -88,6 +106,9 @@ def latest_valid_by_site(conn, table_name, source_columns):
 def safe_value(row, column):
     if not row:
         return None
+
+    if column == "rh_pct_calc":
+        return calc_relative_humidity_pct(row.get("temp_c"), row.get("dewpoint_c"))
 
     value = row.get(column)
 
