@@ -204,6 +204,7 @@
   </div>
 
   <div class="section-title">ERA5</div>
+  <div class="label" id="era5Timestamp" style="margin-left:8px; margin-bottom:8px;">Último ERA5: --</div>
   <div class="grid">
     <div class="card"><div class="label">ERA5 temperatura</div><div class="value"><span id="era5Temp">--</span> <span class="unit">°C</span></div></div>
     <div class="card"><div class="label">ERA5 humedad relativa</div><div class="value"><span id="era5Rh">--</span> <span class="unit">%</span></div></div>
@@ -214,6 +215,7 @@
   </div>
 
   <div class="section-title">NASA POWER</div>
+  <div class="label" id="nasaTimestamp" style="margin-left:8px; margin-bottom:8px;">Último NASA: --</div>
   <div class="grid">
     <div class="card"><div class="label">NASA temperatura</div><div class="value"><span id="nasaTemp">--</span> <span class="unit">°C</span></div></div>
     <div class="card"><div class="label">NASA punto de rocío</div><div class="value"><span id="nasaDew">--</span> <span class="unit">°C</span></div></div>
@@ -598,17 +600,46 @@ async function updateStationsLatest() {
 }
 
 
+
+function fmt(value, decimals = 2) {
+  if (value === null || value === undefined || value === "" || Number.isNaN(Number(value))) {
+    return "--";
+  }
+  return Number(value).toFixed(decimals);
+}
+
+function fmtTemp(value) {
+  return fmt(value, 2);
+}
+
+function fmtPct(value) {
+  return fmt(value, 1);
+}
+
+function fmtPressure(value) {
+  return fmt(value, 2);
+}
+
+function fmtRain(value) {
+  return fmt(value, 3);
+}
+
+function fmtWind(value) {
+  return fmt(value, 2);
+}
+
+
 async function updateLatest() {
   const r = await fetch("/api/latest");
   const data = await r.json();
 
   setText("timestamp", data.timestamp_local);
-  setText("temp", data.temp_avg_C);
-  setText("hum", data.hum_avg_pct);
-  setText("pres", data.pres_avg_hPa);
-  setText("dew", data.dew_point_C);
+  setText("temp", fmtTemp(data.temp_avg_C));
+  setText("hum", fmtPct(data.hum_avg_pct));
+  setText("pres", fmtPressure(data.pres_avg_hPa));
+  setText("dew", fmtTemp(data.dew_point_C));
   setText("vapor", data.vapor_pressure_hPa);
-  setText("rain1h", data.rain_1h_mm);
+  setText("rain1h", fmtRain(data.rain_1h_mm));
   setText("raintotal", data.rain_total_mm);
 
   setStatus("bme", data.bme_ok);
@@ -619,19 +650,19 @@ async function updateLatest() {
   setText("windGust", data.wind_gust_ms);
   setStatus("windOk", data.wind_ok);
 
-  setText("era5Temp", data.era5_temp_c);
-  setText("era5Rh", data.era5_rh_pct);
-  setText("era5Dew", data.era5_dewpoint_c);
-  setText("era5Rain", data.era5_precip_mm);
-  setText("era5Press", data.era5_press_hpa);
-  setText("era5Wind", data.era5_wind_ms);
+  setText("era5Temp", fmtTemp(data.era5_temp_c));
+  setText("era5Rh", fmtPct(data.era5_rh_pct));
+  setText("era5Dew", fmtTemp(data.era5_dewpoint_c));
+  setText("era5Rain", fmtRain(data.era5_precip_mm));
+  setText("era5Press", fmtPressure(data.era5_press_hpa));
+  setText("era5Wind", fmtWind(data.era5_wind_ms));
 
-  setText("nasaTemp", data.nasa_temp_c);
-  setText("nasaDew", data.nasa_dewpoint_c);
-  setText("nasaRh", data.nasa_rh_pct);
-  setText("nasaRain", data.nasa_precip_mm);
-  setText("nasaPress", data.nasa_press_hpa);
-  setText("nasaWind", data.nasa_wind10m_ms);
+  setText("nasaTemp", fmtTemp(data.nasa_temp_c));
+  setText("nasaDew", fmtTemp(data.nasa_dewpoint_c));
+  setText("nasaRh", fmtPct(data.nasa_rh_pct));
+  setText("nasaRain", fmtRain(data.nasa_precip_mm));
+  setText("nasaPress", fmtPressure(data.nasa_press_hpa));
+  setText("nasaWind", fmtWind(data.nasa_wind10m_ms));
 
   setText("snrDl", data.radio_snr_dl);
   setText("snrUl", data.radio_snr_ul);
@@ -795,12 +826,12 @@ async function updateCoreStatus() {
         row.innerHTML = `
           <td>${sourceName}</td>
           <td>${g.label || g.variable || "--"}</td>
-          <td>${g.ap_value ?? "--"} ${unit}</td>
-          <td>${g.mid_value ?? "--"} ${unit}</td>
-          <td>${g.sm_value ?? "--"} ${unit}</td>
-          <td>${g.gradient_ap_to_mid ?? "--"} ${unit}</td>
-          <td>${g.gradient_mid_to_sm ?? "--"} ${unit}</td>
-          <td>${g.gradient_ap_to_sm ?? "--"} ${unit}</td>
+          <td>${g.ap_value !== null && g.ap_value !== undefined ? fmt(g.ap_value, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
+          <td>${g.mid_value !== null && g.mid_value !== undefined ? fmt(g.mid_value, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
+          <td>${g.sm_value !== null && g.sm_value !== undefined ? fmt(g.sm_value, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
+          <td>${g.gradient_ap_to_mid !== null && g.gradient_ap_to_mid !== undefined ? fmt(g.gradient_ap_to_mid, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
+          <td>${g.gradient_mid_to_sm !== null && g.gradient_mid_to_sm !== undefined ? fmt(g.gradient_mid_to_sm, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
+          <td>${g.gradient_ap_to_sm !== null && g.gradient_ap_to_sm !== undefined ? fmt(g.gradient_ap_to_sm, unit === "mm" ? 3 : 2) : "--"} ${unit}</td>
         `;
 
         corridorTable.appendChild(row);
