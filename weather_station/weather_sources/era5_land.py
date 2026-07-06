@@ -1,3 +1,4 @@
+import argparse
 import sqlite3
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
@@ -7,6 +8,7 @@ import pandas as pd
 import xarray as xr
 
 from weather_station.config.station_manager import get_station_context
+
 
 STATION_CONTEXT = get_station_context()
 DB_FILE = STATION_CONTEXT["database"]
@@ -58,36 +60,45 @@ def init_db():
     conn.close()
 
 
-def month_cache_path(year, month, site_tag):
+def cache_path(date_lima, site_tag):
     Path(ERA_CACHE_DIR).mkdir(parents=True, exist_ok=True)
-    return f"{ERA_CACHE_DIR}/era5land_{site_tag}_{year:04d}_{month:02d}.nc"
+    return f"{ERA_CACHE_DIR}/era5land_{site_tag}_{date_lima}.nc"
 
 
-def download_month(year, month, site_tag, lat, lon):
-    path = month_cache_path(year, month, site_tag)
+def download_day(date_lima, site_tag, lat, lon):
+    path = cache_path(date_lima, site_tag)
 
     if Path(path).exists() and Path(path).stat().st_size > 0:
         return path
 
-    area = [
-        lat + 0.10,
-        lon - 0.10,
-        lat - 0.10,
-        lon + 0.10,
-    ]
+    start_lima = datetime.combine(date_lima, datetime.min.time(), tzinfo=LIMA_TZ)
+    end_lima = start_lima + timedelta(days=1)
+
+    start_utc = start_lima.astimezone(timezone.utc)
+    end_utc = end_lima.astimezone(timezone.utc) - timedelta(hours=1)
+
+    utc_days = sorted({
+        start_utc.strftime("%d"),
+        end_utc.strftime("%d"),
+    })
 
     request = {
         "variable": VARIABLES,
-        "year": f"{year:04d}",
-        "month": f"{month:02d}",
-        "day": [f"{d:02d}" for d in range(1, 32)],
+        "year": start_utc.strftime("%Y"),
+        "month": start_utc.strftime("%m"),
+        "day": utc_days,
         "time": [f"{h:02d}:00" for h in range(24)],
-        "area": area,
+        "area": [
+            lat + 0.10,
+            lon - 0.10,
+            lat - 0.10,
+            lon + 0.10,
+        ],
         "data_format": "netcdf",
         "download_format": "unarchived",
     }
 
-    print(f"Descargando ERA5-Land {site_tag} {year}-{month:02d}...")
+    print(f"Descargando ERA5-Land {site_tag} {date_lima}...")
     cdsapi.Client().retrieve("reanalysis-era5-land", request, path)
 
     return path
@@ -111,10 +122,7 @@ def pick_col(df, *names):
         if name in df.columns:
             return df[name]
 
-    raise KeyError(
-        f"No se encontró ninguna columna de {names}. "
-        f"Columnas disponibles: {list(df.columns)}"
-    )
+    raise KeyError(f"No se encontró ninguna columna de {names}. Columnas: {list(df.columns)}")
 
 
 def extract_day(date_lima, site_tag, lat, lon):
@@ -124,9 +132,9 @@ def extract_day(date_lima, site_tag, lat, lon):
     start_utc = start_lima.astimezone(timezone.utc).replace(tzinfo=None)
     end_utc = end_lima.astimezone(timezone.utc).replace(tzinfo=None)
 
-    nc_path = download_month(start_utc.year, start_utc.month, site_tag, lat, lon)
+    nc_path = download_day(date_lima, site_tag, lat, lon)
 
-    ds = xr.open_dataset(nc_path, engine="netcdf4")
+    ds = xr.open_dataset(nc_path)
     time_name = detect_time_coord(ds)
 
     lat_name = "latitude" if "latitude" in ds.coords else "lat"
@@ -214,7 +222,6 @@ def save_to_sqlite(df, site_tag, lat, lon):
 
 def run_for_day(date_str):
     init_db()
-
     date_lima = datetime.strptime(date_str, "%Y-%m-%d").date()
 
     for site_tag, cfg in SITES.items():
@@ -223,8 +230,6 @@ def run_for_day(date_str):
 
 
 if __name__ == "__main__":
-    import argparse
-
     parser = argparse.ArgumentParser(description="Descarga e inserta ERA5-Land horario en SQLite.")
     parser.add_argument("--day", required=True, help="Día Lima YYYY-MM-DD")
     args = parser.parse_args()
