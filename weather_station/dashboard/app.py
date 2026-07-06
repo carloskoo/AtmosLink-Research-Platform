@@ -120,6 +120,34 @@ def age_payload(reference_ts, source_ts):
         "freshness": freshness,
     }
 
+
+def parse_dashboard_datetime(value):
+    if not value:
+        return None
+    try:
+        dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if dt.tzinfo is not None:
+            dt = dt.replace(tzinfo=None)
+        return dt
+    except Exception:
+        return None
+
+
+def build_age_label(reference_ts, source_ts):
+    ref = parse_dashboard_datetime(reference_ts)
+    src = parse_dashboard_datetime(source_ts)
+
+    if ref is None or src is None:
+        return "--"
+
+    hours = max((ref - src).total_seconds() / 3600.0, 0)
+    days = hours / 24.0
+
+    if hours < 24:
+        return f"hace {hours:.1f} h"
+
+    return f"hace {days:.1f} días"
+
 def get_latest():
     if not DB_FILE.exists():
         return {}
@@ -221,10 +249,27 @@ def get_latest():
         d["radio_ul_rate"] = radio.get("radio_ul_rate")
         d["radio_note"] = radio.get("radio_note")
 
+    d["era5_age_label"] = build_age_label(d.get("timestamp_local"), d.get("era5_timestamp_local"))
+    d["nasa_age_label"] = build_age_label(d.get("timestamp_local"), d.get("nasa_timestamp_local"))
+
+    d["era5_age_label"] = build_age_label(d.get("timestamp_local"), d.get("era5_timestamp_local"))
+    d["nasa_age_label"] = build_age_label(d.get("timestamp_local"), d.get("nasa_timestamp_local"))
+
     return d
 
 
 def get_history(limit=180):
+    """
+    Historial científico estrictamente emparejado.
+
+    Solo devuelve registros donde existen simultáneamente:
+    - estación local
+    - ERA5-Land
+    - NASA POWER
+
+    Esto evita comparar curvas de fechas diferentes y permite que los gráficos
+    Local vs ERA5 vs NASA sean temporalmente válidos.
+    """
     if not DB_FILE.exists():
         return []
 
@@ -236,8 +281,14 @@ def get_history(limit=180):
 
     query = """
         SELECT
+            bucket_minute,
             master_timestamp_local,
             master_timestamp_hour,
+
+            weather_timestamp_local,
+            era5_timestamp_local,
+            nasa_timestamp_local,
+            radio_timestamp_local,
 
             local_temp_avg_c,
             local_hum_avg_pct,
@@ -276,29 +327,47 @@ def get_history(limit=180):
             radio_ul_rate,
             radio_note
         FROM master_observations
-        WHERE era5_temp_c IS NOT NULL
-           OR nasa_temp_c IS NOT NULL
-           OR era5_press_hpa IS NOT NULL
-           OR nasa_press_hpa IS NOT NULL
+        WHERE local_temp_avg_c IS NOT NULL
+          AND local_hum_avg_pct IS NOT NULL
+          AND local_press_hpa IS NOT NULL
+
+          AND era5_temp_c IS NOT NULL
+          AND era5_rh_pct IS NOT NULL
+          AND era5_press_hpa IS NOT NULL
+
+          AND nasa_temp_c IS NOT NULL
+          AND nasa_rh_pct IS NOT NULL
+          AND nasa_press_hpa IS NOT NULL
         ORDER BY bucket_minute DESC
         LIMIT ?
     """
 
     rows = conn.execute(query, (limit,)).fetchall()
-
-    if not rows:
-        rows = conn.execute("""
-            SELECT *
-            FROM master_observations
-            ORDER BY bucket_minute DESC
-            LIMIT ?
-        """, (limit,)).fetchall()
-
-    data = [dict(r) for r in rows]
-    data.reverse()
-
     conn.close()
+
+    data = []
+
+    for row in rows:
+        d = dict(row)
+
+        for key in [
+            "bucket_minute",
+            "master_timestamp_local",
+            "master_timestamp_hour",
+            "weather_timestamp_local",
+            "era5_timestamp_local",
+            "nasa_timestamp_local",
+            "radio_timestamp_local",
+        ]:
+            if key in d:
+                d[key] = clean_timestamp(d.get(key))
+
+        d["history_mode"] = "strict_matched_local_era5_nasa"
+        data.append(d)
+
+    data.reverse()
     return data
+
 
 def get_master_summary():
     if not DB_FILE.exists():

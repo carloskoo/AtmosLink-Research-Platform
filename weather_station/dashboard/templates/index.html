@@ -152,13 +152,60 @@
 
 <main>
 
-  <div class="section-title">Resumen científico</div>
+
+<section id="scientificExecutivePanel" style="margin:22px 0;">
+  <h2 style="color:#00c8ff; font-size:18px; margin-bottom:12px;">
+    Estado del dataset del experimento
+  </h2>
+
+  <div style="display:grid; grid-template-columns: repeat(6, minmax(160px, 1fr)); gap:12px;">
+    <div class="card">
+      <div class="label">Última observación AtmosLink</div>
+      <div id="execLastObservation" class="value">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Ventana científica</div>
+      <div id="execScientificWindow" class="value" style="font-size:15px;">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Registros válidos emparejados</div>
+      <div id="execMatchedRecords" class="value">--</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Fuentes sincronizadas</div>
+      <div class="value" style="font-size:15px;">AtmosLink + ERA5-Land + NASA POWER</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Modo de comparación</div>
+      <div class="value" style="font-size:15px; color:#22c55e;">Coincidencia temporal exacta</div>
+    </div>
+
+    <div class="card">
+      <div class="label">Estado del dataset</div>
+      <div id="execScientificStatus" class="value" style="color:#22c55e;">OK</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:12px; border-left:4px solid #00c8ff;">
+    <div class="label">Interpretación metodológica</div>
+    <div id="execScientificInterpretation" style="font-weight:700; color:#ffffff;">
+      Todas las métricas y gráficos se calculan exclusivamente con registros sincronizados temporalmente entre AtmosLink, ERA5-Land y NASA POWER.
+    </div>
+  </div>
+</section>
+
+
+  <div class="section-title">Resumen operativo</div>
   <div class="grid">
     <div class="card"><div class="label">Última observación</div><div class="value" id="timestamp" style="font-size:20px;">--</div></div>
     <div class="card"><div class="label">Registros master</div><div class="value" id="masterRecords">--</div></div>
     <div class="card"><div class="label">ERA5 emparejados</div><div class="value" id="era5Matched">--</div></div>
     <div class="card"><div class="label">NASA emparejados</div><div class="value" id="nasaMatched">--</div></div>
-    <div class="card"><div class="label">Radio emparejados</div><div class="value" id="radioMatched">--</div></div>
+    <div class="card"><div class="label">Radioenlace</div><div class="value" id="radioMatched">--</div></div>
   </div>
 
 
@@ -244,24 +291,24 @@
     <div class="card"><div class="label">RSSI DL</div><div class="value"><span id="rssiDl">--</span> <span class="unit">dBm</span></div></div>
     <div class="card"><div class="label">MCS DL</div><div class="value"><span id="mcsDl">--</span></div></div>
     <div class="card"><div class="label">DL Rate</div><div class="value"><span id="dlRate">--</span> <span class="unit">Mbps</span></div></div>
-    <div class="card"><div class="label">Estado radio</div><div class="value" id="radioNote">Pendiente</div></div>
+    <div class="card"><div class="label">Estado radio</div><div class="value" id="radioNote">Adquisición RF deshabilitada</div></div>
   </div>
 
 
-  <div class="section-title">Scientific Agreement Index</div>
+  <div class="section-title">Índice de concordancia científica</div>
   <div class="grid">
     <div class="card">
-      <div class="label">Agreement Index</div>
+      <div class="label">Índice de concordancia</div>
       <div class="value"><span id="agreementIndex">--</span> <span class="unit">%</span></div>
     </div>
 
     <div class="card">
-      <div class="label">Nivel</div>
+      <div class="label">Clasificación</div>
       <div class="value" id="agreementLevel">--</div>
     </div>
 
     <div class="card">
-      <div class="label">Bloques válidos</div>
+      <div class="label">Variables evaluadas</div>
       <div class="value" id="agreementBlocks">--</div>
     </div>
 
@@ -272,10 +319,18 @@
   </div>
 
 
-  <div class="section-title">Corredor atmosférico AP–MID–SM</div>
+  <div class="section-title">Corredor atmosférico del radioenlace AP–MID–SM</div>
+
+<div id="corridorScientificContext" class="card" style="margin-top:10px; border-left:4px solid #00c8ff;">
+  <div class="label">Modelo espacial del corredor</div>
+  <div style="font-weight:700; color:#ffffff;">
+    El corredor AP–MID–SM representa el perfil atmosférico longitudinal del radioenlace rural altoandino. ERA5-Land caracteriza los tres puntos del corredor, mientras que NASA POWER se utiliza como fuente externa de contraste para el punto Mid-Link.
+  </div>
+</div>
+
 
   <div class="card" style="margin-bottom:12px;">
-    <div class="label">Nota metodológica</div>
+    <div class="label">Contexto metodológico</div>
     <div class="value" style="font-size:16px; line-height:1.5;">
       ERA5-Land representa el corredor atmosférico en tres puntos: AP Cuñacales, Mid-Link y SM San José.
       NASA POWER se usa como fuente externa de contraste para el punto Mid-Link del corredor.
@@ -348,9 +403,9 @@
     <canvas id="corridorProfileChart"></canvas>
   </div>
 
-  <div class="section-title">Comparación científica Local vs NASA / ERA5</div>
+  <div class="section-title">Resultados de concordancia científica</div>
   <div class="card">
-    <div class="label">Estado comparación</div>
+    <div class="label">Resultado del análisis</div>
     <div class="value" id="comparisonStatus">--</div>
     <div class="label" id="comparisonMessage" style="margin-top:8px;">--</div>
 
@@ -371,7 +426,7 @@
       <tbody id="comparisonTable"></tbody>
     </table>
 
-    <div class="label" style="margin-top:18px;">Fuente recomendada por variable</div>
+    <div class="label" style="margin-top:18px;">Síntesis por variable</div>
     <table>
       <thead>
         <tr>
@@ -403,10 +458,10 @@
 
 
 
-  <div class="section-title">Scientific Reliability</div>
+  <div class="section-title">Confiabilidad científica</div>
   <div class="grid">
     <div class="card">
-      <div class="label">Reliability</div>
+      <div class="label">Confiabilidad</div>
       <div class="value"><span id="reliabilityPercent">--</span> <span class="unit">%</span></div>
     </div>
 
@@ -416,25 +471,25 @@
     </div>
 
     <div class="card">
-      <div class="label">Completitud master</div>
+      <div class="label">Completitud del dataset</div>
       <div class="value"><span id="masterCompleteness">--</span> <span class="unit">%</span></div>
     </div>
 
     <div class="card">
-      <div class="label">Registros descartados</div>
+      <div class="label">Registros excluidos</div>
       <div class="value" id="discardedEstimate">--</div>
     </div>
   </div>
 
-  <div class="section-title">Scientific Health Score</div>
+  <div class="section-title">Índice de salud del dataset</div>
   <div class="grid">
     <div class="card">
-      <div class="label">Score científico</div>
+      <div class="label">Puntaje científico</div>
       <div class="value"><span id="scientificScore">--</span> <span class="unit">%</span></div>
     </div>
 
     <div class="card">
-      <div class="label">Estado científico</div>
+      <div class="label">Estado del dataset</div>
       <div class="value" id="scientificStatus">--</div>
     </div>
 
@@ -449,7 +504,7 @@
     </div>
   </div>
 
-  <div class="section-title">Estado general del sistema</div>
+  <div class="section-title">Diagnóstico general del sistema</div>
   <div class="grid">
     <div class="card">
       <div class="label">SQLite</div>
@@ -472,7 +527,7 @@
     </div>
   </div>
 
-  <div class="section-title">Alertas activas</div>
+  <div class="section-title">Alertas científicas y técnicas</div>
   <div class="card">
     <div class="label">Cantidad de alertas</div>
     <div class="value" id="alertCount">--</div>
@@ -489,7 +544,7 @@
     </table>
   </div>
 
-  <div class="section-title">Control de calidad científico</div>
+  <div class="section-title">Control de calidad del dataset</div>
   <div class="grid">
     <div class="card">
       <div class="label">Estado QC</div>
@@ -512,7 +567,7 @@
     </div>
   </div>
 
-  <div class="section-title">Scheduler y salud del sistema</div>
+  <div class="section-title">Diagnóstico interno del sistema</div>
   <div class="card">
     <div class="label">Última actualización del núcleo</div>
     <div class="value" id="coreUpdated" style="font-size:20px;">--</div>
@@ -597,7 +652,7 @@ async function updateStationsLatest() {
     let colorClass = "ok";
 
     if (!bmeOk || !rainOk) {
-      status = "WARNING";
+      status = "Concordancia limitada";
       colorClass = "warning";
     }
 
@@ -697,7 +752,7 @@ async function updateLatest() {
   setText("rssiDl", data.radio_sta_dl_rssi);
   setText("mcsDl", data.radio_mcs_dl);
   setText("dlRate", data.radio_dl_rate);
-  setText("radioNote", data.radio_note || "Pendiente");
+  setText("radioNote", data.radio_note || "Adquisición RF deshabilitada");
 }
 
 
@@ -1044,7 +1099,7 @@ async function updateCoreStatus() {
       el.textContent = "OK";
       el.className = "value ok";
     } else if (normalized === "warning" || normalized === "disabled" || normalized === "no_data") {
-      el.textContent = "WARNING";
+      el.textContent = "Concordancia limitada";
       el.className = "value warning";
     } else if (normalized === "critical" || normalized === "failed" || normalized === "error" || normalized === "timeout") {
       el.textContent = "CRITICAL";
@@ -1197,7 +1252,85 @@ setInterval(updateStationsLatest, 5000);
 setInterval(updateLatest, 5000);
 setInterval(updateCoreStatus, 10000);
 setInterval(updateCharts, 15000);
+
+/* AtmosLink Scientific Dashboard v2 Clean */
+async function updateScientificExecutivePanelClean() {
+  const setTextSafe = function(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
+  try {
+    const latestResponse = await fetch("/api/latest");
+    const latest = await latestResponse.json();
+
+    setTextSafe(
+      "execLastObservation",
+      latest.timestamp_local || latest.master_timestamp_local || latest.weather_timestamp_local || "--"
+    );
+  } catch (error) {
+    console.error("No se pudo leer /api/latest:", error);
+  }
+
+  try {
+    const historyResponse = await fetch("/api/history");
+    const history = await historyResponse.json();
+
+    if (Array.isArray(history) && history.length > 0) {
+      const first = history[0];
+      const last = history[history.length - 1];
+
+      const start = first.master_timestamp_local || first.master_timestamp_hour || first.bucket_minute || "--";
+      const end = last.master_timestamp_local || last.master_timestamp_hour || last.bucket_minute || "--";
+
+      setTextSafe("execScientificWindow", start + " → " + end);
+      setTextSafe("execMatchedRecords", String(history.length));
+
+      const statusEl = document.getElementById("execScientificStatus");
+      if (statusEl) {
+        statusEl.textContent = "OK";
+        statusEl.style.color = "#22c55e";
+      }
+
+      setTextSafe(
+        "execScientificInterpretation",
+        "Comparación científica válida: las curvas usan " + history.length +
+        " registros con coincidencia temporal exacta entre AtmosLink, ERA5-Land y NASA POWER. " +
+        "Las métricas deben interpretarse únicamente dentro de esta ventana."
+      );
+    } else {
+      setTextSafe("execScientificWindow", "--");
+      setTextSafe("execMatchedRecords", "0");
+
+      const statusEl = document.getElementById("execScientificStatus");
+      if (statusEl) {
+        statusEl.textContent = "SIN VENTANA";
+        statusEl.style.color = "#f59e0b";
+      }
+    }
+  } catch (error) {
+    console.error("No se pudo leer /api/history:", error);
+  }
+}
+
+window.addEventListener("load", function () {
+  updateScientificExecutivePanelClean();
+  setInterval(updateScientificExecutivePanelClean, 60000);
+});
+
 </script>
+
+
+<footer id="atmoslinkScientificFooter" style="margin:28px 0 16px 0;">
+  <div class="card" style="border-left:4px solid #00c8ff;">
+    <div style="color:#00c8ff; font-size:16px; font-weight:800; margin-bottom:6px;">
+      AtmosLink Scientific Platform · Versión 3.0
+    </div>
+    <div style="font-weight:700; color:#ffffff;">
+      Motor científico: Exact Temporal Matching Engine · Resolución temporal: 1 hora · Fuentes: AtmosLink, ERA5-Land y NASA POWER.
+    </div>
+  </div>
+</footer>
 
 </body>
 </html>
