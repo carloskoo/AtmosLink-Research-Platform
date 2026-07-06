@@ -27,3 +27,4 @@ runtime/
 config/telegram.yaml
 venv/
 docs/
+backups/
