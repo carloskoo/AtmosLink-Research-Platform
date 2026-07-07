@@ -28,3 +28,15 @@ config/telegram.yaml
 venv/
 docs/
 backups/
+
+# Local temporary repair scripts
+fix_*.py
+test_*.py
+read_wind_rs_wdbd01_linux.py
+erial
+
+# Local backup files
+*.bak
+*.bak_*
+*.backup
+*.old
