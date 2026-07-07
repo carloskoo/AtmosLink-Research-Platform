@@ -135,13 +135,9 @@ def insert_weather(row: dict):
             pulses_delta,
             pulses_total,
             bme_ok,
-            rain_ok,
-            wind_speed_ms,
-            wind_direction_deg,
-            wind_gust_ms,
-            wind_ok
+            rain_ok
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         timestamp_utc,
         timestamp_local,
@@ -165,10 +161,6 @@ def insert_weather(row: dict):
         row["pulses_total"],
         row["bme_ok"],
         row["rain_ok"],
-        row.get("wind_speed_ms"),
-        row.get("wind_direction_deg"),
-        row.get("wind_gust_ms"),
-        row.get("wind_ok", 0),
     ))
 
     conn.commit()

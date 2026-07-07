@@ -14,7 +14,7 @@ from weather_station.config.station_manager import get_station_context
 from weather_station.acquisition.parser import parse_weather_line
 from weather_station.database.sqlite_manager import init_db, insert_weather
 from weather_station.database.csv_writer import init_csv, append_csv
-from weather_station.acquisition.wind_rs485 import read_wind
+from weather_station.sensors.wind_rs485 import read_wind_sensor, reading_to_weather_fields
 
 
 STATION_CONTEXT = get_station_context()
@@ -24,8 +24,8 @@ BAUD_RATE = STATION_CONTEXT.get("serial_baudrate") or 115200
 SERIAL_TIMEOUT = STATION_CONTEXT.get("serial_timeout") or 2
 
 WIND_ENABLED = os.getenv("ATMOSLINK_WIND_ENABLED", "0") == "1"
-WIND_PORT = os.getenv("ATMOSLINK_WIND_PORT", "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0")
-WIND_BAUDRATE = int(os.getenv("ATMOSLINK_WIND_BAUDRATE", "9600"))
+WIND_PORT = os.getenv("ATMOSLINK_WIND_PORT", "/dev/ttyUSB1")
+WIND_BAUDRATE = int(os.getenv("ATMOSLINK_WIND_BAUDRATE", "4800"))
 WIND_SLAVE_ID = int(os.getenv("ATMOSLINK_WIND_SLAVE_ID", "1"))
 WIND_START_REGISTER = int(os.getenv("ATMOSLINK_WIND_START_REGISTER", "0"))
 WIND_QUANTITY = int(os.getenv("ATMOSLINK_WIND_QUANTITY", "3"))
@@ -75,32 +75,19 @@ def get_wind_fields():
             "wind_ok": 0,
         }
 
-    try:
-        reading = read_wind(
-            port=WIND_PORT,
-            baudrate=WIND_BAUDRATE,
-            slave_id=WIND_SLAVE_ID,
-            timeout=WIND_TIMEOUT,
-        )
+    reading = read_wind_sensor(
+        port=WIND_PORT,
+        baudrate=WIND_BAUDRATE,
+        slave_id=WIND_SLAVE_ID,
+        start_register=WIND_START_REGISTER,
+        quantity=WIND_QUANTITY,
+        timeout=WIND_TIMEOUT,
+    )
 
-        if reading.get("wind_ok") != 1:
-            logging.warning(f"Lectura de viento no válida: {reading.get('wind_error')}")
+    if reading.wind_ok != 1:
+        logging.warning(f"Lectura de viento no válida: {reading.error}")
 
-        return {
-            "wind_speed_ms": reading.get("wind_speed_ms"),
-            "wind_direction_deg": reading.get("wind_direction_deg"),
-            "wind_gust_ms": reading.get("wind_gust_ms"),
-            "wind_ok": reading.get("wind_ok", 0),
-        }
-
-    except Exception as e:
-        logging.warning(f"Error leyendo viento RS485: {e}")
-        return {
-            "wind_speed_ms": None,
-            "wind_direction_deg": None,
-            "wind_gust_ms": None,
-            "wind_ok": 0,
-        }
+    return reading_to_weather_fields(reading)
 
 
 def validate_weather_row(row):

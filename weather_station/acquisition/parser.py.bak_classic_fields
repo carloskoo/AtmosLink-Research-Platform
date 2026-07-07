@@ -46,10 +46,7 @@ def parse_line(line: str):
         }
 
     # ---------------------------------------------------
-    # FORMATO CLASICO ATMOSLINK
-    # t_s,temp_avg,temp_min,temp_max,hum_avg,hum_min,hum_max,
-    # pres_avg,dew_point,vapor_pressure,rain_1min,rain_1h,
-    # rain_total,pulses_delta,pulses_total,bme_ok,rain_ok
+    # FORMATO ANTIGUO
     # ---------------------------------------------------
 
     p = line.split(",")
@@ -58,7 +55,9 @@ def parse_line(line: str):
         return None
 
     return {
+
         "station_id": "UNKNOWN",
+
         "timestamp": datetime.now().isoformat(),
 
         "t_s": int(p[0]),
@@ -71,23 +70,23 @@ def parse_line(line: str):
         "hum_min_pct": float(p[5]),
         "hum_max_pct": float(p[6]),
 
-        "pres_avg_hPa": float(p[7]),
-        "dew_point_C": float(p[8]),
-        "vapor_pressure_hPa": float(p[9]),
+        "press_hPa": float(p[7]),
 
-        "rain_1min_mm": float(p[10]),
-        "rain_1h_mm": float(p[11]),
+        "dew_point_C": float(p[8]),
+
+        "heat_index_C": float(p[9]),
+
+        "rain_1h_mm": float(p[10]),
+        "rain_24h_mm": float(p[11]),
         "rain_total_mm": float(p[12]),
 
-        "pulses_delta": int(p[13]),
-        "pulses_total": int(p[14]),
+        "bucket_tips": int(p[13]),
 
-        "bme_ok": int(p[15]),
-        "rain_ok": int(p[16]),
+        "bme_ok": int(p[14]),
+        "bucket_ok": int(p[15]),
 
-        "firmware": "V3_1_CLASSIC"
+        "firmware": "V2"
     }
-
 
 def parse_weather_line(line: str):
     return parse_line(line)

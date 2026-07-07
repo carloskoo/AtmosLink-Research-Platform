@@ -201,11 +201,7 @@
 
   <div class="section-title">Resumen operativo</div>
   <div class="grid">
-    <div class="card">
-      <div class="label">Última observación</div>
-      <div class="value" id="timestamp" style="font-size:20px;">--</div>
-      <div class="label" id="observationAge" style="margin-top:6px; color:#22c55e;">--</div>
-    </div>
+    <div class="card"><div class="label">Última observación</div><div class="value" id="timestamp" style="font-size:20px;">--</div></div>
     <div class="card"><div class="label">Registros master</div><div class="value" id="masterRecords">--</div></div>
     <div class="card"><div class="label">ERA5 emparejados</div><div class="value" id="era5Matched">--</div></div>
     <div class="card"><div class="label">NASA emparejados</div><div class="value" id="nasaMatched">--</div></div>
@@ -661,7 +657,7 @@ async function updateStationsLatest() {
     }
 
     const windText = windOk
-      ? `${valueOrDash(st.wind_speed_ms)} m/s · ${formatWindDirection(st.wind_direction_deg)}`
+      ? `${valueOrDash(st.wind_speed_ms)} m/s · ${valueOrDash(st.wind_direction_deg)}°`
       : "SIN DATO";
 
     const row = document.createElement("tr");
@@ -709,46 +705,12 @@ function fmtWind(value) {
   return fmt(value, 2);
 }
 
-function setScientificState(id, state) {
-  const el = document.getElementById(id);
-  if (!el) return;
-
-  const value = state || "--";
-  el.textContent = value;
-
-  if (value === "OK") {
-    el.style.color = "#22c55e";
-  } else if (value === "STALE" || value === "PENDING") {
-    el.style.color = "#facc15";
-  } else {
-    el.style.color = "#ef4444";
-  }
-}
-
-function directionText(deg) {
-  if (deg === null || deg === undefined || deg === "--") return null;
-  const v = Number(deg);
-  if (!Number.isFinite(v)) return null;
-
-  const labels = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                  "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-  const idx = Math.floor(((v % 360) + 11.25) / 22.5) % 16;
-  return labels[idx];
-}
-
-function formatWindDirection(deg) {
-  const label = directionText(deg);
-  if (!label) return valueOrDash(deg);
-  return `${label} (${valueOrDash(deg)}°)`;
-}
-
 
 async function updateLatest() {
   const r = await fetch("/api/latest");
   const data = await r.json();
 
   setText("timestamp", data.timestamp_local);
-  setText("observationAge", data.observation_age_label);
   setText("temp", fmtTemp(data.temp_avg_C));
   setText("hum", fmtPct(data.hum_avg_pct));
   setText("pres", fmtPressure(data.pres_avg_hPa));
@@ -761,17 +723,9 @@ async function updateLatest() {
   setStatus("rainok", data.rain_ok);
 
   setText("windSpeed", data.wind_speed_ms);
-  setText("windDirection", formatWindDirection(data.wind_direction_deg));
+  setText("windDirection", data.wind_direction_deg);
   setText("windGust", data.wind_gust_ms);
-  setScientificState("windOk", data.wind_state || (data.wind_ok ? "OK" : "ERROR"));
-
-  const q = data.scientific_quality || {};
-  setScientificState("qualityBme", q.bme280);
-  setScientificState("qualityRain", q.rain_gauge);
-  setScientificState("qualityWind", q.anemometer);
-  setScientificState("qualityEra5", q.era5);
-  setScientificState("qualityNasa", q.nasa_power);
-  setScientificState("qualityRadio", q.radio_link);
+  setStatus("windOk", data.wind_ok);
 
   setText("era5Temp", fmtTemp(data.era5_temp_c));
   setText("era5Rh", fmtPct(data.era5_rh_pct));

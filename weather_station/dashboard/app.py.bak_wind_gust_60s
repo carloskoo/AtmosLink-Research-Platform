@@ -100,47 +100,6 @@ def parse_dashboard_datetime(value):
         return None
 
 
-def seconds_age_label(seconds):
-    if seconds is None:
-        return "--"
-    try:
-        seconds = int(seconds)
-    except Exception:
-        return "--"
-
-    if seconds < 60:
-        return f"hace {seconds} s"
-    minutes = seconds / 60
-    if minutes < 60:
-        return f"hace {minutes:.1f} min"
-    hours = minutes / 60
-    return f"hace {hours:.1f} h"
-
-
-def age_seconds_from_now(timestamp_value):
-    dt = parse_dashboard_datetime(timestamp_value)
-    if dt is None:
-        return None
-
-    now = datetime.now()
-    return max(int((now - dt).total_seconds()), 0)
-
-
-def sensor_state(ok_value, age_seconds=None, stale_after_seconds=120):
-    try:
-        ok = int(float(ok_value)) == 1
-    except Exception:
-        ok = False
-
-    if not ok:
-        return "ERROR"
-
-    if age_seconds is not None and age_seconds > stale_after_seconds:
-        return "STALE"
-
-    return "OK"
-
-
 def age_payload(reference_ts, source_ts):
     ref = parse_dashboard_datetime(reference_ts)
     src = parse_dashboard_datetime(source_ts)
@@ -245,18 +204,6 @@ def get_latest():
         LIMIT 1
     """).fetchone()
 
-    gust_row = None
-    if table_exists(conn, "master_observations"):
-        gust_row = conn.execute("""
-            SELECT MAX(local_wind_speed_ms) AS gust
-            FROM master_observations
-            WHERE local_wind_speed_ms IS NOT NULL
-              AND datetime(weather_timestamp_local) >= datetime(
-                  (SELECT MAX(weather_timestamp_local) FROM master_observations),
-                  '-60 seconds'
-              )
-        """).fetchone()
-
     conn.close()
 
     if latest_local is None:
@@ -266,9 +213,6 @@ def get_latest():
     d = dict(local)
 
     d["timestamp_local"] = clean_timestamp(local.get("master_timestamp_local"))
-    d["weather_timestamp_local_clean"] = clean_timestamp(local.get("weather_timestamp_local"))
-    d["observation_age_seconds"] = age_seconds_from_now(local.get("weather_timestamp_local") or local.get("master_timestamp_local"))
-    d["observation_age_label"] = seconds_age_label(d["observation_age_seconds"])
 
     d["temp_avg_C"] = local.get("local_temp_avg_c")
     d["hum_avg_pct"] = local.get("local_hum_avg_pct")
@@ -285,19 +229,7 @@ def get_latest():
     d["wind_direction_deg"] = local.get("local_wind_direction_deg")
     d["wind_direction_text"] = wind_direction_text(local.get("local_wind_direction_deg"))
     d["wind_gust_ms"] = local.get("local_wind_gust_ms")
-    if d["wind_gust_ms"] is None and gust_row is not None:
-        d["wind_gust_ms"] = gust_row["gust"]
     d["wind_ok"] = local.get("local_wind_ok")
-    d["wind_state"] = sensor_state(d["wind_ok"], d["observation_age_seconds"], 120)
-
-    d["scientific_quality"] = {
-        "bme280": sensor_state(local.get("local_bme_ok"), d["observation_age_seconds"], 120),
-        "rain_gauge": sensor_state(local.get("local_rain_ok"), d["observation_age_seconds"], 120),
-        "anemometer": d["wind_state"],
-        "era5": "OK" if latest_era5 is not None else "ERROR",
-        "nasa_power": "OK" if latest_nasa is not None else "ERROR",
-        "radio_link": "OK" if latest_radio is not None else "PENDING",
-    }
 
     if latest_nasa is not None:
         nasa = dict(latest_nasa)

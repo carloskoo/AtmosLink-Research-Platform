@@ -1,51 +1,15 @@
-from datetime import datetime
+from pathlib import Path
 
+p = Path("weather_station/acquisition/parser.py")
+text = p.read_text(encoding="utf-8")
 
-def parse_line(line: str):
-    """
-    Parser universal AtmosLink
+backup = p.with_suffix(".py.bak_classic_fields")
+backup.write_text(text, encoding="utf-8")
 
-    Soporta:
+start = text.index("    # ---------------------------------------------------\n    # FORMATO ANTIGUO")
+end = text.index("\ndef parse_weather_line", start)
 
-    1) Firmware V3
-       WSCSV,SJ01,uptime,temp,hum,press,tips,rain
-
-    2) Firmware clásico
-       17883,24.36,24.36,...
-    """
-
-    line = line.strip()
-
-    if not line:
-        return None
-
-    # ---------------------------------------------------
-    # NUEVO FIRMWARE V3
-    # ---------------------------------------------------
-    if line.startswith("WSCSV"):
-
-        p = line.split(",")
-
-        if len(p) != 8:
-            return None
-
-        return {
-            "station_id": p[1],
-            "timestamp": datetime.now().isoformat(),
-
-            "uptime_ms": int(p[2]),
-
-            "temp_avg_C": float(p[3]),
-            "hum_avg_pct": float(p[4]),
-            "press_hPa": float(p[5]),
-
-            "rain_tips": int(p[6]),
-            "rain_mm": float(p[7]),
-
-            "firmware": "V3"
-        }
-
-    # ---------------------------------------------------
+new_block = '''    # ---------------------------------------------------
     # FORMATO CLASICO ATMOSLINK
     # t_s,temp_avg,temp_min,temp_max,hum_avg,hum_min,hum_max,
     # pres_avg,dew_point,vapor_pressure,rain_1min,rain_1h,
@@ -88,6 +52,11 @@ def parse_line(line: str):
         "firmware": "V3_1_CLASSIC"
     }
 
+'''
 
-def parse_weather_line(line: str):
-    return parse_line(line)
+text = text[:start] + new_block + text[end:]
+
+p.write_text(text, encoding="utf-8")
+
+print("OK: parser.py corregido para formato clásico AtmosLink")
+print(f"Backup creado en: {backup}")
