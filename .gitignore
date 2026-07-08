@@ -40,3 +40,7 @@ erial
 *.bak_*
 *.backup
 *.old
+
+# Arduino IDE temporary copies
+*_copy_*.ino
+*_copy_*
