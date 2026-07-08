@@ -671,6 +671,134 @@ def api_stations_latest():
     return jsonify(get_stations_latest())
 
 
+
+def wind_sector_16(deg):
+    if deg is None:
+        return None
+    try:
+        deg = float(deg) % 360
+    except Exception:
+        return None
+
+    labels = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+              "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    idx = int((deg + 11.25) // 22.5) % 16
+    return idx, labels[idx]
+
+
+def get_windrose(period="24h"):
+    conn = get_connection()
+
+    try:
+        if not table_exists(conn, "weather_local"):
+            return {}
+
+        where = """
+            wind_speed_ms IS NOT NULL
+            AND wind_direction_deg IS NOT NULL
+            AND wind_ok = 1
+        """
+
+        if period == "24h":
+            where += " AND datetime(timestamp_local) >= datetime('now', 'localtime', '-24 hours')"
+        elif period == "7d":
+            where += " AND datetime(timestamp_local) >= datetime('now', 'localtime', '-7 days')"
+        elif period == "30d":
+            where += " AND datetime(timestamp_local) >= datetime('now', 'localtime', '-30 days')"
+
+        rows = conn.execute(f"""
+            SELECT timestamp_local, wind_speed_ms, wind_direction_deg
+            FROM weather_local
+            WHERE {where}
+            ORDER BY timestamp_local ASC
+        """).fetchall()
+
+        labels = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+                  "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+
+        sectors = {
+            label: {
+                "sector": label,
+                "count": 0,
+                "frequency_pct": 0.0,
+                "speed_sum_ms": 0.0,
+                "speed_avg_ms": None,
+                "speed_max_ms": None,
+            }
+            for label in labels
+        }
+
+        total = 0
+        speed_sum = 0.0
+        speed_max = None
+
+        for row in rows:
+            speed = row["wind_speed_ms"]
+            deg = row["wind_direction_deg"]
+
+            sector = wind_sector_16(deg)
+            if sector is None:
+                continue
+
+            _, label = sector
+
+            try:
+                speed = float(speed)
+            except Exception:
+                continue
+
+            sectors[label]["count"] += 1
+            sectors[label]["speed_sum_ms"] += speed
+
+            if sectors[label]["speed_max_ms"] is None or speed > sectors[label]["speed_max_ms"]:
+                sectors[label]["speed_max_ms"] = speed
+
+            total += 1
+            speed_sum += speed
+
+            if speed_max is None or speed > speed_max:
+                speed_max = speed
+
+        dominant_sector = None
+        dominant_count = 0
+
+        for label in labels:
+            s = sectors[label]
+
+            if s["count"] > 0:
+                s["frequency_pct"] = round((s["count"] / total) * 100.0, 2) if total else 0.0
+                s["speed_avg_ms"] = round(s["speed_sum_ms"] / s["count"], 2)
+                s["speed_max_ms"] = round(s["speed_max_ms"], 2)
+
+            s.pop("speed_sum_ms", None)
+
+            if s["count"] > dominant_count:
+                dominant_sector = label
+                dominant_count = s["count"]
+
+        return {
+            "period": period,
+            "samples": total,
+            "dominant_sector": dominant_sector,
+            "dominant_frequency_pct": round((dominant_count / total) * 100.0, 2) if total else None,
+            "speed_avg_ms": round(speed_sum / total, 2) if total else None,
+            "speed_max_ms": round(speed_max, 2) if speed_max is not None else None,
+            "sectors": [sectors[label] for label in labels],
+        }
+
+    finally:
+        conn.close()
+
+
+@app.route("/api/windrose")
+def api_windrose():
+    from flask import request
+    period = request.args.get("period", "24h")
+    if period not in ["24h", "7d", "30d", "all"]:
+        period = "24h"
+    return jsonify(get_windrose(period))
+
+
 @app.route("/api/master/summary")
 def api_master_summary():
     return jsonify(get_master_summary())

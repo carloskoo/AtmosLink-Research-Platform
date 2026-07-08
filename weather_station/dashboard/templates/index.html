@@ -456,6 +456,42 @@
   <div class="chart-card"><div class="chart-title">Presión: tramo emparejado Local vs ERA5 vs NASA POWER</div><canvas id="pressureCompareChart"></canvas></div>
   <div class="chart-card"><div class="chart-title">Precipitación: tramo emparejado Local vs ERA5 vs NASA POWER</div><canvas id="rainCompareChart"></canvas></div>
   <div class="chart-card"><div class="chart-title">Viento: Local vs NASA POWER</div><canvas id="windChart"></canvas></div>
+  <div class="chart-card">
+    <div class="chart-title">Rosa de vientos local - AtmosLink</div>
+
+    <div style="display:flex; gap:18px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
+      <div>
+        <label style="color:#9ca3af;">Periodo:</label>
+        <select id="windRosePeriod" style="background:#111827; color:#f9fafb; border:1px solid #374151; padding:6px; border-radius:6px;">
+          <option value="24h">Últimas 24 h</option>
+          <option value="7d">Últimos 7 días</option>
+          <option value="30d">Últimos 30 días</option>
+          <option value="all">Toda la campaña</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="color:#9ca3af;">Modo:</label>
+        <select id="windRoseMode" style="background:#111827; color:#f9fafb; border:1px solid #374151; padding:6px; border-radius:6px;">
+          <option value="frequency">Frecuencia (%)</option>
+          <option value="speed">Velocidad media (m/s)</option>
+          <option value="energy">Índice viento frecuencia×velocidad</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="max-width:760px; margin:0 auto;">
+      <canvas id="windRoseChart"></canvas>
+    </div>
+
+    <div class="grid" style="margin-top:12px;">
+      <div class="card"><div class="label">Muestras</div><div class="value" id="windRoseSamples">--</div></div>
+      <div class="card"><div class="label">Dirección predominante</div><div class="value" id="windRoseDominant">--</div></div>
+      <div class="card"><div class="label">Frecuencia predominante</div><div class="value" id="windRoseFrequency">--</div></div>
+      <div class="card"><div class="label">Velocidad media</div><div class="value" id="windRoseAvg">--</div></div>
+      <div class="card"><div class="label">Velocidad máxima</div><div class="value" id="windRoseMax">--</div></div>
+    </div>
+  </div>
 
 
 
@@ -603,6 +639,7 @@ let humidityCompareChart = null;
 let pressureCompareChart = null;
 let rainCompareChart = null;
 let windChart = null;
+let windRoseChart = null;
 
 function valueOrDash(v) {
   if (v === null || v === undefined || v === "") return "--";
@@ -1245,6 +1282,97 @@ function makeLineChart(canvasId, existingChart, labels, datasets) {
   });
 }
 
+async function updateWindRose() {
+  const periodEl = document.getElementById("windRosePeriod");
+  const modeEl = document.getElementById("windRoseMode");
+
+  const period = periodEl ? periodEl.value : "24h";
+  const mode = modeEl ? modeEl.value : "frequency";
+
+  const r = await fetch(`/api/windrose?period=${period}`);
+  const data = await r.json();
+
+  const sectors = data.sectors || [];
+  const labels = sectors.map(x => x.sector);
+
+  let values = [];
+  let chartLabel = "";
+
+  if (mode === "speed") {
+    values = sectors.map(x => x.speed_avg_ms || 0);
+    chartLabel = "Velocidad media (m/s)";
+  } else if (mode === "energy") {
+    values = sectors.map(x => {
+      const f = x.frequency_pct || 0;
+      const v = x.speed_avg_ms || 0;
+      return Number((f * v).toFixed(2));
+    });
+    chartLabel = "Índice frecuencia × velocidad";
+  } else {
+    values = sectors.map(x => x.frequency_pct || 0);
+    chartLabel = "Frecuencia (%)";
+  }
+
+  const avgSpeeds = sectors.map(x => x.speed_avg_ms || 0);
+
+  setText("windRoseSamples", data.samples);
+  setText("windRoseDominant", data.dominant_sector);
+  setText("windRoseFrequency", data.dominant_frequency_pct !== null && data.dominant_frequency_pct !== undefined ? `${data.dominant_frequency_pct} %` : "--");
+  setText("windRoseAvg", data.speed_avg_ms !== null && data.speed_avg_ms !== undefined ? `${data.speed_avg_ms} m/s` : "--");
+  setText("windRoseMax", data.speed_max_ms !== null && data.speed_max_ms !== undefined ? `${data.speed_max_ms} m/s` : "--");
+
+  if (windRoseChart) windRoseChart.destroy();
+
+  windRoseChart = new Chart(document.getElementById("windRoseChart"), {
+    type: "polarArea",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: chartLabel,
+        data: values,
+        backgroundColor: avgSpeeds.map(v => {
+          if (v < 0.5) return "rgba(56,189,248,0.42)";
+          if (v < 1.5) return "rgba(34,197,94,0.42)";
+          if (v < 3.0) return "rgba(250,204,21,0.42)";
+          if (v < 6.0) return "rgba(249,115,22,0.45)";
+          return "rgba(239,68,68,0.50)";
+        }),
+        borderColor: "#e5e7eb",
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const sector = sectors[ctx.dataIndex];
+              return [
+                `${chartLabel}: ${ctx.raw}`,
+                `Frecuencia: ${sector.frequency_pct} %`,
+                `Muestras: ${sector.count}`,
+                `Vel. media: ${sector.speed_avg_ms ?? "--"} m/s`,
+                `Vel. máx.: ${sector.speed_max_ms ?? "--"} m/s`
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        r: {
+          beginAtZero: true,
+          ticks: { color: "#9ca3af", backdropColor: "transparent" },
+          grid: { color: "#374151" },
+          angleLines: { color: "#374151" },
+          pointLabels: { color: "#f9fafb", font: { size: 12 } }
+        }
+      }
+    }
+  });
+}
+
 async function updateCharts() {
   const r = await fetch("/api/history");
   const data = await r.json();
@@ -1293,11 +1421,23 @@ updateStationsLatest();
 updateLatest();
 updateCoreStatus();
 updateCharts();
+updateWindRose();
 
 setInterval(updateStationsLatest, 5000);
 setInterval(updateLatest, 5000);
 setInterval(updateCoreStatus, 10000);
 setInterval(updateCharts, 15000);
+setInterval(updateWindRose, 60000);
+
+const windRosePeriodSelect = document.getElementById("windRosePeriod");
+if (windRosePeriodSelect) {
+  windRosePeriodSelect.addEventListener("change", updateWindRose);
+}
+
+const windRoseModeSelect = document.getElementById("windRoseMode");
+if (windRoseModeSelect) {
+  windRoseModeSelect.addEventListener("change", updateWindRose);
+}
 
 /* AtmosLink Scientific Dashboard v2 Clean */
 async function updateScientificExecutivePanelClean() {
