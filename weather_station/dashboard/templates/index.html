@@ -600,6 +600,212 @@
   }
 }
 
+
+.platform-v5-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 22px;
+  margin: 0 0 14px 0;
+  padding: 18px 20px;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(14, 165, 233, 0.10),
+      rgba(15, 23, 42, 0.32)
+    ),
+    var(--card);
+}
+
+.platform-v5-kicker {
+  color: #38bdf8;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.platform-v5-title {
+  margin-top: 5px;
+  color: #f8fafc;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.platform-v5-subtitle {
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.platform-v5-version {
+  padding: 8px 12px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 999px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.module-navigation {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.module-nav-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 12px;
+  background: var(--card);
+  color: #cbd5e1;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.module-nav-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.module-nav-button.active {
+  border-color: rgba(56, 189, 248, 0.65);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(56, 189, 248, 0.16),
+      rgba(31, 41, 55, 0.94)
+    );
+  color: #f8fafc;
+  box-shadow: inset 0 -2px 0 #38bdf8;
+}
+
+.module-nav-button strong,
+.module-nav-button small {
+  display: block;
+}
+
+.module-nav-button strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-nav-button small {
+  margin-top: 2px;
+  overflow: hidden;
+  color: #94a3b8;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-nav-code {
+  color: #38bdf8;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.active-module-context {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-left: 3px solid #38bdf8;
+  border-radius: 0 10px 10px 0;
+  background: rgba(31, 41, 55, 0.65);
+}
+
+.active-module-context span,
+.active-module-context strong {
+  display: block;
+}
+
+.active-module-context span {
+  color: #38bdf8;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.active-module-context strong {
+  margin-top: 2px;
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+#activeModuleDescription {
+  max-width: 550px;
+  color: #94a3b8;
+  font-size: 11px;
+  text-align: right;
+}
+
+.atmoslink-module {
+  display: none;
+  animation: moduleFadeIn 0.18s ease-out;
+}
+
+.atmoslink-module.active {
+  display: block;
+}
+
+@keyframes moduleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1250px) {
+  .module-navigation {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .platform-v5-header,
+  .active-module-context {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .module-navigation {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  #activeModuleDescription {
+    text-align: left;
+  }
+}
+
+@media (max-width: 460px) {
+  .module-navigation {
+    grid-template-columns: 1fr;
+  }
+}
+
 </style>
 </head>
 
@@ -618,6 +824,121 @@
 </header>
 
 <main>
+<section
+  id="atmoslinkPlatformHeader"
+  class="platform-v5-header"
+>
+  <div>
+    <div class="platform-v5-kicker">
+      ATMOSLINK RESEARCH PLATFORM
+    </div>
+
+    <div class="platform-v5-title">
+      Scientific Monitoring and Experimental Analytics
+    </div>
+
+    <div class="platform-v5-subtitle">
+      Plataforma modular para observación ambiental,
+      análisis atmosférico y evaluación de radioenlaces
+    </div>
+  </div>
+
+  <div class="platform-v5-version">
+    V5.0
+  </div>
+</section>
+
+<nav
+  id="atmoslinkModuleNavigation"
+  class="module-navigation"
+  aria-label="Módulos AtmosLink"
+>
+  <button
+    class="module-nav-button active"
+    type="button"
+    data-module-target="observatory"
+  >
+    <span class="module-nav-code">01</span>
+    <span>
+      <strong>Observatory</strong>
+      <small>Estado ejecutivo</small>
+    </span>
+  </button>
+
+  <button
+    class="module-nav-button"
+    type="button"
+    data-module-target="weather"
+  >
+    <span class="module-nav-code">02</span>
+    <span>
+      <strong>Meteorología</strong>
+      <small>Local, ERA5 y NASA</small>
+    </span>
+  </button>
+
+  <button
+    class="module-nav-button"
+    type="button"
+    data-module-target="corridor"
+  >
+    <span class="module-nav-code">03</span>
+    <span>
+      <strong>Corredor</strong>
+      <small>AP–MID–SM</small>
+    </span>
+  </button>
+
+  <button
+    class="module-nav-button"
+    type="button"
+    data-module-target="radio"
+  >
+    <span class="module-nav-code">04</span>
+    <span>
+      <strong>Radio RF</strong>
+      <small>Telemetría Cambium</small>
+    </span>
+  </button>
+
+  <button
+    class="module-nav-button"
+    type="button"
+    data-module-target="analytics"
+  >
+    <span class="module-nav-code">05</span>
+    <span>
+      <strong>Analítica</strong>
+      <small>Concordancia y QC</small>
+    </span>
+  </button>
+
+  <button
+    class="module-nav-button"
+    type="button"
+    data-module-target="system"
+  >
+    <span class="module-nav-code">06</span>
+    <span>
+      <strong>Sistema</strong>
+      <small>Salud y diagnóstico</small>
+    </span>
+  </button>
+</nav>
+
+<div id="activeModuleContext" class="active-module-context">
+  <div>
+    <span id="activeModuleCode">MÓDULO 01</span>
+    <strong id="activeModuleTitle">
+      Scientific Observatory
+    </strong>
+  </div>
+
+  <div id="activeModuleDescription">
+    Estado ejecutivo, integridad científica y trazabilidad.
+  </div>
+</div>
+
 
 
 <section id="scientificExecutivePanel" style="margin:22px 0;">
@@ -912,6 +1233,12 @@
   </article>
 </section>
 
+
+<section
+  id="module-observatory"
+  class="atmoslink-module"
+  data-module="observatory"
+>
 <div class="section-title">Resumen operativo</div>
   <div class="grid">
     <div class="card">
@@ -946,7 +1273,15 @@
     </table>
   </div>
 
-  <div class="section-title">Estación meteorológica local</div>
+  
+</section><!-- /module-observatory -->
+
+<section
+  id="module-weather"
+  class="atmoslink-module"
+  data-module="weather"
+>
+<div class="section-title">Estación meteorológica local</div>
   <div class="grid">
     <div class="card"><div class="label">Temperatura local</div><div class="value"><span id="temp">--</span> <span class="unit">°C</span></div></div>
     <div class="card"><div class="label">Humedad relativa local</div><div class="value"><span id="hum">--</span> <span class="unit">%</span></div></div>
@@ -1019,6 +1354,14 @@
   </div>
 
   
+
+</section><!-- /module-weather -->
+
+<section
+  id="module-radio"
+  class="atmoslink-module"
+  data-module="radio"
+>
 <div class="section-title">Radioenlace Cambium</div>
 
 <section id="radioCambiumPanel" class="radio-cambium-panel">
@@ -1132,7 +1475,15 @@
   </div>
 
 
-  <div class="section-title">Corredor atmosférico del radioenlace AP–MID–SM</div>
+  
+</section><!-- /module-radio -->
+
+<section
+  id="module-corridor"
+  class="atmoslink-module"
+  data-module="corridor"
+>
+<div class="section-title">Corredor atmosférico del radioenlace AP–MID–SM</div>
 
 <div id="corridorScientificContext" class="card" style="margin-top:10px; border-left:4px solid #00c8ff;">
   <div class="label">Modelo espacial del corredor</div>
@@ -1216,7 +1567,15 @@
     <canvas id="corridorProfileChart"></canvas>
   </div>
 
-  <div class="section-title">Resultados de concordancia científica</div>
+  
+</section><!-- /module-corridor -->
+
+<section
+  id="module-analytics"
+  class="atmoslink-module"
+  data-module="analytics"
+>
+<div class="section-title">Resultados de concordancia científica</div>
   <div class="card">
     <div class="label">Resultado del análisis</div>
     <div class="value" id="comparisonStatus">--</div>
@@ -1353,7 +1712,15 @@
     </div>
   </div>
 
-  <div class="section-title">Diagnóstico general del sistema</div>
+  
+</section><!-- /module-analytics -->
+
+<section
+  id="module-system"
+  class="atmoslink-module"
+  data-module="system"
+>
+<div class="section-title">Diagnóstico general del sistema</div>
   <div class="grid">
     <div class="card">
       <div class="label">SQLite</div>
@@ -1436,6 +1803,8 @@
     </table>
   </div>
 
+
+</section><!-- /module-system -->
 </main>
 
 <footer>
@@ -3175,6 +3544,159 @@ window.addEventListener("load", function () {
   updateScientificExecutivePanelClean();
   setInterval(updateScientificExecutivePanelClean, 60000);
 });
+
+
+const ATMOSLINK_MODULES = {
+  observatory: {
+    code: "MÓDULO 01",
+    title: "Scientific Observatory",
+    description:
+      "Estado ejecutivo, integridad científica y trazabilidad."
+  },
+
+  weather: {
+    code: "MÓDULO 02",
+    title: "Meteorología integrada",
+    description:
+      "Estación local, viento, ERA5-Land y NASA POWER."
+  },
+
+  corridor: {
+    code: "MÓDULO 03",
+    title: "Corredor atmosférico AP–MID–SM",
+    description:
+      "Gradientes espaciales y perfil longitudinal altoandino."
+  },
+
+  radio: {
+    code: "MÓDULO 04",
+    title: "RF Observatory",
+    description:
+      "Telemetría Cambium, adquisición RF y estado del radioenlace."
+  },
+
+  analytics: {
+    code: "MÓDULO 05",
+    title: "Scientific Analytics",
+    description:
+      "Concordancia, comparaciones temporales y confiabilidad."
+  },
+
+  system: {
+    code: "MÓDULO 06",
+    title: "System Diagnostics",
+    description:
+      "Salud del sistema, alertas, control de calidad y tareas."
+  }
+};
+
+function activateAtmosLinkModule(moduleName, options = {}) {
+  const config =
+    ATMOSLINK_MODULES[moduleName] ||
+    ATMOSLINK_MODULES.observatory;
+
+  document
+    .querySelectorAll(".atmoslink-module")
+    .forEach(module => {
+      module.classList.toggle(
+        "active",
+        module.dataset.module === moduleName
+      );
+    });
+
+  document
+    .querySelectorAll(".module-nav-button")
+    .forEach(button => {
+      const active =
+        button.dataset.moduleTarget === moduleName;
+
+      button.classList.toggle("active", active);
+      button.setAttribute(
+        "aria-current",
+        active ? "page" : "false"
+      );
+    });
+
+  const code =
+    document.getElementById("activeModuleCode");
+
+  const title =
+    document.getElementById("activeModuleTitle");
+
+  const description =
+    document.getElementById(
+      "activeModuleDescription"
+    );
+
+  if (code) code.textContent = config.code;
+  if (title) title.textContent = config.title;
+
+  if (description) {
+    description.textContent = config.description;
+  }
+
+  if (options.persist !== false) {
+    localStorage.setItem(
+      "atmoslink.activeModule",
+      moduleName
+    );
+  }
+
+  if (options.scroll !== false) {
+    document
+      .getElementById("atmoslinkModuleNavigation")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+  }
+
+  window.dispatchEvent(new Event("resize"));
+}
+
+function initializeAtmosLinkModules() {
+  const navigation =
+    document.getElementById(
+      "atmoslinkModuleNavigation"
+    );
+
+  if (!navigation) return;
+
+  navigation.addEventListener("click", event => {
+    const button = event.target.closest(
+      ".module-nav-button"
+    );
+
+    if (!button) return;
+
+    activateAtmosLinkModule(
+      button.dataset.moduleTarget
+    );
+  });
+
+  const stored =
+    localStorage.getItem(
+      "atmoslink.activeModule"
+    );
+
+  const initial =
+    Object.prototype.hasOwnProperty.call(
+      ATMOSLINK_MODULES,
+      stored
+    )
+      ? stored
+      : "observatory";
+
+  activateAtmosLinkModule(initial, {
+    scroll: false,
+    persist: false
+  });
+}
+
+document.addEventListener(
+  "DOMContentLoaded",
+  initializeAtmosLinkModules
+);
 
 </script>
 
