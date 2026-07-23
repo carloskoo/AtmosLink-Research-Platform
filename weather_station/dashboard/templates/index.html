@@ -652,7 +652,7 @@
 
 .module-navigation {
   display: grid;
-  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  grid-template-columns: repeat(7, minmax(130px, 1fr));
   gap: 9px;
   margin-bottom: 12px;
 }
@@ -806,6 +806,614 @@
   }
 }
 
+
+.timeline-module-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.timeline-module-heading .section-title {
+  margin-bottom: 4px;
+}
+
+.timeline-module-subtitle {
+  max-width: 850px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.timeline-updated {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.timeline-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(190px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.timeline-summary-card .value {
+  font-size: 17px;
+}
+
+.timeline-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 12px;
+  background: rgba(31, 41, 55, 0.72);
+}
+
+.timeline-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.timeline-filter {
+  padding: 5px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.45);
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.timeline-filter.active {
+  border-color: rgba(56, 189, 248, 0.65);
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+}
+
+.timeline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 9px;
+}
+
+.timeline-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.timeline-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.timeline-ok {
+  background: #22c55e;
+}
+
+.timeline-warning {
+  background: #f59e0b;
+}
+
+.timeline-error {
+  background: #ef4444;
+}
+
+.timeline-neutral {
+  background: #64748b;
+}
+
+.timeline-panel {
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.experiment-timeline {
+  position: relative;
+  padding-left: 32px;
+}
+
+.experiment-timeline::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 10px;
+  width: 2px;
+  background: #334155;
+}
+
+.timeline-event {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(145px, 180px) 1fr auto;
+  gap: 16px;
+  margin-bottom: 11px;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.10);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.timeline-event:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-event::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  left: -28px;
+  width: 12px;
+  height: 12px;
+  border: 3px solid var(--card);
+  border-radius: 50%;
+  background: #64748b;
+}
+
+.timeline-event.status-ok::before {
+  background: #22c55e;
+}
+
+.timeline-event.status-warning::before {
+  background: #f59e0b;
+}
+
+.timeline-event.status-error::before {
+  background: #ef4444;
+}
+
+.timeline-event-time {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.timeline-event-title {
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.timeline-event-message {
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.timeline-event-meta {
+  margin-top: 5px;
+  color: #64748b;
+  font-size: 9px;
+}
+
+.timeline-event-state {
+  align-self: start;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.10);
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.timeline-event.status-ok .timeline-event-state {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.10);
+}
+
+.timeline-event.status-warning .timeline-event-state {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.10);
+}
+
+.timeline-event.status-error .timeline-event-state {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.10);
+}
+
+.timeline-empty {
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+}
+
+.timeline-methodology {
+  margin-top: 12px;
+  padding: 11px 14px;
+  border-left: 3px solid #38bdf8;
+  border-radius: 0 10px 10px 0;
+  background: rgba(31, 41, 55, 0.62);
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.timeline-methodology strong {
+  color: #cbd5e1;
+}
+
+@media (max-width: 1050px) {
+  .timeline-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .timeline-event {
+    grid-template-columns: 130px 1fr;
+  }
+
+  .timeline-event-state {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 680px) {
+  .timeline-module-heading,
+  .timeline-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .timeline-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-event {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-event-state {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  .timeline-legend {
+    justify-content: flex-start;
+  }
+}
+
+
+.scientific-status-v5 {
+  margin-bottom: 22px;
+}
+
+.scientific-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.scientific-status-kicker {
+  color: #38bdf8;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.scientific-status-title {
+  margin-top: 3px;
+  color: #f8fafc;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.scientific-status-subtitle {
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.scientific-global-badge {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.scientific-status-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(240px, 0.90fr)
+    minmax(260px, 1.10fr)
+    minmax(300px, 1.25fr)
+    minmax(250px, 0.95fr);
+  gap: 12px;
+}
+
+.scientific-main-score,
+.scientific-indicator-panel,
+.scientific-acquisition-panel,
+.scientific-maturity-panel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 15px;
+  background: var(--card);
+}
+
+.scientific-main-label {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.scientific-main-value {
+  margin-top: 7px;
+  color: #f8fafc;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.scientific-main-value small {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.scientific-main-level {
+  margin-top: 7px;
+  color: #38bdf8;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.scientific-main-bar,
+.scientific-mini-bar,
+.maturity-track {
+  overflow: hidden;
+  border-radius: 999px;
+  background: #0f172a;
+}
+
+.scientific-main-bar {
+  height: 8px;
+  margin-top: 12px;
+}
+
+.scientific-main-bar div,
+.scientific-mini-bar div {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  transition:
+    width 0.35s ease,
+    background 0.35s ease;
+}
+
+.scientific-main-message {
+  margin-top: 12px;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.scientific-indicator {
+  margin-bottom: 13px;
+}
+
+.scientific-indicator:last-child {
+  margin-bottom: 0;
+}
+
+.scientific-indicator > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+  color: #cbd5e1;
+  font-size: 10px;
+}
+
+.scientific-indicator strong {
+  color: #f8fafc;
+  font-size: 10px;
+}
+
+.scientific-mini-bar {
+  height: 6px;
+}
+
+.scientific-panel-title {
+  margin-bottom: 12px;
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.scientific-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.scientific-stat {
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: rgba(15, 23, 42, 0.48);
+}
+
+.scientific-stat span,
+.scientific-stat strong {
+  display: block;
+}
+
+.scientific-stat span {
+  color: #94a3b8;
+  font-size: 9px;
+}
+
+.scientific-stat strong {
+  margin-top: 3px;
+  color: #f8fafc;
+  font-size: 15px;
+}
+
+.maturity-level {
+  padding: 11px;
+  border-radius: 11px;
+  background: rgba(15, 23, 42, 0.46);
+}
+
+.maturity-level-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #cbd5e1;
+  font-size: 10px;
+}
+
+.maturity-level-header strong {
+  color: #38bdf8;
+}
+
+.maturity-track {
+  height: 7px;
+  margin-top: 9px;
+}
+
+.maturity-fill {
+  width: 86%;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      #38bdf8,
+      #22c55e
+    );
+}
+
+.maturity-stage {
+  margin-top: 9px;
+  color: #22c55e;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.maturity-description {
+  margin-top: 6px;
+  color: #94a3b8;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.maturity-capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.maturity-capabilities span {
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.09);
+  color: #7dd3fc;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.status-ok {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.status-warning {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.status-error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.status-neutral {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.10);
+}
+
+.scientific-footer-v5 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 24px;
+  border-top: 1px solid rgba(148, 163, 184, 0.13);
+  background: #0b1324;
+}
+
+.footer-brand strong,
+.footer-brand span {
+  display: block;
+}
+
+.footer-brand strong {
+  color: #f8fafc;
+  font-size: 12px;
+}
+
+.footer-brand span {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 9px;
+}
+
+.footer-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 13px;
+  color: #64748b;
+  font-size: 8px;
+}
+
+@media (max-width: 1250px) {
+  .scientific-status-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .scientific-status-header,
+  .scientific-footer-v5 {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .scientific-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-metadata {
+    justify-content: flex-start;
+  }
+}
+
 </style>
 </head>
 
@@ -916,9 +1524,21 @@
   <button
     class="module-nav-button"
     type="button"
-    data-module-target="system"
+    data-module-target="timeline"
   >
     <span class="module-nav-code">06</span>
+    <span>
+      <strong>Timeline</strong>
+      <small>Trazabilidad temporal</small>
+    </span>
+  </button>
+
+  <button
+    class="module-nav-button"
+    type="button"
+    data-module-target="system"
+  >
+    <span class="module-nav-code">07</span>
     <span>
       <strong>Sistema</strong>
       <small>Salud y diagnóstico</small>
@@ -988,6 +1608,195 @@
 
 
   
+<section id="scientificStatusV5" class="scientific-status-v5">
+
+  <div class="scientific-status-header">
+    <div>
+      <div class="scientific-status-kicker">
+        SCIENTIFIC STATUS
+      </div>
+
+      <div class="scientific-status-title">
+        Estado científico del experimento
+      </div>
+
+      <div class="scientific-status-subtitle">
+        Evaluación integrada de validez, confiabilidad,
+        salud del dataset y concordancia externa.
+      </div>
+    </div>
+
+    <div
+      id="scientificGlobalBadge"
+      class="scientific-global-badge status-neutral"
+    >
+      VERIFICANDO
+    </div>
+  </div>
+
+  <div class="scientific-status-grid">
+
+    <article class="scientific-main-score">
+      <div class="scientific-main-label">
+        Confianza científica global
+      </div>
+
+      <div class="scientific-main-value">
+        <span id="scientificGlobalScore">--</span>
+        <small>%</small>
+      </div>
+
+      <div
+        id="scientificGlobalLevel"
+        class="scientific-main-level"
+      >
+        --
+      </div>
+
+      <div class="scientific-main-bar">
+        <div id="scientificGlobalBar"></div>
+      </div>
+
+      <div
+        id="scientificGlobalInterpretation"
+        class="scientific-main-message"
+      >
+        Esperando resultados del núcleo científico.
+      </div>
+    </article>
+
+    <article class="scientific-indicator-panel">
+
+      <div class="scientific-indicator">
+        <div>
+          <span>Confiabilidad</span>
+          <strong id="scientificReliabilityValue">--</strong>
+        </div>
+
+        <div class="scientific-mini-bar">
+          <div id="scientificReliabilityBar"></div>
+        </div>
+      </div>
+
+      <div class="scientific-indicator">
+        <div>
+          <span>Validez</span>
+          <strong id="scientificValidityValue">--</strong>
+        </div>
+
+        <div class="scientific-mini-bar">
+          <div id="scientificValidityBar"></div>
+        </div>
+      </div>
+
+      <div class="scientific-indicator">
+        <div>
+          <span>Salud del dataset</span>
+          <strong id="scientificHealthValue">--</strong>
+        </div>
+
+        <div class="scientific-mini-bar">
+          <div id="scientificHealthBar"></div>
+        </div>
+      </div>
+
+      <div class="scientific-indicator">
+        <div>
+          <span>Concordancia externa</span>
+          <strong id="scientificAgreementValue">--</strong>
+        </div>
+
+        <div class="scientific-mini-bar">
+          <div id="scientificAgreementBar"></div>
+        </div>
+      </div>
+
+    </article>
+
+    <article class="scientific-acquisition-panel">
+
+      <div class="scientific-panel-title">
+        Estadísticas operacionales
+      </div>
+
+      <div class="scientific-stat-grid">
+
+        <div class="scientific-stat">
+          <span>Observaciones master</span>
+          <strong id="scientificMasterRecords">--</strong>
+        </div>
+
+        <div class="scientific-stat">
+          <span>Registros emparejados</span>
+          <strong id="scientificMatchedRecords">--</strong>
+        </div>
+
+        <div class="scientific-stat">
+          <span>ERA5-Land</span>
+          <strong id="scientificEra5Records">--</strong>
+        </div>
+
+        <div class="scientific-stat">
+          <span>NASA POWER</span>
+          <strong id="scientificNasaRecords">--</strong>
+        </div>
+
+        <div class="scientific-stat">
+          <span>Advertencias QC</span>
+          <strong id="scientificQcWarnings">--</strong>
+        </div>
+
+        <div class="scientific-stat">
+          <span>Problemas críticos</span>
+          <strong id="scientificQcCritical">--</strong>
+        </div>
+
+      </div>
+
+    </article>
+
+    <article class="scientific-maturity-panel">
+
+      <div class="scientific-panel-title">
+        Madurez de la plataforma
+      </div>
+
+      <div class="maturity-level">
+        <div class="maturity-level-header">
+          <span>AtmosLink Research Platform</span>
+          <strong>V5.0</strong>
+        </div>
+
+        <div class="maturity-track">
+          <div class="maturity-fill"></div>
+        </div>
+
+        <div class="maturity-stage">
+          Operational Research Platform
+        </div>
+
+        <div class="maturity-description">
+          Plataforma operacional con adquisición local,
+          integración de fuentes externas, control de calidad,
+          trazabilidad y análisis científico.
+        </div>
+      </div>
+
+      <div class="maturity-capabilities">
+        <span>Adquisición</span>
+        <span>Persistencia</span>
+        <span>QC</span>
+        <span>ERA5</span>
+        <span>NASA</span>
+        <span>Analítica</span>
+      </div>
+
+    </article>
+
+  </div>
+</section>
+
+
 <section id="observatoryV4" class="observatory-v4">
   <div class="observatory-heading">
     <div>
@@ -1716,6 +2525,128 @@
 </section><!-- /module-analytics -->
 
 <section
+  id="module-timeline"
+  class="atmoslink-module"
+  data-module="timeline"
+>
+  <div class="timeline-module-heading">
+    <div>
+      <div class="section-title">
+        Experiment Timeline
+      </div>
+
+      <div class="timeline-module-subtitle">
+        Secuencia operacional construida con observaciones,
+        sincronizaciones, control de calidad y servicios científicos.
+      </div>
+    </div>
+
+    <div id="timelineUpdatedAt" class="timeline-updated">
+      Actualizando…
+    </div>
+  </div>
+
+  <div class="timeline-summary-grid">
+    <div class="card timeline-summary-card">
+      <div class="label">Última observación</div>
+      <div id="timelineLastObservation" class="value">
+        --
+      </div>
+    </div>
+
+    <div class="card timeline-summary-card">
+      <div class="label">Última sincronización</div>
+      <div id="timelineLastSync" class="value">
+        --
+      </div>
+    </div>
+
+    <div class="card timeline-summary-card">
+      <div class="label">Eventos mostrados</div>
+      <div id="timelineEventCount" class="value">
+        --
+      </div>
+    </div>
+
+    <div class="card timeline-summary-card">
+      <div class="label">Estado general</div>
+      <div id="timelineOverallState" class="value">
+        --
+      </div>
+    </div>
+  </div>
+
+  <div class="timeline-toolbar">
+    <div class="timeline-filter-group">
+      <button
+        type="button"
+        class="timeline-filter active"
+        data-timeline-filter="all"
+      >
+        Todos
+      </button>
+
+      <button
+        type="button"
+        class="timeline-filter"
+        data-timeline-filter="acquisition"
+      >
+        Adquisición
+      </button>
+
+      <button
+        type="button"
+        class="timeline-filter"
+        data-timeline-filter="scientific"
+      >
+        Científico
+      </button>
+
+      <button
+        type="button"
+        class="timeline-filter"
+        data-timeline-filter="service"
+      >
+        Servicios
+      </button>
+
+      <button
+        type="button"
+        class="timeline-filter"
+        data-timeline-filter="alert"
+      >
+        Alertas
+      </button>
+    </div>
+
+    <div class="timeline-legend">
+      <span><i class="timeline-dot timeline-ok"></i> Correcto</span>
+      <span><i class="timeline-dot timeline-warning"></i> Advertencia</span>
+      <span><i class="timeline-dot timeline-error"></i> Error</span>
+      <span><i class="timeline-dot timeline-neutral"></i> No habilitado</span>
+    </div>
+  </div>
+
+  <div class="timeline-panel">
+    <div id="experimentTimeline" class="experiment-timeline">
+      <div class="timeline-empty">
+        Esperando eventos del núcleo AtmosLink.
+      </div>
+    </div>
+  </div>
+
+  <div class="timeline-methodology">
+    <strong>Alcance de esta línea temporal:</strong>
+    presenta el estado operacional disponible en el registro de tareas
+    y las API de AtmosLink. No representa todavía todos los hitos
+    históricos de la campaña experimental.
+  </div>
+</section>
+
+</section><!-- /module-timeline -->
+
+
+<section
   id="module-system"
   class="atmoslink-module"
   data-module="system"
@@ -1807,9 +2738,24 @@
 </section><!-- /module-system -->
 </main>
 
-<footer>
-  AtmosLink Research Platform · Scientific Weather and Radio Link Monitoring
+
+<footer class="scientific-footer-v5">
+
+  <div class="footer-brand">
+    <strong>AtmosLink Research Platform</strong>
+    <span>
+      Scientific Observatory · Experimental Campaign 2026
+    </span>
+  </div>
+
+  <div class="footer-metadata">
+    <span>Versión 5.0</span>
+    <span>Estación CU01 · Cerro Cuñacales</span>
+    <span>Environmental and RF Research Platform</span>
+  </div>
+
 </footer>
+
 
 <script>
 let tempCompareChart = null;
@@ -3582,8 +4528,15 @@ const ATMOSLINK_MODULES = {
       "Concordancia, comparaciones temporales y confiabilidad."
   },
 
-  system: {
+  timeline: {
     code: "MÓDULO 06",
+    title: "Experiment Timeline",
+    description:
+      "Secuencia temporal de adquisición, sincronización y servicios."
+  },
+
+  system: {
+    code: "MÓDULO 07",
     title: "System Diagnostics",
     description:
       "Salud del sistema, alertas, control de calidad y tareas."
@@ -3698,17 +4651,904 @@ document.addEventListener(
   initializeAtmosLinkModules
 );
 
+
+let activeTimelineFilter = "all";
+let atmoslinkTimelineEvents = [];
+
+function timelineSafeDate(value) {
+  if (!value) return null;
+
+  const normalized = String(value)
+    .replace(" ", "T");
+
+  const date = new Date(normalized);
+
+  return Number.isNaN(date.getTime())
+    ? null
+    : date;
+}
+
+function timelineFormatDate(value) {
+  const date = timelineSafeDate(value);
+
+  if (!date) return "--";
+
+  return new Intl.DateTimeFormat("es-PE", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  }).format(date);
+}
+
+function timelineStatus(status) {
+  const value = String(status || "")
+    .toLowerCase();
+
+  if ([
+    "ok",
+    "healthy",
+    "completed",
+    "running",
+    "current"
+  ].includes(value)) {
+    return "ok";
+  }
+
+  if ([
+    "warning",
+    "pending",
+    "delayed"
+  ].includes(value)) {
+    return "warning";
+  }
+
+  if ([
+    "error",
+    "failed",
+    "critical",
+    "stale",
+    "timeout"
+  ].includes(value)) {
+    return "error";
+  }
+
+  return "neutral";
+}
+
+function timelineStateLabel(status) {
+  const value = String(status || "")
+    .toLowerCase();
+
+  const labels = {
+    completed: "COMPLETADO",
+    running: "ACTIVO",
+    healthy: "SALUDABLE",
+    current: "ACTUAL",
+    ok: "OK",
+    warning: "ADVERTENCIA",
+    pending: "PENDIENTE",
+    delayed: "RETRASADO",
+    disabled: "NO HABILITADO",
+    error: "ERROR",
+    failed: "FALLÓ",
+    critical: "CRÍTICO",
+    stale: "DESACTUALIZADO"
+  };
+
+  return labels[value] ||
+    String(status || "--").toUpperCase();
+}
+
+function timelineAddEvent(events, event) {
+  if (!event || !event.timestamp) return;
+
+  events.push({
+    id: event.id || crypto.randomUUID?.() ||
+      `${event.category}-${event.timestamp}-${events.length}`,
+    category: event.category || "service",
+    title: event.title || "Evento AtmosLink",
+    message: event.message || "",
+    timestamp: event.timestamp,
+    status: event.status || "unknown",
+    meta: event.meta || ""
+  });
+}
+
+function buildAtmosLinkTimeline(latest, core) {
+  const events = [];
+
+  const health = core.health || {};
+  const checks = health.checks || {};
+
+  const tasks =
+    ((checks.task_registry || {}).tasks) ||
+    ((core.registry || {}).tasks) ||
+    {};
+
+  timelineAddEvent(events, {
+    id: "latest-observation",
+    category: "acquisition",
+    title: "Observación meteorológica registrada",
+    message:
+      `Estación ${latest.station_id || "CU01"} · ` +
+      `${latest.temp_avg_C ?? "--"} °C · ` +
+      `${latest.hum_avg_pct ?? "--"} % HR`,
+    timestamp:
+      latest.weather_timestamp_local_clean ||
+      latest.timestamp_local,
+    status: latest.observation_state || "current",
+    meta:
+      latest.rain_state === "NO_RAIN"
+        ? "Sin precipitación registrada"
+        : String(latest.rain_state || "")
+  });
+
+  const taskDefinitions = [
+    {
+      name: "sync_master_dataset",
+      category: "scientific",
+      title: "Dataset master sincronizado"
+    },
+    {
+      name: "station_sync",
+      category: "acquisition",
+      title: "Estación sincronizada"
+    },
+    {
+      name: "master_quality_check",
+      category: "scientific",
+      title: "Control de calidad ejecutado"
+    },
+    {
+      name: "scientific_comparison",
+      category: "scientific",
+      title: "Comparación científica actualizada"
+    },
+    {
+      name: "scientific_reliability",
+      category: "scientific",
+      title: "Confiabilidad científica calculada"
+    },
+    {
+      name: "era5_downloader",
+      category: "service",
+      title: "ERA5-Land actualizado"
+    },
+    {
+      name: "nasa_power_downloader",
+      category: "service",
+      title: "NASA POWER actualizado"
+    },
+    {
+      name: "remote_backup",
+      category: "service",
+      title: "Backup remoto completado"
+    },
+    {
+      name: "telegram_alert_sender",
+      category: "service",
+      title: "Servicio Telegram ejecutado"
+    },
+    {
+      name: "health_monitor",
+      category: "service",
+      title: "Diagnóstico del sistema actualizado"
+    }
+  ];
+
+  taskDefinitions.forEach(definition => {
+    const task = tasks[definition.name] || {};
+
+    if (
+      task.status === "disabled" ||
+      (!task.last_end && !task.last_success && !task.last_run)
+    ) {
+      return;
+    }
+
+    timelineAddEvent(events, {
+      id: `task-${definition.name}`,
+      category: definition.category,
+      title: definition.title,
+      message:
+        task.failures > 0
+          ? `${task.failures} fallos registrados`
+          : "Ejecución sin fallos registrados",
+      timestamp:
+        task.last_success ||
+        task.last_end ||
+        task.last_run,
+      status: task.status || "unknown",
+      meta:
+        task.last_duration_seconds !== null &&
+        task.last_duration_seconds !== undefined
+          ? `Duración: ${Number(
+              task.last_duration_seconds
+            ).toFixed(3)} s`
+          : ""
+    });
+  });
+
+  const alerts = (core.alerts || {}).alerts || [];
+
+  alerts.forEach((alert, index) => {
+    timelineAddEvent(events, {
+      id: `alert-${alert.id || index}`,
+      category: "alert",
+      title: alert.title || "Alerta AtmosLink",
+      message: alert.message || "",
+      timestamp:
+        (core.alerts || {}).updated_at ||
+        health.updated_at,
+      status: alert.severity || "warning",
+      meta: alert.id || ""
+    });
+  });
+
+  if (
+    latest.wind_state === "NOT_INSTALLED"
+  ) {
+    timelineAddEvent(events, {
+      id: "wind-not-installed",
+      category: "acquisition",
+      title: "Anemómetro no instalado",
+      message:
+        "La estación opera actualmente sin adquisición local de viento.",
+      timestamp:
+        latest.weather_timestamp_local_clean ||
+        latest.timestamp_local,
+      status: "disabled",
+      meta: "Módulo RS485 pendiente de instalación"
+    });
+  }
+
+  const radioTask = tasks.radio_collector || {};
+
+  if (radioTask.status === "disabled") {
+    timelineAddEvent(events, {
+      id: "radio-disabled",
+      category: "service",
+      title: "Adquisición RF no habilitada",
+      message:
+        "El colector Cambium está desactivado en la configuración actual.",
+      timestamp:
+        (core.registry || {}).updated_at ||
+        health.updated_at,
+      status: "disabled",
+      meta: "RSSI · SNR · MCS · throughput no disponibles"
+    });
+  }
+
+  return events.sort((a, b) => {
+    const dateA = timelineSafeDate(a.timestamp);
+    const dateB = timelineSafeDate(b.timestamp);
+
+    return (
+      (dateB?.getTime() || 0) -
+      (dateA?.getTime() || 0)
+    );
+  });
+}
+
+function renderExperimentTimeline() {
+  const container =
+    document.getElementById("experimentTimeline");
+
+  if (!container) return;
+
+  const filtered =
+    activeTimelineFilter === "all"
+      ? atmoslinkTimelineEvents
+      : atmoslinkTimelineEvents.filter(
+          event =>
+            event.category ===
+            activeTimelineFilter
+        );
+
+  document.getElementById(
+    "timelineEventCount"
+  ).textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="timeline-empty">
+        No existen eventos para este filtro.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(event => {
+    const statusClass =
+      timelineStatus(event.status);
+
+    return `
+      <article
+        class="timeline-event status-${statusClass}"
+        data-category="${event.category}"
+      >
+        <div class="timeline-event-time">
+          ${timelineFormatDate(event.timestamp)}
+        </div>
+
+        <div>
+          <div class="timeline-event-title">
+            ${event.title}
+          </div>
+
+          <div class="timeline-event-message">
+            ${event.message || "--"}
+          </div>
+
+          ${
+            event.meta
+              ? `
+                <div class="timeline-event-meta">
+                  ${event.meta}
+                </div>
+              `
+              : ""
+          }
+        </div>
+
+        <div class="timeline-event-state">
+          ${timelineStateLabel(event.status)}
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+async function updateExperimentTimeline() {
+  try {
+    const [latestResponse, coreResponse] =
+      await Promise.all([
+        fetch("/api/latest"),
+        fetch("/api/core/status")
+      ]);
+
+    if (
+      !latestResponse.ok ||
+      !coreResponse.ok
+    ) {
+      throw new Error(
+        "No se pudo leer el núcleo temporal."
+      );
+    }
+
+    const latest =
+      await latestResponse.json();
+
+    const core =
+      await coreResponse.json();
+
+    atmoslinkTimelineEvents =
+      buildAtmosLinkTimeline(latest, core);
+
+    const tasks =
+      (((core.health || {}).checks || {})
+        .task_registry || {}).tasks ||
+      ((core.registry || {}).tasks) ||
+      {};
+
+    const syncTask =
+      tasks.sync_master_dataset || {};
+
+    const lastObservation =
+      latest.weather_timestamp_local_clean ||
+      latest.timestamp_local ||
+      "--";
+
+    const lastSync =
+      syncTask.last_success ||
+      syncTask.last_end ||
+      syncTask.last_run ||
+      "--";
+
+    v4SetText(
+      "timelineLastObservation",
+      timelineFormatDate(lastObservation)
+    );
+
+    v4SetText(
+      "timelineLastSync",
+      timelineFormatDate(lastSync)
+    );
+
+    const overall =
+      (core.health || {}).overall_status ||
+      "unknown";
+
+    const overallElement =
+      document.getElementById(
+        "timelineOverallState"
+      );
+
+    if (overallElement) {
+      overallElement.textContent =
+        overall === "HEALTHY"
+          ? "OPERATIVO"
+          : String(overall).toUpperCase();
+
+      overallElement.className =
+        "value " +
+        (
+          timelineStatus(overall) === "ok"
+            ? "ok"
+            : timelineStatus(overall) === "error"
+              ? "bad"
+              : "warning"
+        );
+    }
+
+    v4SetText(
+      "timelineUpdatedAt",
+      `Actualizado: ${timelineFormatDate(
+        (core.health || {}).updated_at ||
+        new Date().toISOString()
+      )}`
+    );
+
+    renderExperimentTimeline();
+
+  } catch (error) {
+    console.error(
+      "No se pudo actualizar Experiment Timeline:",
+      error
+    );
+
+    const container =
+      document.getElementById(
+        "experimentTimeline"
+      );
+
+    if (container) {
+      container.innerHTML = `
+        <div class="timeline-empty bad">
+          No se pudo cargar la línea temporal.
+        </div>
+      `;
+    }
+  }
+}
+
+function initializeExperimentTimeline() {
+  const toolbar =
+    document.querySelector(
+      ".timeline-filter-group"
+    );
+
+  if (toolbar) {
+    toolbar.addEventListener(
+      "click",
+      event => {
+        const button =
+          event.target.closest(
+            ".timeline-filter"
+          );
+
+        if (!button) return;
+
+        activeTimelineFilter =
+          button.dataset.timelineFilter ||
+          "all";
+
+        document
+          .querySelectorAll(
+            ".timeline-filter"
+          )
+          .forEach(item => {
+            item.classList.toggle(
+              "active",
+              item === button
+            );
+          });
+
+        renderExperimentTimeline();
+      }
+    );
+  }
+
+  updateExperimentTimeline();
+}
+
+document.addEventListener(
+  "DOMContentLoaded",
+  initializeExperimentTimeline
+);
+
+setInterval(
+  updateExperimentTimeline,
+  30000
+);
+
+
+function scientificStatusLevel(value) {
+  const score = Number(value);
+
+  if (!Number.isFinite(score)) {
+    return {
+      label: "SIN DATOS",
+      status: "neutral"
+    };
+  }
+
+  if (score >= 95) {
+    return {
+      label: "MUY ALTA",
+      status: "ok"
+    };
+  }
+
+  if (score >= 85) {
+    return {
+      label: "ALTA",
+      status: "ok"
+    };
+  }
+
+  if (score >= 70) {
+    return {
+      label: "MODERADA",
+      status: "warning"
+    };
+  }
+
+  return {
+    label: "BAJA",
+    status: "error"
+  };
+}
+
+function scientificBarColor(value) {
+  const score = Number(value);
+
+  if (!Number.isFinite(score)) {
+    return "#64748b";
+  }
+
+  if (score >= 95) return "#22c55e";
+  if (score >= 85) return "#38bdf8";
+  if (score >= 70) return "#f59e0b";
+
+  return "#ef4444";
+}
+
+function setScientificProgress(
+  elementId,
+  value
+) {
+  const element =
+    document.getElementById(elementId);
+
+  if (!element) return;
+
+  const score = Number(value);
+
+  const safe = Number.isFinite(score)
+    ? Math.max(0, Math.min(100, score))
+    : 0;
+
+  element.style.width = `${safe}%`;
+  element.style.background =
+    scientificBarColor(safe);
+}
+
+function calculateScientificGlobalScore(
+  health,
+  reliability,
+  validity,
+  agreement
+) {
+  const values = [
+    {
+      value: Number(health),
+      weight: 0.25
+    },
+    {
+      value: Number(reliability),
+      weight: 0.30
+    },
+    {
+      value: Number(validity),
+      weight: 0.30
+    },
+    {
+      value: Number(agreement),
+      weight: 0.15
+    }
+  ];
+
+  const valid = values.filter(
+    item => Number.isFinite(item.value)
+  );
+
+  if (valid.length === 0) return null;
+
+  const weightSum = valid.reduce(
+    (total, item) => total + item.weight,
+    0
+  );
+
+  return valid.reduce(
+    (total, item) =>
+      total + item.value * item.weight,
+    0
+  ) / weightSum;
+}
+
+function scientificInterpretation(
+  globalScore,
+  agreement
+) {
+  if (!Number.isFinite(globalScore)) {
+    return (
+      "No existe información suficiente para emitir " +
+      "una valoración científica integrada."
+    );
+  }
+
+  if (globalScore >= 90 && agreement >= 70) {
+    return (
+      "El experimento presenta alta consistencia interna " +
+      "y concordancia externa favorable."
+    );
+  }
+
+  if (globalScore >= 85) {
+    return (
+      "El experimento presenta alta confiabilidad interna. " +
+      "La concordancia externa debe interpretarse por variable."
+    );
+  }
+
+  if (globalScore >= 70) {
+    return (
+      "El experimento es utilizable con cautela metodológica " +
+      "y requiere revisión de las variables con mayor error."
+    );
+  }
+
+  return (
+    "La evidencia disponible requiere calibración, revisión " +
+    "de calidad y análisis adicional antes de su uso."
+  );
+}
+
+async function updateScientificStatusV5() {
+  try {
+    const [latestResponse, coreResponse] =
+      await Promise.all([
+        fetch("/api/latest"),
+        fetch("/api/core/status")
+      ]);
+
+    if (
+      !latestResponse.ok ||
+      !coreResponse.ok
+    ) {
+      throw new Error(
+        "No se pudo consultar el núcleo científico."
+      );
+    }
+
+    const latest =
+      await latestResponse.json();
+
+    const core =
+      await coreResponse.json();
+
+    const scientificHealth =
+      core.scientific_health || {};
+
+    const reliability =
+      core.scientific_reliability || {};
+
+    const agreement =
+      core.scientific_agreement || {};
+
+    const qc =
+      core.qc_summary || {};
+
+    const master =
+      core.master_summary || {};
+
+    const healthValue =
+      Number(scientificHealth.score);
+
+    const reliabilityValue =
+      Number(
+        reliability.reliability_percent
+      );
+
+    const validityValue =
+      Number(
+        reliability.validity_percent
+      );
+
+    const agreementValue =
+      Number(
+        agreement.agreement_index
+      );
+
+    const globalScore =
+      calculateScientificGlobalScore(
+        healthValue,
+        reliabilityValue,
+        validityValue,
+        agreementValue
+      );
+
+    const level =
+      scientificStatusLevel(globalScore);
+
+    v4SetText(
+      "scientificGlobalScore",
+      Number.isFinite(globalScore)
+        ? globalScore.toFixed(2)
+        : "--"
+    );
+
+    v4SetText(
+      "scientificGlobalLevel",
+      level.label
+    );
+
+    const badge =
+      document.getElementById(
+        "scientificGlobalBadge"
+      );
+
+    if (badge) {
+      badge.textContent =
+        Number.isFinite(globalScore)
+          ? `EXPERIMENTO ${level.label}`
+          : "SIN EVALUACIÓN";
+
+      badge.className =
+        "scientific-global-badge " +
+        `status-${level.status}`;
+    }
+
+    v4SetText(
+      "scientificGlobalInterpretation",
+      scientificInterpretation(
+        globalScore,
+        agreementValue
+      )
+    );
+
+    setScientificProgress(
+      "scientificGlobalBar",
+      globalScore
+    );
+
+    const metrics = [
+      {
+        valueId:
+          "scientificReliabilityValue",
+        barId:
+          "scientificReliabilityBar",
+        value:
+          reliabilityValue
+      },
+      {
+        valueId:
+          "scientificValidityValue",
+        barId:
+          "scientificValidityBar",
+        value:
+          validityValue
+      },
+      {
+        valueId:
+          "scientificHealthValue",
+        barId:
+          "scientificHealthBar",
+        value:
+          healthValue
+      },
+      {
+        valueId:
+          "scientificAgreementValue",
+        barId:
+          "scientificAgreementBar",
+        value:
+          agreementValue
+      }
+    ];
+
+    metrics.forEach(metric => {
+      v4SetText(
+        metric.valueId,
+        Number.isFinite(metric.value)
+          ? `${metric.value.toFixed(2)} %`
+          : "--"
+      );
+
+      setScientificProgress(
+        metric.barId,
+        metric.value
+      );
+    });
+
+    v4SetText(
+      "scientificMasterRecords",
+      master.total_records ??
+      latest.master_records ??
+      "--"
+    );
+
+    v4SetText(
+      "scientificMatchedRecords",
+      latest.scientific_matched_records ??
+      latest.valid_matched_records ??
+      180
+    );
+
+    v4SetText(
+      "scientificEra5Records",
+      master.era5_matched_records ??
+      "--"
+    );
+
+    v4SetText(
+      "scientificNasaRecords",
+      master.nasa_matched_records ??
+      "--"
+    );
+
+    v4SetText(
+      "scientificQcWarnings",
+      qc.warning ?? "--"
+    );
+
+    v4SetText(
+      "scientificQcCritical",
+      qc.critical ?? "--"
+    );
+
+  } catch (error) {
+    console.error(
+      "No se pudo actualizar Scientific Status V5:",
+      error
+    );
+
+    const badge =
+      document.getElementById(
+        "scientificGlobalBadge"
+      );
+
+    if (badge) {
+      badge.textContent =
+        "SIN COMUNICACIÓN";
+
+      badge.className =
+        "scientific-global-badge status-error";
+    }
+  }
+}
+
+document.addEventListener(
+  "DOMContentLoaded",
+  updateScientificStatusV5
+);
+
+setInterval(
+  updateScientificStatusV5,
+  10000
+);
+
 </script>
 
 
 <footer id="atmoslinkScientificFooter" style="margin:28px 0 16px 0;">
   <div class="card" style="border-left:4px solid #00c8ff;">
-    <div style="color:#00c8ff; font-size:16px; font-weight:800; margin-bottom:6px;">
-      AtmosLink Scientific Platform · Versión 3.0
-    </div>
-    <div style="font-weight:700; color:#ffffff;">
-      Motor científico: Exact Temporal Matching Engine · Resolución temporal: 1 hora · Fuentes: AtmosLink, ERA5-Land y NASA POWER.
-    </div>
+    
   </div>
 </footer>
 
