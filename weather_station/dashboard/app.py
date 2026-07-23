@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime
 import json
 from pathlib import Path
+import os
 
 from weather_station.config.station_manager import get_station_context
 
@@ -124,6 +125,87 @@ def age_seconds_from_now(timestamp_value):
 
     now = datetime.now()
     return max(int((now - dt).total_seconds()), 0)
+
+
+def wind_installation_requested():
+    """
+    Indica si el módulo RS485 de viento está habilitado en esta
+    instalación. Un sensor deshabilitado no debe mostrarse como error.
+    """
+    return os.getenv(
+        "ATMOSLINK_WIND_ENABLED",
+        "0",
+    ).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def scientific_wind_state(
+    wind_ok,
+    wind_speed,
+    wind_direction,
+    wind_gust,
+    age_seconds,
+):
+    """
+    Distingue entre sensor no instalado, operativo, sin datos y error.
+    """
+    requested = wind_installation_requested()
+
+    if not requested:
+        return "NOT_INSTALLED"
+
+    has_measurement = any(
+        value is not None
+        for value in (
+            wind_speed,
+            wind_direction,
+            wind_gust,
+        )
+    )
+
+    if wind_ok in (1, 1.0, True) and has_measurement:
+        if age_seconds is not None and age_seconds > 300:
+            return "STALE"
+        return "OK"
+
+    if not has_measurement:
+        return "NO_DATA"
+
+    return "ERROR"
+
+
+def scientific_rain_state(rain_ok, rain_1h):
+    """
+    Distingue una observación válida de cero lluvia de una falla
+    del pluviómetro.
+    """
+    if rain_ok not in (1, 1.0, True):
+        return "ERROR"
+
+    try:
+        value = float(rain_1h or 0)
+    except (TypeError, ValueError):
+        return "NO_DATA"
+
+    if value > 0:
+        return "RAIN_DETECTED"
+
+    return "NO_RAIN"
+
+
+def scientific_observation_state(age_seconds):
+    """
+    Clasificación visual de vigencia de la observación local.
+    """
+    if age_seconds is None:
+        return "NO_DATA"
+
+    if age_seconds < 120:
+        return "CURRENT"
+
+    if age_seconds <= 300:
+        return "DELAYED"
+
+    return "STALE"
 
 
 def sensor_state(ok_value, age_seconds=None, stale_after_seconds=120):
@@ -288,7 +370,23 @@ def get_latest():
     if d["wind_gust_ms"] is None and gust_row is not None:
         d["wind_gust_ms"] = gust_row["gust"]
     d["wind_ok"] = local.get("local_wind_ok")
-    d["wind_state"] = sensor_state(d["wind_ok"], d["observation_age_seconds"], 120)
+    d["wind_requested"] = wind_installation_requested()
+    d["wind_state"] = scientific_wind_state(
+        d["wind_ok"],
+        d["wind_speed_ms"],
+        d["wind_direction_deg"],
+        d["wind_gust_ms"],
+        d["observation_age_seconds"],
+    )
+
+    d["rain_state"] = scientific_rain_state(
+        local.get("local_rain_ok"),
+        d.get("rain_1h_mm"),
+    )
+
+    d["observation_state"] = scientific_observation_state(
+        d["observation_age_seconds"]
+    )
 
     d["scientific_quality"] = {
         "bme280": sensor_state(local.get("local_bme_ok"), d["observation_age_seconds"], 120),

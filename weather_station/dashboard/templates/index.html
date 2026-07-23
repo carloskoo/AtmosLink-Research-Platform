@@ -137,7 +137,470 @@
       text-align: center;
       padding: 20px;
     }
-  </style>
+  
+  .scientific-substate {
+    margin-top: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.9;
+  }
+
+  .state-neutral {
+    color: #94a3b8 !important;
+  }
+
+  .state-current {
+    color: #22c55e !important;
+  }
+
+  .state-delayed {
+    color: #f59e0b !important;
+  }
+
+  .state-stale,
+  .state-error {
+    color: #ef4444 !important;
+  }
+
+  .state-rain {
+    color: #38bdf8 !important;
+  }
+
+
+  .observation-state-main {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+  }
+
+  .observation-state-age {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.70rem;
+    font-weight: 600;
+    opacity: 0.90;
+  }
+
+  .station-wind-neutral {
+    color: #94a3b8;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .station-wind-error {
+    color: #ef4444;
+    font-weight: 700;
+  }
+
+  .online-system-state {
+    text-align: right;
+    line-height: 1.2;
+  }
+
+  .online-main {
+    color: #22c55e;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .online-station {
+    margin-top: 2px;
+    color: #cbd5e1;
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .online-time {
+    margin-top: 1px;
+    color: #94a3b8;
+    font-size: 0.64rem;
+    font-weight: 600;
+  }
+
+
+.observatory-v4 {
+  margin: 26px 0 30px 0;
+}
+
+.observatory-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.observatory-title {
+  color: var(--accent);
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.observatory-subtitle {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.v4-badge,
+.v4-status-chip {
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.v4-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.v4-panel,
+.v4-flow-panel {
+  background: var(--card);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  padding: 17px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+.v4-panel-title {
+  margin-bottom: 14px;
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.v4-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.v4-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.v4-ok {
+  color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.v4-warning {
+  color: #f59e0b !important;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.v4-error {
+  color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.v4-neutral {
+  color: #94a3b8 !important;
+  background: rgba(148, 163, 184, 0.10);
+}
+
+.v4-metric {
+  margin-bottom: 14px;
+}
+
+.v4-metric-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.v4-progress {
+  height: 7px;
+  overflow: hidden;
+  background: #0f172a;
+  border-radius: 999px;
+}
+
+.v4-progress-fill {
+  width: 0;
+  height: 100%;
+  background: #38bdf8;
+  border-radius: inherit;
+  transition: width 0.4s ease;
+}
+
+.v4-qc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.v4-qc-item {
+  background: rgba(15, 23, 42, 0.55);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.v4-qc-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.v4-message {
+  margin-top: 12px;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.v4-alert-banner {
+  margin-bottom: 14px;
+  padding: 12px 15px;
+  border-left: 4px solid #f59e0b;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.10);
+}
+
+.v4-alert-title {
+  color: #f59e0b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.v4-alert-message {
+  margin-top: 3px;
+  color: #fde68a;
+  font-size: 12px;
+}
+
+.v4-hidden {
+  display: none;
+}
+
+.v4-flow-panel {
+  margin-top: 14px;
+}
+
+.v4-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 10px 0 14px 0;
+}
+
+.v4-node {
+  min-width: 105px;
+  text-align: center;
+}
+
+.v4-node strong,
+.v4-node small {
+  display: block;
+}
+
+.v4-node strong {
+  margin-top: 7px;
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.v4-node small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.v4-node-dot {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+}
+
+.v4-flow-line {
+  min-width: 42px;
+  height: 2px;
+  background: #475569;
+}
+
+.v4-flow-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.v4-flow-meta strong {
+  color: #e2e8f0;
+}
+
+@media (max-width: 1200px) {
+  .v4-panel-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .observatory-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .v4-panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.v4-metric-head strong {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-align: right;
+}
+
+.v4-node small {
+  min-height: 24px;
+  max-width: 125px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.25;
+}
+
+.v4-panel {
+  position: relative;
+}
+
+.v4-panel:hover,
+.v4-flow-panel:hover {
+  border-color: rgba(56, 189, 248, 0.28);
+  transition: border-color 0.2s ease;
+}
+
+#v4QcStatus {
+  color: #f59e0b;
+}
+
+#v4QcCritical {
+  color: #22c55e;
+}
+
+#v4QcWarning {
+  color: #f59e0b;
+}
+
+
+.radio-cambium-panel {
+  margin-bottom: 22px;
+}
+
+.radio-disabled-panel {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+.radio-disabled-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: rgba(148, 163, 184, 0.10);
+  color: #94a3b8;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.radio-disabled-title {
+  color: #e2e8f0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.radio-disabled-message {
+  max-width: 760px;
+  margin-top: 5px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.radio-disabled-metrics {
+  margin-top: 7px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.radio-disabled-badge {
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.10);
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.agreement-interpretation {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+#agreementLevel {
+  letter-spacing: 0.04em;
+}
+
+#v4NodeAnalytics.v4-warning {
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.18);
+}
+
+#v4NodeAnalytics.v4-error {
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.18);
+}
+
+@media (max-width: 760px) {
+  .radio-disabled-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .radio-disabled-badge {
+    justify-self: start;
+  }
+}
+
+</style>
 </head>
 
 <body>
@@ -147,7 +610,11 @@
     <h1>AtmosLink Scientific Dashboard</h1>
     <div class="subtitle">Local Weather · Wind RS485 Ready · ERA5 · NASA POWER · Radio Link</div>
   </div>
-  <div class="status-ok" id="systemStatus">● ONLINE</div>
+  <div id="onlineSystemState" class="online-system-state">
+  <div class="online-main">● ONLINE</div>
+  <div class="online-station">CU01</div>
+  <div class="online-time" id="onlineObservationTime">--:--:--</div>
+</div>
 </header>
 
 <main>
@@ -199,7 +666,253 @@
 </section>
 
 
-  <div class="section-title">Resumen operativo</div>
+  
+<section id="observatoryV4" class="observatory-v4">
+  <div class="observatory-heading">
+    <div>
+      <div class="observatory-title">
+        AtmosLink Scientific Observatory
+      </div>
+      <div class="observatory-subtitle">
+        Centro integrado de monitoreo operacional, control de calidad científica y trazabilidad experimental
+      </div>
+    </div>
+
+    <div id="v4OverallBadge" class="v4-badge v4-neutral">
+      VERIFICANDO
+    </div>
+  </div>
+
+  <div id="v4AlertBanner" class="v4-alert-banner v4-hidden">
+    <div id="v4AlertTitle" class="v4-alert-title">--</div>
+    <div id="v4AlertMessage" class="v4-alert-message">--</div>
+  </div>
+
+  <div class="v4-panel-grid">
+
+    <article class="v4-panel">
+      <div class="v4-panel-title">Salud operacional</div>
+
+      <div class="v4-status-list">
+        <div class="v4-status-row">
+          <span>BME280</span>
+          <span id="v4Bme" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>Pluviómetro</span>
+          <span id="v4Rain" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>Anemómetro</span>
+          <span id="v4Wind" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>Adquisición local</span>
+          <span id="v4Acquisition" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>Internet</span>
+          <span id="v4Internet" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>SQLite</span>
+          <span id="v4Sqlite" class="v4-status-chip v4-neutral">--</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="v4-panel">
+      <div class="v4-panel-title">Calidad científica</div>
+
+      <div class="v4-metric">
+        <div class="v4-metric-head">
+          <span>Índice de salud</span>
+          <strong id="v4HealthScore">--</strong>
+        </div>
+        <div class="v4-progress">
+          <div id="v4HealthBar" class="v4-progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="v4-metric">
+        <div class="v4-metric-head">
+          <span>Confiabilidad</span>
+          <strong id="v4Reliability">--</strong>
+        </div>
+        <div class="v4-progress">
+          <div id="v4ReliabilityBar" class="v4-progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="v4-metric">
+        <div class="v4-metric-head">
+          <span>Validez</span>
+          <strong id="v4Validity">--</strong>
+        </div>
+        <div class="v4-progress">
+          <div id="v4ValidityBar" class="v4-progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="v4-metric">
+        <div class="v4-metric-head">
+          <span>Concordancia externa</span>
+          <strong id="v4Agreement">--</strong>
+        </div>
+        <div class="v4-progress">
+          <div id="v4AgreementBar" class="v4-progress-fill"></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="v4-panel">
+      <div class="v4-panel-title">Control de calidad</div>
+
+      <div class="v4-qc-grid">
+        <div class="v4-qc-item">
+          <span class="v4-qc-label">Estado</span>
+          <strong id="v4QcStatus">--</strong>
+        </div>
+
+        <div class="v4-qc-item">
+          <span class="v4-qc-label">Críticas</span>
+          <strong id="v4QcCritical">--</strong>
+        </div>
+
+        <div class="v4-qc-item">
+          <span class="v4-qc-label">Advertencias</span>
+          <strong id="v4QcWarning">--</strong>
+        </div>
+
+        <div class="v4-qc-item">
+          <span class="v4-qc-label">Registros master</span>
+          <strong id="v4MasterRecords">--</strong>
+        </div>
+      </div>
+
+      <div id="v4QcMessage" class="v4-message">
+        Esperando información de control de calidad.
+      </div>
+    </article>
+
+    <article class="v4-panel">
+      <div class="v4-panel-title">Servicios de la plataforma</div>
+
+      <div class="v4-status-list">
+        <div class="v4-status-row">
+          <span>Sincronización master</span>
+          <span id="v4Scheduler" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>Weather logger</span>
+          <span id="v4Logger" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>ERA5-Land</span>
+          <span id="v4Era5" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>NASA POWER</span>
+          <span id="v4Nasa" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>Telegram</span>
+          <span id="v4Telegram" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>Backup remoto</span>
+          <span id="v4Backup" class="v4-status-chip v4-neutral">--</span>
+        </div>
+
+        <div class="v4-status-row">
+          <span>Radioenlace</span>
+          <span id="v4Radio" class="v4-status-chip v4-neutral">--</span>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <article class="v4-flow-panel">
+    <div class="v4-panel-title">Flujo operativo AtmosLink</div>
+
+    <div class="v4-flow">
+      <div class="v4-node">
+        <span id="v4NodeEsp32" class="v4-node-dot v4-neutral"></span>
+        <strong>ESP32</strong>
+        <small>Adquisición</small>
+      </div>
+
+      <div class="v4-flow-line"></div>
+
+      <div class="v4-node">
+        <span id="v4NodeLogger" class="v4-node-dot v4-neutral"></span>
+        <strong>Logger</strong>
+        <small>Tramas válidas</small>
+      </div>
+
+      <div class="v4-flow-line"></div>
+
+      <div class="v4-node">
+        <span id="v4NodeSqlite" class="v4-node-dot v4-neutral"></span>
+        <strong>SQLite</strong>
+        <small>Persistencia</small>
+      </div>
+
+      <div class="v4-flow-line"></div>
+
+      <div class="v4-node">
+        <span id="v4NodeMaster" class="v4-node-dot v4-neutral"></span>
+        <strong>Master dataset</strong>
+        <small>Sincronización</small>
+      </div>
+
+      <div class="v4-flow-line"></div>
+
+      <div class="v4-node">
+        <span id="v4NodeDashboard" class="v4-node-dot v4-neutral"></span>
+        <strong>Observatory</strong>
+        <small>Visualización</small>
+      </div>
+
+      <div class="v4-flow-line"></div>
+
+      <div class="v4-node">
+        <span id="v4NodeAnalytics" class="v4-node-dot v4-neutral"></span>
+        <strong>Scientific Analytics</strong>
+        <small>Análisis comparativo</small>
+      </div>
+    </div>
+
+    <div class="v4-flow-meta">
+      <span>
+        Última observación:
+        <strong id="v4LastObservation">--</strong>
+      </span>
+
+      <span>
+        Base de datos:
+        <strong id="v4Database">--</strong>
+      </span>
+
+      <span>
+        Estación:
+        <strong id="v4Station">--</strong>
+      </span>
+    </div>
+  </article>
+</section>
+
+<div class="section-title">Resumen operativo</div>
   <div class="grid">
     <div class="card">
       <div class="label">Última observación</div>
@@ -240,8 +953,21 @@
     <div class="card"><div class="label">Presión local</div><div class="value"><span id="pres">--</span> <span class="unit">hPa</span></div></div>
     <div class="card"><div class="label">Punto de rocío local</div><div class="value"><span id="dew">--</span> <span class="unit">°C</span></div></div>
     <div class="card"><div class="label">Presión de vapor local</div><div class="value"><span id="vapor">--</span> <span class="unit">hPa</span></div></div>
-    <div class="card"><div class="label">Lluvia última hora</div><div class="value"><span id="rain1h">--</span> <span class="unit">mm</span></div></div>
-    <div class="card"><div class="label">Lluvia acumulada</div><div class="value"><span id="raintotal">--</span> <span class="unit">mm</span></div></div>
+    <div class="card">
+      <div class="label">Lluvia última hora</div>
+      <div class="value">
+        <span id="rain1h">--</span>
+        <span class="unit">mm</span>
+      </div>
+      <div class="scientific-substate" id="rainState">--</div>
+    </div>
+    <div class="card">
+      <div class="label">Lluvia acumulada</div>
+      <div class="value">
+        <span id="raintotal">--</span>
+        <span class="unit">mm</span>
+      </div>
+    </div>
     <div class="card"><div class="label">BME280</div><div class="value" id="bme">--</div></div>
     <div class="card"><div class="label">Pluviómetro</div><div class="value" id="rainok">--</div></div>
   </div>
@@ -251,7 +977,11 @@
     <div class="card"><div class="label">Velocidad del viento</div><div class="value"><span id="windSpeed">--</span> <span class="unit">m/s</span></div></div>
     <div class="card"><div class="label">Dirección del viento</div><div class="value"><span id="windDirection">--</span> <span class="unit">°</span></div></div>
     <div class="card"><div class="label">Ráfaga máxima</div><div class="value"><span id="windGust">--</span> <span class="unit">m/s</span></div></div>
-    <div class="card"><div class="label">Anemómetro</div><div class="value" id="windOk">--</div></div>
+    <div class="card">
+      <div class="label">Anemómetro</div>
+      <div class="value" id="windOk">--</div>
+      <div class="scientific-substate" id="windInstallState">--</div>
+    </div>
   </div>
 
   <div class="section-title">ERA5-Land</div>
@@ -288,18 +1018,86 @@
     <div class="card"><div class="label">NASA viento 10 m</div><div class="value"><span id="nasaWind">--</span> <span class="unit">m/s</span></div></div>
   </div>
 
-  <div class="section-title">Radioenlace Cambium</div>
-  <div class="grid">
-    <div class="card"><div class="label">SNR DL</div><div class="value"><span id="snrDl">--</span> <span class="unit">dB</span></div></div>
-    <div class="card"><div class="label">SNR UL</div><div class="value"><span id="snrUl">--</span> <span class="unit">dB</span></div></div>
-    <div class="card"><div class="label">RSSI DL</div><div class="value"><span id="rssiDl">--</span> <span class="unit">dBm</span></div></div>
-    <div class="card"><div class="label">MCS DL</div><div class="value"><span id="mcsDl">--</span></div></div>
-    <div class="card"><div class="label">DL Rate</div><div class="value"><span id="dlRate">--</span> <span class="unit">Mbps</span></div></div>
-    <div class="card"><div class="label">Estado radio</div><div class="value" id="radioNote">Adquisición RF deshabilitada</div></div>
+  
+<div class="section-title">Radioenlace Cambium</div>
+
+<section id="radioCambiumPanel" class="radio-cambium-panel">
+
+  <div id="radioDisabledPanel" class="radio-disabled-panel">
+    <div class="radio-disabled-icon">RF</div>
+
+    <div class="radio-disabled-content">
+      <div class="radio-disabled-title">
+        Adquisición RF no habilitada
+      </div>
+
+      <div class="radio-disabled-message">
+        La telemetría del radioenlace está desactivada temporalmente
+        para esta estación. Los indicadores se habilitarán
+        automáticamente cuando se reactive el colector Cambium.
+      </div>
+
+      <div class="radio-disabled-metrics">
+        RSSI · SNR · MCS · capacidad · throughput
+      </div>
+    </div>
+
+    <div class="radio-disabled-badge">
+      MODO INACTIVO
+    </div>
   </div>
 
+  <div id="radioEnabledPanel" class="radio-enabled-panel v4-hidden">
+    <div class="grid">
+      <div class="card">
+        <div class="label">SNR DL</div>
+        <div class="value">
+          <span id="radioSnrDl">--</span>
+          <span class="unit">dB</span>
+        </div>
+      </div>
 
-  <div class="section-title">Índice de concordancia científica</div>
+      <div class="card">
+        <div class="label">SNR UL</div>
+        <div class="value">
+          <span id="radioSnrUl">--</span>
+          <span class="unit">dB</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="label">RSSI DL</div>
+        <div class="value">
+          <span id="radioRssiDl">--</span>
+          <span class="unit">dBm</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="label">MCS DL</div>
+        <div class="value" id="radioMcsDl">--</div>
+      </div>
+
+      <div class="card">
+        <div class="label">DL Rate</div>
+        <div class="value">
+          <span id="radioDlRate">--</span>
+          <span class="unit">Mbps</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="label">Estado radio</div>
+        <div class="value" id="radioNote">
+          Adquisición RF deshabilitada
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<div class="section-title">Índice de concordancia científica</div>
   <div class="grid">
     <div class="card">
       <div class="label">Índice de concordancia</div>
@@ -316,10 +1114,21 @@
       <div class="value" id="agreementBlocks">--</div>
     </div>
 
+    
     <div class="card">
       <div class="label">Mensaje</div>
-      <div class="value" id="agreementMessage" style="font-size:18px;">--</div>
+      <div
+        class="value"
+        id="agreementMessage"
+        style="font-size:18px;"
+      >--</div>
+
+      <div
+        id="agreementInterpretation"
+        class="agreement-interpretation"
+      >--</div>
     </div>
+
   </div>
 
 
@@ -669,52 +1478,107 @@ function setStatus(id, value) {
 
 
 async function updateStationsLatest() {
-  const r = await fetch("/api/stations/latest");
-  const stations = await r.json();
-
   const tbody = document.getElementById("stationsTable");
+
   if (!tbody) return;
 
-  tbody.innerHTML = "";
+  try {
+    const response = await fetch("/api/stations/latest");
 
-  if (!stations || stations.length === 0) {
-    const row = document.createElement("tr");
-    row.innerHTML = `<td colspan="9">Sin estaciones registradas.</td>`;
-    tbody.appendChild(row);
-    return;
-  }
-
-  stations.forEach(st => {
-    const bmeOk = st.bme_ok === 1;
-    const rainOk = st.rain_ok === 1;
-    const windOk = st.wind_ok === 1;
-
-    let status = "OK";
-    let colorClass = "ok";
-
-    if (!bmeOk || !rainOk) {
-      status = "Concordancia limitada";
-      colorClass = "warning";
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status} al consultar estaciones`
+      );
     }
 
-    const windText = windOk
-      ? `${valueOrDash(st.wind_speed_ms)} m/s · ${formatWindDirection(st.wind_direction_deg)}`
-      : "SIN DATO";
+    const stations = await response.json();
 
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${st.source_station_id || st.station_id || "--"}</td>
-      <td>${st.radio_role || "--"}</td>
-      <td>${st.timestamp_local || "--"}</td>
-      <td>${valueOrDash(st.temp_avg_C)} °C</td>
-      <td>${valueOrDash(st.hum_avg_pct)} %</td>
-      <td>${valueOrDash(st.pres_avg_hPa)} hPa</td>
-      <td>${valueOrDash(st.rain_total_mm)} mm</td>
-      <td>${windText}</td>
-      <td class="${colorClass}">${status}</td>
+    tbody.innerHTML = "";
+
+    if (!Array.isArray(stations) || stations.length === 0) {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td colspan="9">
+          Sin estaciones registradas.
+        </td>
+      `;
+
+      tbody.appendChild(row);
+      return;
+    }
+
+    stations.forEach(st => {
+      const bmeOk = Number(st.bme_ok) === 1;
+      const rainOk = Number(st.rain_ok) === 1;
+      const windOk = Number(st.wind_ok) === 1;
+
+      const hasWindMeasurement = [
+        st.wind_speed_ms,
+        st.wind_direction_deg,
+        st.wind_gust_ms
+      ].some(value =>
+        value !== null &&
+        value !== undefined &&
+        value !== ""
+      );
+
+      let windText = "";
+      let windClass = "";
+
+      if (windOk && hasWindMeasurement) {
+        windText =
+          `${valueOrDash(st.wind_speed_ms)} m/s · ` +
+          `${formatWindDirection(st.wind_direction_deg)}`;
+
+        windClass = "ok";
+      } else if (!windOk && !hasWindMeasurement) {
+        windText = "NO INSTALADO";
+        windClass = "station-wind-neutral";
+      } else {
+        windText = "ERROR";
+        windClass = "station-wind-error";
+      }
+
+      let stationStatus = "OK";
+      let statusClass = "ok";
+
+      if (!bmeOk || !rainOk) {
+        stationStatus = "ERROR";
+        statusClass = "bad";
+      }
+
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${valueOrDash(st.station_id)}</td>
+        <td>${valueOrDash(st.radio_role)}</td>
+        <td>${valueOrDash(st.timestamp_local)}</td>
+        <td>${valueOrDash(st.temp_avg_C)} °C</td>
+        <td>${valueOrDash(st.hum_avg_pct)} %</td>
+        <td>${valueOrDash(st.pres_avg_hPa)} hPa</td>
+        <td>${valueOrDash(st.rain_total_mm)} mm</td>
+        <td class="${windClass}">${windText}</td>
+        <td class="${statusClass}">${stationStatus}</td>
+      `;
+
+      tbody.appendChild(row);
+    });
+
+  } catch (error) {
+    console.error(
+      "No se pudo actualizar la tabla de estaciones:",
+      error
+    );
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="bad">
+          No se pudo cargar el estado de las estaciones.
+        </td>
+      </tr>
     `;
-    tbody.appendChild(row);
-  });
+  }
 }
 
 
@@ -744,6 +1608,134 @@ function fmtRain(value) {
 
 function fmtWind(value) {
   return fmt(value, 2);
+}
+
+function applyStateClass(elementId, className) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  el.classList.remove(
+    "state-neutral",
+    "state-current",
+    "state-delayed",
+    "state-stale",
+    "state-error",
+    "state-rain"
+  );
+
+  if (className) {
+    el.classList.add(className);
+  }
+}
+
+function updateScientificWindState(data) {
+  const state = String(data.wind_state || "").toUpperCase();
+
+  const labels = {
+    NOT_INSTALLED: "NO INSTALADO",
+    OK: "OK",
+    NO_DATA: "SIN DATOS",
+    STALE: "DESACTUALIZADO",
+    ERROR: "ERROR"
+  };
+
+  const classes = {
+    NOT_INSTALLED: "state-neutral",
+    OK: "state-current",
+    NO_DATA: "state-delayed",
+    STALE: "state-stale",
+    ERROR: "state-error"
+  };
+
+  const label = labels[state] || "SIN DATOS";
+
+  setText("windOk", label);
+  setText(
+    "windInstallState",
+    state === "NOT_INSTALLED"
+      ? "Pendiente de instalación"
+      : "Estado del sensor de viento"
+  );
+
+  applyStateClass("windOk", classes[state] || "state-neutral");
+  applyStateClass(
+    "windInstallState",
+    classes[state] || "state-neutral"
+  );
+
+  const unavailable = [
+    "NOT_INSTALLED",
+    "NO_DATA",
+    "ERROR",
+    "STALE"
+  ].includes(state);
+
+  if (unavailable) {
+    setText("windSpeed", "No disponible");
+    setText("windDirection", "No disponible");
+    setText("windGust", "No disponible");
+  } else {
+    setText("windSpeed", data.wind_speed_ms);
+    setText(
+      "windDirection",
+      formatWindDirection(data.wind_direction_deg)
+    );
+    setText("windGust", data.wind_gust_ms);
+  }
+}
+
+function updateScientificRainState(data) {
+  const state = String(data.rain_state || "").toUpperCase();
+
+  const labels = {
+    NO_RAIN: "SIN LLUVIA",
+    RAIN_DETECTED: "LLUVIA DETECTADA",
+    NO_DATA: "SIN DATOS",
+    ERROR: "ERROR SENSOR"
+  };
+
+  const classes = {
+    NO_RAIN: "state-current",
+    RAIN_DETECTED: "state-rain",
+    NO_DATA: "state-delayed",
+    ERROR: "state-error"
+  };
+
+  setText("rainState", labels[state] || "SIN DATOS");
+  applyStateClass(
+    "rainState",
+    classes[state] || "state-neutral"
+  );
+}
+
+function updateScientificObservationState(data) {
+  const state = String(
+    data.observation_state || ""
+  ).toUpperCase();
+
+  const labels = {
+    CURRENT: "ACTUALIZADO",
+    DELAYED: "RETRASO",
+    STALE: "DESACTUALIZADO",
+    NO_DATA: "SIN DATOS"
+  };
+
+  const classes = {
+    CURRENT: "state-current",
+    DELAYED: "state-delayed",
+    STALE: "state-stale",
+    NO_DATA: "state-neutral"
+  };
+
+  const age = data.observation_age_label || "sin referencia";
+  setText(
+    "observationAge",
+    `${labels[state] || "SIN DATOS"} · ${age}`
+  );
+  applyStateClass(
+    "observationAge",
+    classes[state] || "state-neutral"
+  );
 }
 
 function setScientificState(id, state) {
@@ -780,12 +1772,678 @@ function formatWindDirection(deg) {
 }
 
 
+
+function v4SetText(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.textContent =
+    value === null ||
+    value === undefined ||
+    value === ""
+      ? "--"
+      : value;
+}
+
+function v4StatusClass(status) {
+  const value = String(status || "").toLowerCase();
+
+  if ([
+    "ok",
+    "healthy",
+    "completed",
+    "running",
+    "current",
+    "pass"
+  ].includes(value)) {
+    return "v4-ok";
+  }
+
+  if ([
+    "warning",
+    "pending",
+    "delayed",
+    "no_data"
+  ].includes(value)) {
+    return "v4-warning";
+  }
+
+  if ([
+    "not_installed",
+    "disabled"
+  ].includes(value)) {
+    return "v4-neutral";
+  }
+
+  if ([
+    "error",
+    "failed",
+    "critical",
+    "stale",
+    "timeout"
+  ].includes(value)) {
+    return "v4-error";
+  }
+
+  return "v4-neutral";
+}
+
+function v4ApplyStatus(id, label, status) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.textContent = label || "--";
+
+  el.classList.remove(
+    "v4-ok",
+    "v4-warning",
+    "v4-error",
+    "v4-neutral"
+  );
+
+  el.classList.add(v4StatusClass(status));
+}
+
+function v4ApplyNode(id, status) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.classList.remove(
+    "v4-ok",
+    "v4-warning",
+    "v4-error",
+    "v4-neutral"
+  );
+
+  el.classList.add(v4StatusClass(status));
+}
+
+
+
+function translateAgreementLevel(level) {
+  const normalized = String(level || "")
+    .trim()
+    .toLowerCase();
+
+  const labels = {
+    very_high: "MUY ALTA",
+    "very high": "MUY ALTA",
+    excellent: "MUY ALTA",
+    high: "ALTA",
+    good: "ALTA",
+    moderate: "MODERADA",
+    medium: "MODERADA",
+    low: "BAJA",
+    poor: "BAJA",
+    critical: "CRÍTICA"
+  };
+
+  return labels[normalized] ||
+    String(level || "--").toUpperCase();
+}
+
+function agreementInterpretationText(value) {
+  const score = Number(value);
+
+  if (!Number.isFinite(score)) {
+    return "No existe información suficiente para interpretar la concordancia.";
+  }
+
+  if (score >= 85) {
+    return (
+      "La concordancia con las fuentes externas es alta. " +
+      "Las comparaciones presentan consistencia favorable."
+    );
+  }
+
+  if (score >= 70) {
+    return (
+      "La concordancia es moderada. Se recomienda revisar " +
+      "las variables con mayor error antes de utilizarlas."
+    );
+  }
+
+  if (score >= 50) {
+    return (
+      "La concordancia es baja. Las fuentes externas deben " +
+      "interpretarse individualmente y con cautela."
+    );
+  }
+
+  return (
+    "La concordancia es crítica. No se recomienda utilizar " +
+    "las fuentes externas sin calibración o análisis adicional."
+  );
+}
+
+function updateRadioPresentation(data) {
+  const disabledPanel =
+    document.getElementById("radioDisabledPanel");
+
+  const enabledPanel =
+    document.getElementById("radioEnabledPanel");
+
+  const hasRadioData = [
+    data.radio_snr_dl,
+    data.radio_snr_ul,
+    data.radio_sta_dl_rssi,
+    data.radio_mcs_dl,
+    data.radio_dl_rate
+  ].some(value =>
+    value !== null &&
+    value !== undefined &&
+    value !== ""
+  );
+
+  const radioDisabled =
+    !hasRadioData ||
+    String(data.radio_note || "")
+      .toUpperCase()
+      .includes("UNAVAILABLE");
+
+  if (disabledPanel) {
+    disabledPanel.classList.toggle(
+      "v4-hidden",
+      !radioDisabled
+    );
+  }
+
+  if (enabledPanel) {
+    enabledPanel.classList.toggle(
+      "v4-hidden",
+      radioDisabled
+    );
+  }
+
+  if (!radioDisabled) {
+    setText("radioSnrDl", data.radio_snr_dl);
+    setText("radioSnrUl", data.radio_snr_ul);
+    setText(
+      "radioRssiDl",
+      data.radio_sta_dl_rssi ??
+      data.radio_rssi_c0p
+    );
+    setText("radioMcsDl", data.radio_mcs_dl);
+    setText("radioDlRate", data.radio_dl_rate);
+    setText("radioNote", data.radio_note || "RF ACTIVO");
+  }
+}
+
+function v4QualityLabel(value) {
+  const numeric = Number(value);
+
+  if (!Number.isFinite(numeric)) return "";
+
+  if (numeric >= 95) return "MUY ALTA";
+  if (numeric >= 85) return "ALTA";
+  if (numeric >= 70) return "MODERADA";
+
+  return "BAJA";
+}
+
+function v4MetricText(value) {
+  const numeric = Number(value);
+
+  if (!Number.isFinite(numeric)) return "--";
+
+  return `${numeric.toFixed(2)} % · ${v4QualityLabel(numeric)}`;
+}
+
+function v4SetNodeDetail(nodeId, detail) {
+  const node = document
+    .getElementById(nodeId)
+    ?.closest(".v4-node");
+
+  if (!node) return;
+
+  const small = node.querySelector("small");
+
+  if (small) {
+    small.textContent =
+      detail === null ||
+      detail === undefined ||
+      detail === ""
+        ? "--"
+        : detail;
+  }
+}
+
+function v4SetProgress(id, value, status) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  const numeric = Number(value);
+
+  const safe = Number.isFinite(numeric)
+    ? Math.max(0, Math.min(100, numeric))
+    : 0;
+
+  el.style.width = `${safe}%`;
+
+  if (status === "critical" || safe < 70) {
+    el.style.background = "#ef4444";
+  } else if (safe < 85) {
+    el.style.background = "#f59e0b";
+  } else if (safe < 95) {
+    el.style.background = "#38bdf8";
+  } else {
+    el.style.background = "#22c55e";
+  }
+}
+
+function v4TaskStatus(tasks, name) {
+  return (tasks[name] || {}).status || "unknown";
+}
+
+function v4TaskLabel(tasks, name) {
+  const status = String(
+    (tasks[name] || {}).status || ""
+  ).toLowerCase();
+
+  if (status === "completed") return "OK";
+  if (status === "running") return "ACTIVO";
+  if (status === "disabled") return "NO HABILITADO";
+  if (status === "failed") return "ERROR";
+
+  return status ? status.toUpperCase() : "--";
+}
+
+async function updateObservatoryV4() {
+  try {
+    const [latestResponse, coreResponse] = await Promise.all([
+      fetch("/api/latest"),
+      fetch("/api/core/status")
+    ]);
+
+    if (!latestResponse.ok || !coreResponse.ok) {
+      throw new Error("Respuesta API no válida");
+    }
+
+    const latest = await latestResponse.json();
+    const core = await coreResponse.json();
+
+    const health = core.health || {};
+    const checks = health.checks || {};
+
+    const tasks =
+      ((checks.task_registry || {}).tasks) ||
+      ((core.registry || {}).tasks) ||
+      {};
+
+    const scientificHealth =
+      core.scientific_health || {};
+
+    const reliability =
+      core.scientific_reliability || {};
+
+    const agreement =
+      core.scientific_agreement || {};
+
+    const qc = core.qc_summary || {};
+    const master = core.master_summary || {};
+    const station = core.station || {};
+    const alerts = core.alerts || {};
+
+    const overall =
+      health.overall_status || "unknown";
+
+    v4ApplyStatus(
+      "v4OverallBadge",
+      overall === "HEALTHY"
+        ? "SISTEMA OPERATIVO"
+        : String(overall).toUpperCase(),
+      overall
+    );
+
+    v4ApplyStatus(
+      "v4Bme",
+      latest.bme_ok === 1 ? "OK" : "ERROR",
+      latest.bme_ok === 1 ? "ok" : "error"
+    );
+
+    v4ApplyStatus(
+      "v4Rain",
+      latest.rain_ok === 1 ? "OK" : "ERROR",
+      latest.rain_ok === 1 ? "ok" : "error"
+    );
+
+    const windState = String(
+      latest.wind_state || "NO_DATA"
+    ).toUpperCase();
+
+    v4ApplyStatus(
+      "v4Wind",
+      windState === "NOT_INSTALLED"
+        ? "NO INSTALADO"
+        : windState,
+      windState
+    );
+
+    const acquisitionState =
+      latest.observation_state || "NO_DATA";
+
+    v4ApplyStatus(
+      "v4Acquisition",
+      acquisitionState === "CURRENT"
+        ? "ACTIVA"
+        : acquisitionState,
+      acquisitionState
+    );
+
+    const internetStatus =
+      (checks.internet || {}).status || "unknown";
+
+    v4ApplyStatus(
+      "v4Internet",
+      internetStatus === "ok"
+        ? "OK"
+        : internetStatus.toUpperCase(),
+      internetStatus
+    );
+
+    const sqliteStatus =
+      (checks.sqlite || {}).status || "unknown";
+
+    v4ApplyStatus(
+      "v4Sqlite",
+      sqliteStatus === "ok"
+        ? "ÍNTEGRA"
+        : sqliteStatus.toUpperCase(),
+      sqliteStatus
+    );
+
+    const healthScore =
+      Number(scientificHealth.score);
+
+    const reliabilityScore =
+      Number(reliability.reliability_percent);
+
+    const validityScore =
+      Number(reliability.validity_percent);
+
+    const agreementScore =
+      Number(agreement.agreement_index);
+
+    v4SetText(
+      "v4HealthScore",
+      v4MetricText(healthScore)
+    );
+
+    v4SetText(
+      "v4Reliability",
+      v4MetricText(reliabilityScore)
+    );
+
+    v4SetText(
+      "v4Validity",
+      v4MetricText(validityScore)
+    );
+
+    v4SetText(
+      "v4Agreement",
+      v4MetricText(agreementScore)
+    );
+
+    v4SetProgress(
+      "v4HealthBar",
+      healthScore,
+      scientificHealth.status
+    );
+
+    v4SetProgress(
+      "v4ReliabilityBar",
+      reliabilityScore,
+      reliability.status
+    );
+
+    v4SetProgress(
+      "v4ValidityBar",
+      validityScore,
+      reliability.status
+    );
+
+    v4SetProgress(
+      "v4AgreementBar",
+      agreementScore,
+      agreement.status
+    );
+
+    v4SetText(
+      "v4QcStatus",
+      String(qc.status || "--").toUpperCase()
+    );
+
+    v4SetText(
+      "v4QcCritical",
+      qc.critical ?? "--"
+    );
+
+    v4SetText(
+      "v4QcWarning",
+      qc.warning ?? "--"
+    );
+
+    v4SetText(
+      "v4MasterRecords",
+      master.total_records ?? "--"
+    );
+
+    v4SetText(
+      "v4QcMessage",
+      qc.message ||
+      "Sin resumen de control de calidad."
+    );
+
+    v4ApplyStatus(
+      "v4Logger",
+      acquisitionState === "CURRENT"
+        ? "ACTIVO"
+        : acquisitionState,
+      acquisitionState
+    );
+
+    const serviceMap = [
+      ["v4Scheduler", "sync_master_dataset"],
+      ["v4Era5", "era5_downloader"],
+      ["v4Nasa", "nasa_power_downloader"],
+      ["v4Telegram", "telegram_alert_sender"],
+      ["v4Backup", "remote_backup"]
+    ];
+
+    serviceMap.forEach(([elementId, taskName]) => {
+      v4ApplyStatus(
+        elementId,
+        v4TaskLabel(tasks, taskName),
+        v4TaskStatus(tasks, taskName)
+      );
+    });
+
+    const radioStatus =
+      v4TaskStatus(tasks, "radio_collector");
+
+    v4ApplyStatus(
+      "v4Radio",
+      radioStatus === "disabled"
+        ? "NO HABILITADO"
+        : v4TaskLabel(tasks, "radio_collector"),
+      radioStatus
+    );
+
+    v4ApplyNode(
+      "v4NodeEsp32",
+      acquisitionState
+    );
+
+    v4ApplyNode(
+      "v4NodeLogger",
+      acquisitionState
+    );
+
+    v4ApplyNode(
+      "v4NodeSqlite",
+      sqliteStatus
+    );
+
+    v4ApplyNode(
+      "v4NodeMaster",
+      v4TaskStatus(tasks, "sync_master_dataset")
+    );
+
+    v4ApplyNode(
+      "v4NodeDashboard",
+      overall
+    );
+
+    v4ApplyNode(
+      "v4NodeAnalytics",
+      agreement.status || "warning"
+    );
+
+    const observationTime =
+      latest.weather_timestamp_local_clean ||
+      latest.timestamp_local ||
+      "--";
+
+    const observationClock =
+      String(observationTime).includes(" ")
+        ? String(observationTime).split(" ")[1]
+        : String(observationTime).slice(11, 19);
+
+    v4SetNodeDetail(
+      "v4NodeEsp32",
+      `Última trama ${observationClock}`
+    );
+
+    v4SetNodeDetail(
+      "v4NodeLogger",
+      acquisitionState === "CURRENT"
+        ? "Grabando observaciones"
+        : String(acquisitionState)
+    );
+
+    v4SetNodeDetail(
+      "v4NodeSqlite",
+      master.total_records !== undefined
+        ? `${master.total_records} registros`
+        : "Persistencia"
+    );
+
+    v4SetNodeDetail(
+      "v4NodeMaster",
+      v4TaskStatus(tasks, "sync_master_dataset") === "completed"
+        ? "Sincronizado"
+        : v4TaskLabel(tasks, "sync_master_dataset")
+    );
+
+    v4SetNodeDetail(
+      "v4NodeDashboard",
+      overall === "HEALTHY"
+        ? "Visualización activa"
+        : String(overall)
+    );
+
+    v4SetNodeDetail(
+      "v4NodeAnalytics",
+      Number.isFinite(agreementScore)
+        ? `${agreementScore.toFixed(0)} % de concordancia`
+        : "Análisis comparativo"
+    );
+
+    v4SetText(
+      "v4LastObservation",
+      latest.weather_timestamp_local_clean ||
+      latest.timestamp_local ||
+      "--"
+    );
+
+    v4SetText(
+      "v4Database",
+      station.database ||
+      core.database ||
+      "--"
+    );
+
+    v4SetText(
+      "v4Station",
+      `${station.station_id || latest.station_id || "--"} · ` +
+      `${station.station_name || latest.station_name || "--"}`
+    );
+
+    const alertBanner =
+      document.getElementById("v4AlertBanner");
+
+    const rawAlertItems = alerts.alerts || [];
+
+    const alertItems = rawAlertItems.filter(alert => {
+      const alertId = String(alert.id || "").toUpperCase();
+
+      const isDisabledRadioAlert =
+        radioStatus === "disabled" &&
+        alertId === "RADIO_LINK_STATUS";
+
+      return !isDisabledRadioAlert;
+    });
+
+    if (
+      alertBanner &&
+      alertItems.length > 0
+    ) {
+      const firstAlert = alertItems[0];
+
+      alertBanner.classList.remove("v4-hidden");
+
+      v4SetText(
+        "v4AlertTitle",
+        firstAlert.title ||
+        "Advertencia del sistema"
+      );
+
+      v4SetText(
+        "v4AlertMessage",
+        firstAlert.message || "--"
+      );
+    } else if (alertBanner) {
+      alertBanner.classList.add("v4-hidden");
+    }
+
+  } catch (error) {
+    console.error(
+      "No se pudo actualizar Observatory V4:",
+      error
+    );
+
+    v4ApplyStatus(
+      "v4OverallBadge",
+      "SIN COMUNICACIÓN",
+      "error"
+    );
+  }
+}
+
 async function updateLatest() {
   const r = await fetch("/api/latest");
   const data = await r.json();
 
   setText("timestamp", data.timestamp_local);
-  setText("observationAge", data.observation_age_label);
+  updateScientificObservationState(data);
+
+  const onlineTimeEl = document.getElementById("onlineObservationTime");
+  if (onlineTimeEl) {
+    const timestamp =
+      data.weather_timestamp_local ||
+      data.master_timestamp_local ||
+      data.timestamp_local;
+
+    if (timestamp) {
+      const text = String(timestamp);
+      onlineTimeEl.textContent =
+        text.includes(" ")
+          ? text.split(" ")[1]
+          : text.slice(11, 19);
+    } else {
+      onlineTimeEl.textContent = "--:--:--";
+    }
+  }
   setText("temp", fmtTemp(data.temp_avg_C));
   setText("hum", fmtPct(data.hum_avg_pct));
   setText("pres", fmtPressure(data.pres_avg_hPa));
@@ -797,10 +2455,8 @@ async function updateLatest() {
   setStatus("bme", data.bme_ok);
   setStatus("rainok", data.rain_ok);
 
-  setText("windSpeed", data.wind_speed_ms);
-  setText("windDirection", formatWindDirection(data.wind_direction_deg));
-  setText("windGust", data.wind_gust_ms);
-  setScientificState("windOk", data.wind_state || (data.wind_ok ? "OK" : "ERROR"));
+  updateScientificWindState(data);
+  updateScientificRainState(data);
 
   const q = data.scientific_quality || {};
   setScientificState("qualityBme", q.bme280);
@@ -835,7 +2491,7 @@ async function updateLatest() {
   setText("rssiDl", data.radio_sta_dl_rssi);
   setText("mcsDl", data.radio_mcs_dl);
   setText("dlRate", data.radio_dl_rate);
-  setText("radioNote", data.radio_note || "Adquisición RF deshabilitada");
+  updateRadioPresentation(data);
 }
 
 
@@ -1029,11 +2685,25 @@ async function updateCoreStatus() {
 
   setText("agreementIndex", agreement.agreement_index ?? "--");
   setText("agreementBlocks", agreement.valid_blocks ?? "--");
-  setText("agreementMessage", agreement.message || "--");
+  setText(
+    "agreementMessage",
+    agreement.message || "--"
+  );
+
+  setText(
+    "agreementInterpretation",
+    agreementInterpretationText(
+      agreement.agreement_index
+    )
+  );
 
   const agreementLevel = document.getElementById("agreementLevel");
   if (agreementLevel) {
-    agreementLevel.textContent = (agreement.level || agreement.status || "--").toUpperCase();
+    agreementLevel.textContent = translateAgreementLevel(
+      agreement.level ||
+      agreement.status ||
+      "--"
+    );
 
     if (agreement.status === "ok") {
       agreementLevel.className = "value ok";
@@ -1420,12 +3090,14 @@ document.addEventListener("change", function(e) {
 updateStationsLatest();
 updateLatest();
 updateCoreStatus();
+updateObservatoryV4();
 updateCharts();
 updateWindRose();
 
 setInterval(updateStationsLatest, 5000);
 setInterval(updateLatest, 5000);
 setInterval(updateCoreStatus, 10000);
+setInterval(updateObservatoryV4, 10000);
 setInterval(updateCharts, 15000);
 setInterval(updateWindRose, 60000);
 
