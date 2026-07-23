@@ -23,13 +23,52 @@ SERIAL_PORT = STATION_CONTEXT.get("serial_port") or "/dev/ttyUSB0"
 BAUD_RATE = STATION_CONTEXT.get("serial_baudrate") or 115200
 SERIAL_TIMEOUT = STATION_CONTEXT.get("serial_timeout") or 2
 
-WIND_ENABLED = os.getenv("ATMOSLINK_WIND_ENABLED", "0") == "1"
-WIND_PORT = os.getenv("ATMOSLINK_WIND_PORT", "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0")
+WIND_REQUESTED = os.getenv(
+    "ATMOSLINK_WIND_ENABLED", "0"
+).strip().lower() in {"1", "true", "yes", "on"}
+
+WIND_PORT = os.getenv(
+    "ATMOSLINK_WIND_PORT",
+    "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0",
+).strip()
+
 WIND_BAUDRATE = int(os.getenv("ATMOSLINK_WIND_BAUDRATE", "9600"))
 WIND_SLAVE_ID = int(os.getenv("ATMOSLINK_WIND_SLAVE_ID", "1"))
-WIND_START_REGISTER = int(os.getenv("ATMOSLINK_WIND_START_REGISTER", "0"))
+WIND_START_REGISTER = int(
+    os.getenv("ATMOSLINK_WIND_START_REGISTER", "0")
+)
 WIND_QUANTITY = int(os.getenv("ATMOSLINK_WIND_QUANTITY", "3"))
 WIND_TIMEOUT = float(os.getenv("ATMOSLINK_WIND_TIMEOUT", "2.0"))
+
+_WIND_WARNING_STATE = {
+    "reason": None,
+    "timestamp": 0.0,
+}
+
+_SERIAL_WARNING_STATE = {
+    "reason": None,
+    "timestamp": 0.0,
+}
+
+ESP32_BOOT_PREFIXES = (
+    "rst:",
+    "ets ",
+    "boot:",
+    "configsip:",
+    "clk_drv:",
+    "mode:",
+    "load:",
+    "ho ",
+    "entry ",
+)
+
+SERIAL_CONTROL_PREFIXES = (
+    "INFO,",
+    "WARN,",
+    "ERROR,",
+)
+
+EXPECTED_WEATHER_FIELDS = 17
 
 
 VALID_RANGES = {
@@ -66,14 +105,135 @@ def setup_logging():
     )
 
 
+def warn_serial_once(reason, interval_seconds=300):
+    """
+    Evita inundar systemd-journald cuando llegan tramas seriales
+    corruptas, incompletas o no reconocidas.
+    """
+    now = time.monotonic()
+
+    if (
+        _SERIAL_WARNING_STATE["reason"] != reason
+        or now - _SERIAL_WARNING_STATE["timestamp"] >= interval_seconds
+    ):
+        message = f"AVISO SERIAL: {reason}"
+        print(message)
+        logging.warning(reason)
+
+        _SERIAL_WARNING_STATE["reason"] = reason
+        _SERIAL_WARNING_STATE["timestamp"] = now
+
+
+def is_serial_control_line(line):
+    """
+    Identifica mensajes informativos del firmware y mensajes de
+    arranque del ESP32 que no representan observaciones científicas.
+    """
+    clean = line.strip()
+
+    if not clean:
+        return True
+
+    return clean.startswith(
+        ESP32_BOOT_PREFIXES + SERIAL_CONTROL_PREFIXES
+    )
+
+
+def is_weather_candidate(line):
+    """
+    Realiza una comprobación estructural preliminar antes de enviar
+    la línea al parser meteorológico.
+    """
+    clean = line.strip()
+    fields = [field.strip() for field in clean.split(",")]
+
+    if len(fields) != EXPECTED_WEATHER_FIELDS:
+        return False, (
+            f"cantidad de campos inesperada: "
+            f"{len(fields)}; se esperaban {EXPECTED_WEATHER_FIELDS}"
+        )
+
+    try:
+        float(fields[0])
+        float(fields[1])
+    except (TypeError, ValueError):
+        return False, "la trama no comienza con valores numéricos"
+
+    return True, "ok"
+
+
+def empty_wind_fields():
+    """
+    Devuelve campos de viento compatibles cuando el anemómetro
+    no está disponible.
+    """
+    return {
+        "wind_speed_ms": None,
+        "wind_direction_deg": None,
+        "wind_gust_ms": None,
+        "wind_ok": 0,
+    }
+
+
+def warn_wind_once(reason, interval_seconds=300):
+    """
+    Evita repetir continuamente la misma advertencia relacionada
+    con el anemómetro.
+    """
+    now = time.monotonic()
+
+    if (
+        _WIND_WARNING_STATE["reason"] != reason
+        or now - _WIND_WARNING_STATE["timestamp"] >= interval_seconds
+    ):
+        print(f"AVISO VIENTO: {reason}")
+        logging.warning(reason)
+
+        _WIND_WARNING_STATE["reason"] = reason
+        _WIND_WARNING_STATE["timestamp"] = now
+
+
+def get_wind_availability():
+    """
+    Comprueba dinámicamente si el anemómetro puede utilizarse.
+
+    Retorna:
+        tuple[bool, str]: disponibilidad y motivo.
+    """
+    if not WIND_REQUESTED:
+        return False, "módulo de viento deshabilitado por configuración"
+
+    if not WIND_PORT:
+        return False, "puerto de viento no configurado"
+
+    if not os.path.exists(WIND_PORT):
+        return False, f"anemómetro no detectado en {WIND_PORT}"
+
+    weather_real = os.path.realpath(SERIAL_PORT)
+    wind_real = os.path.realpath(WIND_PORT)
+
+    if weather_real == wind_real:
+        return (
+            False,
+            "conflicto de puertos: ESP32 y anemómetro apuntan "
+            f"al mismo dispositivo ({weather_real})",
+        )
+
+    return True, "anemómetro disponible"
+
+
 def get_wind_fields():
-    if not WIND_ENABLED:
-        return {
-            "wind_speed_ms": None,
-            "wind_direction_deg": None,
-            "wind_gust_ms": None,
-            "wind_ok": 0,
-        }
+    """
+    Obtiene los datos del anemómetro si está disponible.
+    Si no está disponible, el logger continúa sin viento.
+    """
+    available, reason = get_wind_availability()
+
+    if not available:
+        if WIND_REQUESTED:
+            warn_wind_once(reason)
+
+        return empty_wind_fields()
 
     try:
         reading = read_wind(
@@ -84,7 +244,13 @@ def get_wind_fields():
         )
 
         if reading.get("wind_ok") != 1:
-            logging.warning(f"Lectura de viento no válida: {reading.get('wind_error')}")
+            warn_wind_once(
+                f"lectura de viento no válida: "
+                f"{reading.get('wind_error')}"
+            )
+        else:
+            _WIND_WARNING_STATE["reason"] = None
+            _WIND_WARNING_STATE["timestamp"] = 0.0
 
         return {
             "wind_speed_ms": reading.get("wind_speed_ms"),
@@ -93,14 +259,45 @@ def get_wind_fields():
             "wind_ok": reading.get("wind_ok", 0),
         }
 
-    except Exception as e:
-        logging.warning(f"Error leyendo viento RS485: {e}")
-        return {
-            "wind_speed_ms": None,
-            "wind_direction_deg": None,
-            "wind_gust_ms": None,
-            "wind_ok": 0,
-        }
+    except Exception as exc:
+        warn_wind_once(f"error leyendo viento RS485: {exc}")
+        return empty_wind_fields()
+
+
+def enrich_station_metadata(row):
+    """
+    Completa automáticamente los metadatos de la estación.
+
+    Los valores enviados por el firmware se respetan cuando son
+    válidos. Si vienen ausentes o como UNKNOWN, se reemplazan con
+    la configuración local de la estación.
+    """
+    station_id = str(row.get("station_id") or "").strip()
+
+    if not station_id or station_id.upper() == "UNKNOWN":
+        row["station_id"] = STATION_CONTEXT["station_id"]
+
+    station_name = str(row.get("station_name") or "").strip()
+
+    if not station_name or station_name.upper() == "UNKNOWN":
+        row["station_name"] = STATION_CONTEXT["station_name"]
+
+    deployment_mode = str(
+        row.get("deployment_mode") or ""
+    ).strip()
+
+    if not deployment_mode:
+        row["deployment_mode"] = STATION_CONTEXT.get(
+            "deployment_mode",
+            "field",
+        )
+
+    firmware = str(row.get("firmware") or "").strip()
+
+    if not firmware:
+        row["firmware"] = "UNKNOWN"
+
+    return row
 
 
 def validate_weather_row(row):
@@ -116,12 +313,16 @@ def validate_weather_row(row):
         if value is None:
             if field.startswith("wind_"):
                 continue
+
             return False, f"valor nulo en {field}"
 
         try:
             value = float(value)
         except (TypeError, ValueError):
-            return False, f"valor no numérico en {field}: {row.get(field)}"
+            return (
+                False,
+                f"valor no numérico en {field}: {row.get(field)}",
+            )
 
         if value < min_value or value > max_value:
             return False, f"{field} fuera de rango: {value}"
@@ -138,7 +339,11 @@ def validate_weather_row(row):
     if row["hum_avg_pct"] > row["hum_max_pct"]:
         return False, "hum_avg_pct mayor que hum_max_pct"
 
-    if row["rain_1min_mm"] < 0 or row["rain_1h_mm"] < 0 or row["rain_total_mm"] < 0:
+    if (
+        row["rain_1min_mm"] < 0
+        or row["rain_1h_mm"] < 0
+        or row["rain_total_mm"] < 0
+    ):
         return False, "lluvia negativa"
 
     if row["pulses_delta"] < 0 or row["pulses_total"] < 0:
@@ -152,50 +357,132 @@ def run_logger():
     init_csv()
 
     print("Logger meteorológico iniciado")
-    print(f"Estación: {STATION_CONTEXT['station_id']} | {STATION_CONTEXT['station_name']}")
-    print(f"Modo: {STATION_CONTEXT.get('deployment_mode')}")
+    print(
+        f"Estación: {STATION_CONTEXT['station_id']} | "
+        f"{STATION_CONTEXT['station_name']}"
+    )
+    print(
+        f"Modo: {STATION_CONTEXT.get('deployment_mode')}"
+    )
     print(f"Puerto clima: {SERIAL_PORT}")
-    print(f"Viento RS485 habilitado: {WIND_ENABLED}")
+    print(f"Viento RS485 solicitado: {WIND_REQUESTED}")
 
-    if WIND_ENABLED:
-        print(f"Puerto viento: {WIND_PORT}")
+    wind_available, wind_reason = get_wind_availability()
+
+    print(
+        f"Viento RS485 disponible al inicio: "
+        f"{wind_available}"
+    )
+    print(f"Estado inicial del viento: {wind_reason}")
+
+    if WIND_REQUESTED:
+        print(
+            f"Puerto viento configurado: {WIND_PORT}"
+        )
         print(f"Baudrate viento: {WIND_BAUDRATE}")
         print(f"Slave ID viento: {WIND_SLAVE_ID}")
 
-    logging.info("Logger iniciado")
+    logging.info(
+        "Logger iniciado | estación=%s | puerto_clima=%s",
+        STATION_CONTEXT["station_id"],
+        SERIAL_PORT,
+    )
 
     while True:
         try:
             print(f"Abriendo puerto {SERIAL_PORT}...")
             logging.info(f"Abriendo puerto {SERIAL_PORT}")
 
-            with serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=SERIAL_TIMEOUT) as ser:
-                logging.info("Puerto serie abierto")
-                print("Puerto serie abierto")
+            with serial.Serial(
+                port=SERIAL_PORT,
+                baudrate=BAUD_RATE,
+                timeout=SERIAL_TIMEOUT,
+                write_timeout=SERIAL_TIMEOUT,
+                rtscts=False,
+                dsrdtr=False,
+                xonxoff=False,
+                exclusive=True,
+            ) as ser:
+                # El CP2102 puede accionar EN/BOOT mediante DTR y RTS.
+                # Se mantienen ambas líneas inactivas para reducir
+                # reinicios involuntarios del ESP32.
+                try:
+                    ser.setDTR(False)
+                    ser.setRTS(False)
+                except (AttributeError, OSError, SerialException) as exc:
+                    logging.warning(
+                        "No se pudo fijar DTR/RTS: %s",
+                        exc,
+                    )
 
-                # Sincronización inicial del puerto serie.
-                # Algunos ESP32 envían fragmentos de trama al abrir el puerto.
-                time.sleep(2)
+                logging.info(
+                    "Puerto serie abierto | puerto=%s | baudrate=%s",
+                    SERIAL_PORT,
+                    BAUD_RATE,
+                )
+                print(
+                    f"Puerto serie abierto: "
+                    f"{SERIAL_PORT} @ {BAUD_RATE} baud"
+                )
+
+                # Permite que el ESP32 termine un posible arranque.
+                time.sleep(3)
+
                 try:
                     ser.reset_input_buffer()
                     ser.reset_output_buffer()
-                except Exception:
-                    pass
+                except (OSError, SerialException) as exc:
+                    logging.warning(
+                        "No se pudieron limpiar los buffers: %s",
+                        exc,
+                    )
 
                 while True:
                     raw = ser.readline()
-                    line = raw.decode("utf-8", errors="ignore").strip()
+
+                    if not raw:
+                        continue
+
+                    try:
+                        line = raw.decode(
+                            "utf-8",
+                            errors="strict",
+                        ).strip()
+                    except UnicodeDecodeError:
+                        warn_serial_once(
+                            "fragmento no UTF-8 descartado"
+                        )
+                        continue
 
                     if not line:
                         continue
 
-                    # Descartar mensajes informativos del firmware.
-                    if line.startswith("INFO") or line.startswith("ERROR") or line.startswith("WARN"):
-                        print("RX_DESCARTADO:", line)
+                    if is_serial_control_line(line):
+                        # Se registra como información, pero no se envía
+                        # al parser meteorológico.
+                        logging.info(
+                            "Mensaje de control ESP32: %s",
+                            line[:250],
+                        )
                         continue
 
-                    # Aceptar formato clásico AtmosLink y formato WSCSV.
-                    print("RX:", line)
+                    candidate, candidate_reason = (
+                        is_weather_candidate(line)
+                    )
+
+                    if not candidate:
+                        warn_serial_once(
+                            f"{candidate_reason} | "
+                            f"muestra={line[:120]!r}"
+                        )
+                        continue
+
+                    # Se restablece el estado al recibir una trama
+                    # estructuralmente válida.
+                    _SERIAL_WARNING_STATE["reason"] = None
+                    _SERIAL_WARNING_STATE["timestamp"] = 0.0
+
+                    print("RX_VALIDO:", line)
 
                     try:
                         row = parse_weather_line(line)
@@ -203,32 +490,61 @@ def run_logger():
                         if row is None:
                             continue
 
+                        row = enrich_station_metadata(row)
+
                         wind_fields = get_wind_fields()
                         row.update(wind_fields)
 
                         valid, reason = validate_weather_row(row)
 
                         if not valid:
-                            print("DATO INVALIDO DESCARTADO:", reason, row)
+                            print(
+                                "DATO INVALIDO DESCARTADO:",
+                                reason,
+                                row,
+                            )
                             logging.warning(
-                                f"Dato invalido descartado: {reason} | row={row} | raw={line}"
+                                "Dato invalido descartado: %s | "
+                                "row=%s | raw=%s",
+                                reason,
+                                row,
+                                line,
                             )
                             continue
 
                         ts_utc, ts_local = insert_weather(row)
-                        append_csv(ts_utc, ts_local, row)
+                        append_csv(
+                            ts_utc,
+                            ts_local,
+                            row,
+                        )
 
-                        print("GUARDADO:", ts_local, row)
-                        logging.info(f"Dato guardado: {ts_local}")
+                        print(
+                            "GUARDADO:",
+                            ts_local,
+                            row,
+                        )
+                        logging.info(
+                            "Dato guardado: %s | estación=%s",
+                            ts_local,
+                            row["station_id"],
+                        )
 
-                    except Exception as e:
+                    except Exception as exc:
                         print("Línea ignorada:", line)
-                        logging.warning(f"Linea ignorada: {line} | Error: {e}")
+                        logging.warning(
+                            "Linea ignorada: %s | Error: %s",
+                            line,
+                            exc,
+                        )
 
-        except SerialException as e:
-            print(f"Error serial: {e}")
-            logging.error(f"Error serial: {e}")
-            print(f"Reintentando en {RECONNECT_DELAY_SECONDS} segundos...")
+        except SerialException as exc:
+            print(f"Error serial: {exc}")
+            logging.error(f"Error serial: {exc}")
+            print(
+                f"Reintentando en "
+                f"{RECONNECT_DELAY_SECONDS} segundos..."
+            )
             time.sleep(RECONNECT_DELAY_SECONDS)
 
         except KeyboardInterrupt:
@@ -236,9 +552,9 @@ def run_logger():
             logging.info("Logger detenido por el usuario")
             break
 
-        except Exception as e:
-            print(f"Error general: {e}")
-            logging.error(f"Error general: {e}")
+        except Exception as exc:
+            print(f"Error general: {exc}")
+            logging.error(f"Error general: {exc}")
             time.sleep(RECONNECT_DELAY_SECONDS)
 
 
