@@ -920,5 +920,112 @@ def api_core_status():
     })
 
 
+
+@app.route("/api/health")
+def api_health():
+    """
+    Health-check ligero para systemd, Gunicorn y monitoreo remoto.
+
+    Comprueba:
+    - disponibilidad de SQLite;
+    - acceso de lectura a la base de datos;
+    - vigencia de la última observación;
+    - identidad de la estación y versión de la plataforma.
+    """
+    checked_at = datetime.now()
+    database_status = "error"
+    database_error = None
+    latest_data = {}
+    latest_error = None
+
+    try:
+        conn = get_connection()
+
+        try:
+            conn.execute("SELECT 1").fetchone()
+            database_status = "ok"
+        finally:
+            conn.close()
+
+    except Exception as exc:
+        database_error = str(exc)
+
+    try:
+        latest_endpoint = None
+
+        for rule in app.url_map.iter_rules():
+            if str(rule) == "/api/latest":
+                latest_endpoint = rule.endpoint
+                break
+
+        if latest_endpoint:
+            response = app.view_functions[latest_endpoint]()
+
+            if hasattr(response, "get_json"):
+                latest_data = response.get_json(silent=True) or {}
+            elif isinstance(response, dict):
+                latest_data = response
+
+    except Exception as exc:
+        latest_error = str(exc)
+
+    observation_age_seconds = latest_data.get(
+        "observation_age_seconds"
+    )
+
+    try:
+        observation_age_seconds = (
+            float(observation_age_seconds)
+            if observation_age_seconds is not None
+            else None
+        )
+    except (TypeError, ValueError):
+        observation_age_seconds = None
+
+    latest_observation = (
+        latest_data.get("weather_timestamp_local_clean")
+        or latest_data.get("timestamp_local")
+        or latest_data.get("weather_timestamp_local")
+    )
+
+    if database_status != "ok":
+        overall_status = "unhealthy"
+        http_status = 503
+
+    elif observation_age_seconds is None:
+        overall_status = "degraded"
+        http_status = 200
+
+    elif observation_age_seconds > 300:
+        overall_status = "degraded"
+        http_status = 200
+
+    else:
+        overall_status = "healthy"
+        http_status = 200
+
+    payload = {
+        "status": overall_status,
+        "service": "atmoslink-dashboard",
+        "platform": "AtmosLink Research Platform",
+        "version": "5.1.0",
+        "station_id": STATION_CONTEXT.get("station_id"),
+        "station_name": STATION_CONTEXT.get("station_name"),
+        "database": {
+            "status": database_status,
+            "path": str(DB_FILE),
+            "error": database_error,
+        },
+        "latest_observation": latest_observation,
+        "observation_age_seconds": observation_age_seconds,
+        "latest_error": latest_error,
+        "checked_at_local": checked_at.isoformat(
+            timespec="seconds"
+        ),
+    }
+
+    return jsonify(payload), http_status
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
