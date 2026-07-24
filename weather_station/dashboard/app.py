@@ -6,6 +6,7 @@ from pathlib import Path
 import os
 
 from weather_station.config.station_manager import get_station_context
+from weather_station.events.event_logger import log_event, list_events, event_statistics
 
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -921,6 +922,51 @@ def api_core_status():
 
 
 
+
+
+@app.route("/api/events")
+def api_events():
+    from flask import request
+
+    limit = request.args.get("limit", 100)
+    category = request.args.get("category")
+    severity = request.args.get("severity")
+    station = request.args.get("station")
+    date_from = request.args.get("from")
+    date_to = request.args.get("to")
+
+    try:
+        events = list_events(
+            limit=limit,
+            category=category,
+            severity=severity,
+            station=station,
+            date_from=date_from,
+            date_to=date_to,
+        )
+    except Exception as exc:
+        return jsonify({
+            "status": "error",
+            "error": str(exc),
+            "events": [],
+        }), 500
+
+    return jsonify({
+        "status": "ok",
+        "count": len(events),
+        "filters": {
+            "limit": limit,
+            "category": category,
+            "severity": severity,
+            "station": station,
+            "from": date_from,
+            "to": date_to,
+        },
+        "statistics": event_statistics(),
+        "events": events,
+    })
+
+
 @app.route("/api/health")
 def api_health():
     """
@@ -1025,6 +1071,37 @@ def api_health():
     }
 
     return jsonify(payload), http_status
+
+
+
+
+def register_dashboard_startup_event():
+    try:
+        log_event(
+            category="SYSTEM",
+            severity="SUCCESS",
+            station=STATION_CONTEXT.get("station_id"),
+            title="AtmosLink dashboard started",
+            description=(
+                "Gunicorn loaded the AtmosLink dashboard application."
+            ),
+            author="system",
+            tags=["dashboard", "gunicorn", "startup"],
+            metadata={
+                "platform_version": "5.2.1",
+                "database": str(DB_FILE),
+            },
+            dedupe_key="dashboard-startup",
+            dedupe_seconds=60,
+        )
+    except Exception:
+        app.logger.exception(
+            "Unable to register dashboard startup event."
+        )
+
+
+if os.environ.get("ATMOSLINK_STATION"):
+    register_dashboard_startup_event()
 
 
 if __name__ == "__main__":
