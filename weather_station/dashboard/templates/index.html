@@ -5546,6 +5546,618 @@ setInterval(
 </script>
 
 
+
+<!-- =========================================================
+     AtmosLink V5.2.2 — Scientific Timeline
+========================================================= -->
+<section
+  id="scientific-timeline"
+  class="scientific-timeline-card"
+  aria-labelledby="scientific-timeline-title"
+>
+  <div class="scientific-timeline-header">
+    <div>
+      <div class="scientific-timeline-kicker">
+        Scientific Event & Traceability System
+      </div>
+
+      <h2 id="scientific-timeline-title">
+        Línea de tiempo científica
+      </h2>
+
+      <p>
+        Registro cronológico de eventos operativos,
+        experimentales y científicos de AtmosLink.
+      </p>
+    </div>
+
+    <div class="scientific-timeline-controls">
+      <label for="scientific-timeline-category">
+        Categoría
+      </label>
+
+      <select id="scientific-timeline-category">
+        <option value="">Todas</option>
+        <option value="SYSTEM">Sistema</option>
+        <option value="RF">Radiofrecuencia</option>
+        <option value="METEOROLOGY">Meteorología</option>
+        <option value="CALIBRATION">Calibración</option>
+        <option value="SENSOR">Sensores</option>
+        <option value="DATASET">Dataset</option>
+        <option value="ERA5">ERA5</option>
+        <option value="NASA">NASA POWER</option>
+        <option value="EXPERIMENT">Experimento</option>
+        <option value="PUBLICATION">Publicación</option>
+        <option value="MAINTENANCE">Mantenimiento</option>
+        <option value="USER">Usuario</option>
+      </select>
+
+      <button
+        id="scientific-timeline-refresh"
+        type="button"
+      >
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  <div class="scientific-timeline-summary">
+    <div>
+      <span>Eventos mostrados</span>
+      <strong id="scientific-timeline-count">—</strong>
+    </div>
+
+    <div>
+      <span>Último evento</span>
+      <strong id="scientific-timeline-latest">—</strong>
+    </div>
+
+    <div>
+      <span>Estado</span>
+      <strong id="scientific-timeline-status">
+        Consultando
+      </strong>
+    </div>
+  </div>
+
+  <div
+    id="scientific-timeline-message"
+    class="scientific-timeline-message"
+  >
+    Cargando eventos científicos…
+  </div>
+
+  <div
+    id="scientific-timeline-events"
+    class="scientific-timeline-events"
+    aria-live="polite"
+  ></div>
+
+  <div class="scientific-timeline-footer">
+    <span>Actualización automática cada 60 segundos</span>
+    <span id="scientific-timeline-updated">
+      Última consulta: —
+    </span>
+  </div>
+</section>
+
+<style>
+.scientific-timeline-card {
+  margin: 28px 0;
+  padding: 24px;
+  border: 1px solid rgba(0, 200, 255, 0.22);
+  border-radius: 16px;
+  background: rgba(10, 25, 40, 0.88);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.22);
+}
+
+.scientific-timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.scientific-timeline-header h2 {
+  margin: 4px 0 8px;
+}
+
+.scientific-timeline-header p {
+  margin: 0;
+  opacity: 0.78;
+}
+
+.scientific-timeline-kicker {
+  color: #00c8ff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scientific-timeline-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  min-width: 260px;
+}
+
+.scientific-timeline-controls label {
+  grid-column: 1 / -1;
+  font-size: 0.76rem;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+
+.scientific-timeline-controls select,
+.scientific-timeline-controls button {
+  min-height: 40px;
+  border: 1px solid rgba(0, 200, 255, 0.3);
+  border-radius: 9px;
+  padding: 0 12px;
+  color: inherit;
+  background: rgba(6, 20, 32, 0.9);
+}
+
+.scientific-timeline-controls button {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.scientific-timeline-controls button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.scientific-timeline-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.scientific-timeline-summary > div {
+  padding: 13px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  background: rgba(4, 15, 25, 0.55);
+}
+
+.scientific-timeline-summary span {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.72rem;
+  opacity: 0.68;
+  text-transform: uppercase;
+}
+
+.scientific-timeline-events {
+  position: relative;
+  margin-left: 8px;
+  padding-left: 28px;
+}
+
+.scientific-timeline-events::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 7px;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    #00c8ff,
+    rgba(0, 200, 255, 0.12)
+  );
+}
+
+.scientific-timeline-event {
+  position: relative;
+  margin-bottom: 14px;
+  padding: 15px 17px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  background: rgba(4, 15, 25, 0.62);
+}
+
+.scientific-timeline-event::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: -27px;
+  width: 12px;
+  height: 12px;
+  border: 3px solid #071522;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+.scientific-timeline-event.severity-success::before {
+  background: #22c55e;
+}
+
+.scientific-timeline-event.severity-warning::before {
+  background: #f59e0b;
+}
+
+.scientific-timeline-event.severity-error::before {
+  background: #ef4444;
+}
+
+.scientific-timeline-event-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.scientific-timeline-event-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.scientific-timeline-event-time {
+  flex: 0 0 auto;
+  font-size: 0.77rem;
+  opacity: 0.68;
+}
+
+.scientific-timeline-event-description {
+  margin: 8px 0 0;
+  line-height: 1.45;
+  opacity: 0.84;
+}
+
+.scientific-timeline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 11px;
+}
+
+.scientific-timeline-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid rgba(0, 200, 255, 0.22);
+  border-radius: 999px;
+  font-size: 0.68rem;
+  opacity: 0.9;
+}
+
+.scientific-timeline-message {
+  padding: 22px;
+  border: 1px dashed rgba(255, 255, 255, 0.17);
+  border-radius: 10px;
+  text-align: center;
+  opacity: 0.72;
+}
+
+.scientific-timeline-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 15px;
+  font-size: 0.72rem;
+  opacity: 0.58;
+}
+
+@media (max-width: 800px) {
+  .scientific-timeline-header {
+    flex-direction: column;
+  }
+
+  .scientific-timeline-controls {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .scientific-timeline-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .scientific-timeline-event-header {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .scientific-timeline-footer {
+    flex-direction: column;
+  }
+}
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  const categoryElement =
+    document.getElementById(
+      "scientific-timeline-category"
+    );
+
+  const refreshElement =
+    document.getElementById(
+      "scientific-timeline-refresh"
+    );
+
+  const countElement =
+    document.getElementById(
+      "scientific-timeline-count"
+    );
+
+  const latestElement =
+    document.getElementById(
+      "scientific-timeline-latest"
+    );
+
+  const statusElement =
+    document.getElementById(
+      "scientific-timeline-status"
+    );
+
+  const messageElement =
+    document.getElementById(
+      "scientific-timeline-message"
+    );
+
+  const eventsElement =
+    document.getElementById(
+      "scientific-timeline-events"
+    );
+
+  const updatedElement =
+    document.getElementById(
+      "scientific-timeline-updated"
+    );
+
+  function text(value, fallback = "—") {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return fallback;
+    }
+
+    return String(value);
+  }
+
+  function formatDate(value) {
+    if (!value) {
+      return "—";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return text(value);
+    }
+
+    return new Intl.DateTimeFormat(
+      "es-PE",
+      {
+        dateStyle: "medium",
+        timeStyle: "medium"
+      }
+    ).format(date);
+  }
+
+  function createBadge(value) {
+    const badge = document.createElement("span");
+
+    badge.className = "scientific-timeline-badge";
+    badge.textContent = text(value);
+
+    return badge;
+  }
+
+  function createEvent(event) {
+    const article = document.createElement("article");
+    const severity = text(
+      event.severity,
+      "INFO"
+    ).toLowerCase();
+
+    article.className =
+      "scientific-timeline-event severity-" +
+      severity;
+
+    const header = document.createElement("div");
+    header.className =
+      "scientific-timeline-event-header";
+
+    const title = document.createElement("h3");
+    title.className =
+      "scientific-timeline-event-title";
+    title.textContent = text(
+      event.title,
+      "Evento sin título"
+    );
+
+    const time = document.createElement("time");
+    time.className =
+      "scientific-timeline-event-time";
+    time.dateTime = text(event.timestamp, "");
+    time.textContent = formatDate(event.timestamp);
+
+    header.appendChild(title);
+    header.appendChild(time);
+    article.appendChild(header);
+
+    if (event.description) {
+      const description =
+        document.createElement("p");
+
+      description.className =
+        "scientific-timeline-event-description";
+
+      description.textContent =
+        text(event.description);
+
+      article.appendChild(description);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "scientific-timeline-meta";
+
+    meta.appendChild(
+      createBadge(event.category)
+    );
+
+    meta.appendChild(
+      createBadge(event.severity)
+    );
+
+    if (event.station) {
+      meta.appendChild(
+        createBadge("Estación: " + event.station)
+      );
+    }
+
+    if (event.author) {
+      meta.appendChild(
+        createBadge("Autor: " + event.author)
+      );
+    }
+
+    if (Array.isArray(event.tags)) {
+      event.tags.slice(0, 5).forEach(
+        function (tag) {
+          meta.appendChild(
+            createBadge("#" + tag)
+          );
+        }
+      );
+    }
+
+    article.appendChild(meta);
+
+    return article;
+  }
+
+  async function loadScientificTimeline() {
+    refreshElement.disabled = true;
+    statusElement.textContent = "Consultando";
+    messageElement.hidden = false;
+    messageElement.textContent =
+      "Cargando eventos científicos…";
+    eventsElement.replaceChildren();
+
+    const params = new URLSearchParams({
+      limit: "20"
+    });
+
+    const category = categoryElement.value.trim();
+
+    if (category) {
+      params.set("category", category);
+    }
+
+    try {
+      const response = await fetch(
+        "/api/events?" + params.toString(),
+        {
+          cache: "no-store",
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "HTTP " + response.status
+        );
+      }
+
+      const payload = await response.json();
+
+      const events = Array.isArray(payload.events)
+        ? payload.events
+        : [];
+
+      countElement.textContent =
+        String(events.length);
+
+      latestElement.textContent =
+        events.length
+          ? formatDate(events[0].timestamp)
+          : "Sin eventos";
+
+      updatedElement.textContent =
+        "Última consulta: " +
+        new Intl.DateTimeFormat(
+          "es-PE",
+          {
+            dateStyle: "short",
+            timeStyle: "medium"
+          }
+        ).format(new Date());
+
+      if (!events.length) {
+        messageElement.hidden = false;
+        messageElement.textContent =
+          "No existen eventos para el filtro seleccionado.";
+
+        statusElement.textContent =
+          "Sin registros";
+
+        return;
+      }
+
+      const fragment =
+        document.createDocumentFragment();
+
+      events.forEach(function (event) {
+        fragment.appendChild(
+          createEvent(event)
+        );
+      });
+
+      eventsElement.appendChild(fragment);
+
+      messageElement.hidden = true;
+      statusElement.textContent = "Operativo";
+
+    } catch (error) {
+      console.error(
+        "Scientific Timeline:",
+        error
+      );
+
+      countElement.textContent = "—";
+      latestElement.textContent = "—";
+      statusElement.textContent = "Error";
+
+      messageElement.hidden = false;
+      messageElement.textContent =
+        "No fue posible consultar la bitácora científica.";
+
+    } finally {
+      refreshElement.disabled = false;
+    }
+  }
+
+  refreshElement.addEventListener(
+    "click",
+    loadScientificTimeline
+  );
+
+  categoryElement.addEventListener(
+    "change",
+    loadScientificTimeline
+  );
+
+  loadScientificTimeline();
+
+  window.setInterval(
+    loadScientificTimeline,
+    60000
+  );
+})();
+</script>
+
+
 <footer id="atmoslinkScientificFooter" style="margin:28px 0 16px 0;">
   <div class="card" style="border-left:4px solid #00c8ff;">
     
