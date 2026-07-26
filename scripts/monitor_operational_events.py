@@ -66,6 +66,35 @@ NASA_MAX_AGE_SECONDS = int(
 )
 
 
+FAILURE_CONFIRMATIONS = int(
+    os.environ.get(
+        "ATMOSLINK_FAILURE_CONFIRMATIONS",
+        "2",
+    )
+)
+
+DEGRADED_CONFIRMATIONS = int(
+    os.environ.get(
+        "ATMOSLINK_DEGRADED_CONFIRMATIONS",
+        "2",
+    )
+)
+
+STALE_CONFIRMATIONS = int(
+    os.environ.get(
+        "ATMOSLINK_STALE_CONFIRMATIONS",
+        "2",
+    )
+)
+
+MISSING_CONFIRMATIONS = int(
+    os.environ.get(
+        "ATMOSLINK_MISSING_CONFIRMATIONS",
+        "3",
+    )
+)
+
+
 def now_iso() -> str:
     return datetime.now().astimezone().isoformat(
         timespec="seconds"
@@ -159,7 +188,7 @@ def fetch_json(
         headers={
             "Accept": "application/json",
             "User-Agent": (
-                "AtmosLink-Automatic-Event-Monitor/5.2.3"
+                "AtmosLink-Automatic-Event-Monitor/5.2.4"
             ),
         },
     )
@@ -312,6 +341,51 @@ def normalize_health_status(
     return "UNKNOWN"
 
 
+def required_confirmations(
+    status: str,
+) -> int:
+    normalized = status.upper()
+
+    if normalized in {
+        "UP",
+        "HEALTHY",
+        "FRESH",
+    }:
+        return 1
+
+    if normalized in {
+        "DOWN",
+        "UNHEALTHY",
+    }:
+        return max(
+            1,
+            FAILURE_CONFIRMATIONS,
+        )
+
+    if normalized == "DEGRADED":
+        return max(
+            1,
+            DEGRADED_CONFIRMATIONS,
+        )
+
+    if normalized == "STALE":
+        return max(
+            1,
+            STALE_CONFIRMATIONS,
+        )
+
+    if normalized in {
+        "MISSING",
+        "UNKNOWN",
+    }:
+        return max(
+            1,
+            MISSING_CONFIRMATIONS,
+        )
+
+    return 1
+
+
 def update_component_state(
     *,
     state: dict[str, Any],
@@ -328,6 +402,8 @@ def update_component_state(
         {},
     )
 
+    checked_at = now_iso()
+
     previous_record = components.get(
         component,
         {},
@@ -337,16 +413,152 @@ def update_component_state(
         "status"
     )
 
-    changed = previous_status != new_status
+    transition_count = int(
+        previous_record.get(
+            "transition_count",
+            0,
+        )
+        or 0
+    )
 
-    components[component] = {
-        "status": new_status,
-        "checked_at": now_iso(),
-        "metadata": metadata,
-    }
+    status_since = previous_record.get(
+        "status_since"
+    )
 
-    if not changed:
+    last_transition_at = previous_record.get(
+        "last_transition_at"
+    )
+
+    candidate_status = previous_record.get(
+        "candidate_status"
+    )
+
+    candidate_count = int(
+        previous_record.get(
+            "candidate_count",
+            0,
+        )
+        or 0
+    )
+
+    candidate_since = previous_record.get(
+        "candidate_since"
+    )
+
+    # Primera observación del componente:
+    # se adopta inmediatamente como estado inicial.
+    if previous_status is None:
+        components[component] = {
+            "status": new_status,
+            "status_since": checked_at,
+            "checked_at": checked_at,
+            "last_observed_status": new_status,
+            "candidate_status": None,
+            "candidate_count": 0,
+            "candidate_since": None,
+            "required_confirmations": 1,
+            "transition_count": 0,
+            "last_transition_at": None,
+            "metadata": metadata,
+        }
+
+        confirmed = True
+        confirmation_count = 1
+        confirmation_required = 1
+
+    # El estado observado coincide con el estado oficial.
+    # Se elimina cualquier candidato transitorio.
+    elif previous_status == new_status:
+        components[component] = {
+            **previous_record,
+            "status": previous_status,
+            "status_since": (
+                status_since
+                or checked_at
+            ),
+            "checked_at": checked_at,
+            "last_observed_status": new_status,
+            "candidate_status": None,
+            "candidate_count": 0,
+            "candidate_since": None,
+            "required_confirmations": 0,
+            "transition_count": transition_count,
+            "last_transition_at": last_transition_at,
+            "metadata": metadata,
+        }
+
         return False
+
+    else:
+        confirmation_required = (
+            required_confirmations(
+                new_status
+            )
+        )
+
+        if candidate_status == new_status:
+            confirmation_count = (
+                candidate_count + 1
+            )
+        else:
+            confirmation_count = 1
+            candidate_since = checked_at
+
+        confirmed = (
+            confirmation_count
+            >= confirmation_required
+        )
+
+        if not confirmed:
+            components[component] = {
+                **previous_record,
+                "status": previous_status,
+                "status_since": (
+                    status_since
+                    or checked_at
+                ),
+                "checked_at": checked_at,
+                "last_observed_status": new_status,
+                "candidate_status": new_status,
+                "candidate_count": (
+                    confirmation_count
+                ),
+                "candidate_since": (
+                    candidate_since
+                ),
+                "required_confirmations": (
+                    confirmation_required
+                ),
+                "transition_count": (
+                    transition_count
+                ),
+                "last_transition_at": (
+                    last_transition_at
+                ),
+                "metadata": metadata,
+            }
+
+            return False
+
+        transition_count += 1
+
+        components[component] = {
+            "status": new_status,
+            "status_since": checked_at,
+            "checked_at": checked_at,
+            "last_observed_status": new_status,
+            "candidate_status": None,
+            "candidate_count": 0,
+            "candidate_since": None,
+            "required_confirmations": (
+                confirmation_required
+            ),
+            "transition_count": (
+                transition_count
+            ),
+            "last_transition_at": checked_at,
+            "metadata": metadata,
+        }
 
     if new_status in {
         "UP",
@@ -375,8 +587,11 @@ def update_component_state(
 
     if previous_status:
         transition_description += (
-            f" Transición detectada: "
-            f"{previous_status} → {new_status}."
+            f" Transición confirmada: "
+            f"{previous_status} → {new_status}. "
+            f"Confirmaciones: "
+            f"{confirmation_count}/"
+            f"{confirmation_required}."
         )
     else:
         transition_description += (
@@ -393,7 +608,8 @@ def update_component_state(
         author="system",
         tags=[
             "automatic-monitor",
-            "v5.2.3",
+            "smart-state-engine",
+            "v5.2.4",
             component.lower(),
             new_status.lower(),
         ],
@@ -401,6 +617,16 @@ def update_component_state(
             "component": component,
             "previous_status": previous_status,
             "current_status": new_status,
+            "confirmation_count": (
+                confirmation_count
+            ),
+            "confirmation_required": (
+                confirmation_required
+            ),
+            "transition_count": (
+                transition_count
+            ),
+            "confirmed_at": checked_at,
             **metadata,
         },
         dedupe_key=(
@@ -782,7 +1008,7 @@ def main() -> int:
         tags=[
             "automatic-monitor",
             "startup",
-            "v5.2.3",
+            "v5.2.4",
         ],
         metadata={
             "base_url": arguments.base_url,
@@ -832,7 +1058,7 @@ def main() -> int:
                 tags=[
                     "automatic-monitor",
                     "failure",
-                    "v5.2.3",
+                    "v5.2.4",
                 ],
                 metadata={
                     "error_type": (

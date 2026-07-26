@@ -19,6 +19,11 @@ Environment=ATMOSLINK_LOCAL_MAX_AGE_SECONDS=300
 Environment=ATMOSLINK_ERA5_MAX_AGE_SECONDS=21600
 Environment=ATMOSLINK_NASA_MAX_AGE_SECONDS=172800
 
+Environment=ATMOSLINK_FAILURE_CONFIRMATIONS=2
+Environment=ATMOSLINK_DEGRADED_CONFIRMATIONS=2
+Environment=ATMOSLINK_STALE_CONFIRMATIONS=2
+Environment=ATMOSLINK_MISSING_CONFIRMATIONS=3
+
 ExecStart=/home/carlos/Proyectos/EstacionMeteorologica/venv/bin/python3 /home/carlos/Proyectos/EstacionMeteorologica/scripts/monitor_operational_events.py
 
 Restart=always
