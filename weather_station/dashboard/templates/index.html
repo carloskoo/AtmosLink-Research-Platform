@@ -1414,6 +1414,493 @@
   }
 }
 
+
+/* ==========================================================
+   ATMOSLINK SCIENTIFIC PLATFORM OVERVIEW V5.2
+   ========================================================== */
+
+.scientific-platform-overview {
+  margin: 22px 24px 30px;
+  padding: 22px;
+  border-radius: 20px;
+  border: 1px solid rgba(56, 189, 248, 0.20);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.98),
+      rgba(17, 24, 39, 0.95)
+    );
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.30);
+}
+
+.scientific-platform-identity {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.scientific-platform-kicker {
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.scientific-platform-title {
+  margin: 6px 0 2px;
+  font-size: clamp(1.45rem, 2.8vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.scientific-platform-description {
+  color: var(--muted);
+  margin-top: 7px;
+  font-size: 0.92rem;
+}
+
+.scientific-platform-version {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid rgba(56, 189, 248, 0.30);
+  border-radius: 999px;
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.08);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.scientific-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.scientific-overview-card {
+  position: relative;
+  min-height: 164px;
+  padding: 17px;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(31, 41, 55, 0.72);
+}
+
+.scientific-overview-card::after {
+  content: "";
+  position: absolute;
+  right: -26px;
+  bottom: -32px;
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.045);
+}
+
+.scientific-overview-label {
+  position: relative;
+  z-index: 1;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.scientific-overview-value {
+  position: relative;
+  z-index: 1;
+  margin-top: 12px;
+  font-size: 1.55rem;
+  font-weight: 850;
+  line-height: 1.1;
+}
+
+.scientific-overview-detail {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.scientific-overview-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 0.79rem;
+}
+
+.scientific-overview-row span:first-child {
+  color: var(--muted);
+}
+
+.scientific-overview-row strong {
+  text-align: right;
+  font-weight: 750;
+}
+
+.scientific-state-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.scientific-state-dot {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 11px;
+  border-radius: 50%;
+  background: #94a3b8;
+  box-shadow: 0 0 0 5px rgba(148, 163, 184, 0.10);
+}
+
+.scientific-overview-card.state-fresh {
+  border-color: rgba(34, 197, 94, 0.42);
+}
+
+.scientific-overview-card.state-fresh .scientific-state-dot {
+  background: #22c55e;
+  box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.12);
+}
+
+.scientific-overview-card.state-fresh .scientific-overview-value {
+  color: #22c55e;
+}
+
+.scientific-overview-card.state-waiting {
+  border-color: rgba(245, 158, 11, 0.42);
+}
+
+.scientific-overview-card.state-waiting .scientific-state-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.12);
+}
+
+.scientific-overview-card.state-waiting .scientific-overview-value {
+  color: #f59e0b;
+}
+
+.scientific-overview-card.state-stale {
+  border-color: rgba(249, 115, 22, 0.48);
+}
+
+.scientific-overview-card.state-stale .scientific-state-dot {
+  background: #f97316;
+  box-shadow: 0 0 0 5px rgba(249, 115, 22, 0.12);
+}
+
+.scientific-overview-card.state-stale .scientific-overview-value {
+  color: #f97316;
+}
+
+.scientific-overview-card.state-critical,
+.scientific-overview-card.state-error {
+  border-color: rgba(239, 68, 68, 0.50);
+}
+
+.scientific-overview-card.state-critical .scientific-state-dot,
+.scientific-overview-card.state-error .scientific-state-dot {
+  background: #ef4444;
+  box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.12);
+}
+
+.scientific-overview-card.state-critical .scientific-overview-value,
+.scientific-overview-card.state-error .scientific-overview-value {
+  color: #ef4444;
+}
+
+.scientific-campaign-active {
+  color: #22c55e;
+}
+
+.scientific-source-list {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 15px;
+}
+
+.scientific-source-chip {
+  padding: 6px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.55);
+  color: #cbd5e1;
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+
+.scientific-overview-updated {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  text-align: right;
+}
+
+@media (max-width: 1180px) {
+  .scientific-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .scientific-platform-overview {
+    margin: 15px 12px 24px;
+    padding: 16px;
+  }
+
+  .scientific-platform-identity {
+    flex-direction: column;
+  }
+
+  .scientific-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scientific-platform-version {
+    align-self: flex-start;
+  }
+}
+
+
+/* ==========================================================
+   ATMOSLINK DASHBOARD V5.3
+   CAMPAIGN PANEL + THEME MANAGER
+   ========================================================== */
+
+:root {
+  --atmos-surface: rgba(31, 41, 55, 0.76);
+  --atmos-surface-soft: rgba(15, 23, 42, 0.58);
+  --atmos-border: rgba(148, 163, 184, 0.16);
+  --atmos-control: #111827;
+  --atmos-control-text: #f9fafb;
+}
+
+html[data-theme="light"] {
+  --bg: #eef2f7;
+  --panel: #ffffff;
+  --card: #ffffff;
+  --text: #172033;
+  --muted: #64748b;
+  --accent: #0284c7;
+  --ok: #15803d;
+  --bad: #dc2626;
+  --warning: #d97706;
+
+  --atmos-surface: rgba(255, 255, 255, 0.94);
+  --atmos-surface-soft: rgba(241, 245, 249, 0.92);
+  --atmos-border: rgba(71, 85, 105, 0.18);
+  --atmos-control: #ffffff;
+  --atmos-control-text: #172033;
+}
+
+html[data-theme="light"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+html[data-theme="light"] header,
+html[data-theme="light"] .card,
+html[data-theme="light"] .chart-card {
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .scientific-platform-overview {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(241, 245, 249, 0.96)
+    );
+}
+
+html[data-theme="light"] td {
+  border-color: #e2e8f0;
+}
+
+html[data-theme="light"] th {
+  border-color: #cbd5e1;
+}
+
+.atmoslink-v53-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.atmoslink-v53-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.atmoslink-v53-control label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.atmoslink-v53-control select,
+.atmoslink-v53-control button {
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid var(--atmos-border);
+  border-radius: 10px;
+  background: var(--atmos-control);
+  color: var(--atmos-control-text);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.atmoslink-v53-control button {
+  cursor: pointer;
+}
+
+.atmoslink-v53-control button:hover {
+  border-color: rgba(56, 189, 248, 0.55);
+}
+
+.atmoslink-v53-campaign-panel {
+  margin: -10px 24px 30px;
+  padding: 20px;
+  border: 1px solid var(--atmos-border);
+  border-radius: 18px;
+  background: var(--atmos-surface-soft);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.20);
+}
+
+.atmoslink-v53-campaign-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 17px;
+}
+
+.atmoslink-v53-campaign-title {
+  margin: 0;
+  font-size: 1.12rem;
+  color: var(--accent);
+}
+
+.atmoslink-v53-campaign-subtitle {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.79rem;
+}
+
+.atmoslink-v53-campaign-badge {
+  padding: 7px 11px;
+  border: 1px solid rgba(34, 197, 94, 0.34);
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.09);
+  color: var(--ok);
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+}
+
+.atmoslink-v53-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.atmoslink-v53-metric {
+  min-height: 90px;
+  padding: 14px;
+  border: 1px solid var(--atmos-border);
+  border-radius: 14px;
+  background: var(--atmos-surface);
+}
+
+.atmoslink-v53-metric-label {
+  color: var(--muted);
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.atmoslink-v53-metric-value {
+  margin-top: 10px;
+  font-size: 1.18rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.atmoslink-v53-metric-detail {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.atmoslink-v53-good {
+  color: var(--ok);
+}
+
+.atmoslink-v53-warning {
+  color: var(--warning);
+}
+
+.atmoslink-v53-error {
+  color: var(--bad);
+}
+
+.atmoslink-v53-update {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-align: right;
+}
+
+@media (max-width: 1250px) {
+  .atmoslink-v53-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .atmoslink-v53-controls {
+    justify-content: flex-start;
+  }
+
+  .atmoslink-v53-campaign-panel {
+    margin: -10px 12px 24px;
+    padding: 15px;
+  }
+
+  .atmoslink-v53-campaign-header {
+    flex-direction: column;
+  }
+
+  .atmoslink-v53-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 460px) {
+  .atmoslink-v53-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
 </style>
 </head>
 
@@ -1430,6 +1917,370 @@
   <div class="online-time" id="onlineObservationTime">--:--:--</div>
 </div>
 </header>
+
+
+<!-- ========================================================
+     ATMOSLINK SCIENTIFIC PLATFORM OVERVIEW V5.2
+     ======================================================== -->
+<section
+  id="scientificPlatformOverview"
+  class="scientific-platform-overview"
+  aria-labelledby="scientificPlatformTitle"
+>
+  <div class="scientific-platform-identity">
+    <div>
+      <div class="scientific-platform-kicker">
+        AtmosLink Research Platform
+      </div>
+
+      <h2
+        id="scientificPlatformTitle"
+        class="scientific-platform-title"
+      >
+        High-Andean Scientific Observatory
+      </h2>
+
+      <div class="scientific-platform-description">
+        Observación meteorológica, integración de datos externos
+        y análisis experimental del radioenlace rural.
+      </div>
+    </div>
+
+    <div class="atmoslink-v53-controls">
+
+      <div class="atmoslink-v53-control">
+        <label for="atmoslinkStationSelector">
+          Estación
+        </label>
+
+        <select
+          id="atmoslinkStationSelector"
+          aria-label="Selector de estación científica"
+        >
+          <option value="CU01">CU01 · Cerro Cuñacales</option>
+        </select>
+      </div>
+
+      <div class="atmoslink-v53-control">
+        <label for="atmoslinkThemeSelector">
+          Tema
+        </label>
+
+        <select
+          id="atmoslinkThemeSelector"
+          aria-label="Tema visual"
+        >
+          <option value="system">Automático</option>
+          <option value="dark">Oscuro</option>
+          <option value="light">Claro</option>
+        </select>
+      </div>
+
+      <div
+        id="scientificPlatformVersion"
+        class="scientific-platform-version"
+      >
+        DASHBOARD V5.3
+      </div>
+
+    </div>
+  </div>
+
+  <div class="scientific-overview-grid">
+
+    <article
+      id="scientificOperationalCard"
+      class="scientific-overview-card"
+    >
+      <div class="scientific-overview-label">
+        Estado operacional
+      </div>
+
+      <div class="scientific-state-line">
+        <span class="scientific-state-dot"></span>
+
+        <div
+          id="scientificOperationalState"
+          class="scientific-overview-value"
+        >
+          VERIFICANDO
+        </div>
+      </div>
+
+      <div
+        id="scientificOperationalMessage"
+        class="scientific-overview-detail"
+      >
+        Consultando la adquisición meteorológica.
+      </div>
+
+      <div class="scientific-overview-row">
+        <span>Edad de observación</span>
+        <strong id="scientificObservationAge">—</strong>
+      </div>
+
+      <div class="scientific-overview-row">
+        <span>Última observación</span>
+        <strong id="scientificLatestObservation">—</strong>
+      </div>
+    </article>
+
+    <article class="scientific-overview-card">
+      <div class="scientific-overview-label">
+        Campaña científica
+      </div>
+
+      <div
+        id="scientificCampaignStatus"
+        class="scientific-overview-value scientific-campaign-active"
+      >
+        ACTIVE
+      </div>
+
+      <div class="scientific-overview-detail">
+        High-Andean Meteorological and RF Research Campaign 2026
+      </div>
+
+      <div class="scientific-overview-row">
+        <span>Estación</span>
+        <strong id="scientificCampaignStation">—</strong>
+      </div>
+
+      <div class="scientific-overview-row">
+        <span>Intervalo nominal</span>
+        <strong>60 s</strong>
+      </div>
+    </article>
+
+    <article class="scientific-overview-card">
+      <div class="scientific-overview-label">
+        Estación y emplazamiento
+      </div>
+
+      <div
+        id="scientificStationId"
+        class="scientific-overview-value"
+      >
+        —
+      </div>
+
+      <div
+        id="scientificStationName"
+        class="scientific-overview-detail"
+      >
+        Consultando metadatos.
+      </div>
+
+      <div class="scientific-overview-row">
+        <span>Altitud</span>
+        <strong id="scientificStationAltitude">—</strong>
+      </div>
+
+      <div class="scientific-overview-row">
+        <span>Coordenadas</span>
+        <strong id="scientificStationCoordinates">—</strong>
+      </div>
+    </article>
+
+    <article class="scientific-overview-card">
+      <div class="scientific-overview-label">
+        Integridad de plataforma
+      </div>
+
+      <div
+        id="scientificPlatformHealth"
+        class="scientific-overview-value"
+      >
+        VERIFICANDO
+      </div>
+
+      <div class="scientific-overview-row">
+        <span>Base local</span>
+        <strong id="scientificDatabaseStatus">—</strong>
+      </div>
+
+      <div class="scientific-overview-row">
+        <span>Servicio</span>
+        <strong id="scientificServiceName">—</strong>
+      </div>
+
+      <div class="scientific-source-list">
+        <span class="scientific-source-chip">LOCAL</span>
+        <span class="scientific-source-chip">ERA5-LAND</span>
+        <span class="scientific-source-chip">NASA POWER</span>
+        <span class="scientific-source-chip">CAMBIUM RF</span>
+      </div>
+    </article>
+
+  </div>
+
+  <div
+    id="scientificOverviewUpdated"
+    class="scientific-overview-updated"
+  >
+    Esperando primera actualización.
+  </div>
+</section>
+
+
+<!-- ========================================================
+     ATMOSLINK CAMPAIGN PANEL V5.3
+     ======================================================== -->
+<section
+  id="atmoslinkV53CampaignPanel"
+  class="atmoslink-v53-campaign-panel"
+  aria-labelledby="atmoslinkV53CampaignTitle"
+>
+  <div class="atmoslink-v53-campaign-header">
+    <div>
+      <h2
+        id="atmoslinkV53CampaignTitle"
+        class="atmoslink-v53-campaign-title"
+      >
+        Campaña científica AtmosLink 2026
+      </h2>
+
+      <div class="atmoslink-v53-campaign-subtitle">
+        Disponibilidad operacional, observaciones y estado
+        de las fuentes científicas integradas.
+      </div>
+    </div>
+
+    <div
+      id="atmoslinkV53CampaignStatus"
+      class="atmoslink-v53-campaign-badge"
+    >
+      ACTIVE
+    </div>
+  </div>
+
+  <div class="atmoslink-v53-metrics">
+
+    <article class="atmoslink-v53-metric">
+      <div class="atmoslink-v53-metric-label">
+        Estado local
+      </div>
+
+      <div
+        id="atmoslinkV53LocalState"
+        class="atmoslink-v53-metric-value"
+      >
+        —
+      </div>
+
+      <div
+        id="atmoslinkV53LocalAge"
+        class="atmoslink-v53-metric-detail"
+      >
+        Esperando observación
+      </div>
+    </article>
+
+    <article class="atmoslink-v53-metric">
+      <div class="atmoslink-v53-metric-label">
+        Base de datos
+      </div>
+
+      <div
+        id="atmoslinkV53Database"
+        class="atmoslink-v53-metric-value"
+      >
+        —
+      </div>
+
+      <div class="atmoslink-v53-metric-detail">
+        SQLite local de campaña
+      </div>
+    </article>
+
+    <article class="atmoslink-v53-metric">
+      <div class="atmoslink-v53-metric-label">
+        ERA5-Land
+      </div>
+
+      <div
+        id="atmoslinkV53Era5"
+        class="atmoslink-v53-metric-value"
+      >
+        —
+      </div>
+
+      <div
+        id="atmoslinkV53Era5Time"
+        class="atmoslink-v53-metric-detail"
+      >
+        Última sincronización
+      </div>
+    </article>
+
+    <article class="atmoslink-v53-metric">
+      <div class="atmoslink-v53-metric-label">
+        NASA POWER
+      </div>
+
+      <div
+        id="atmoslinkV53Nasa"
+        class="atmoslink-v53-metric-value"
+      >
+        —
+      </div>
+
+      <div
+        id="atmoslinkV53NasaTime"
+        class="atmoslink-v53-metric-detail"
+      >
+        Última sincronización
+      </div>
+    </article>
+
+    <article class="atmoslink-v53-metric">
+      <div class="atmoslink-v53-metric-label">
+        Radioenlace RF
+      </div>
+
+      <div
+        id="atmoslinkV53Rf"
+        class="atmoslink-v53-metric-value"
+      >
+        —
+      </div>
+
+      <div class="atmoslink-v53-metric-detail">
+        Telemetría Cambium
+      </div>
+    </article>
+
+    <article class="atmoslink-v53-metric">
+      <div class="atmoslink-v53-metric-label">
+        Plataforma
+      </div>
+
+      <div
+        id="atmoslinkV53Platform"
+        class="atmoslink-v53-metric-value"
+      >
+        —
+      </div>
+
+      <div
+        id="atmoslinkV53PlatformDetail"
+        class="atmoslink-v53-metric-detail"
+      >
+        AtmosLink Dashboard
+      </div>
+    </article>
+
+  </div>
+
+  <div
+    id="atmoslinkV53Updated"
+    class="atmoslink-v53-update"
+  >
+    Esperando primera actualización.
+  </div>
+</section>
+
+
 
 <main>
 <section
@@ -6163,6 +7014,825 @@ setInterval(
     
   </div>
 </footer>
+
+
+<script>
+/* ==========================================================
+   ATMOSLINK SCIENTIFIC PLATFORM OVERVIEW V5.2
+   ========================================================== */
+(function () {
+  "use strict";
+
+  const stationMetadata = {
+    CU01: {
+      altitude: "2730 m s. n. m.",
+      coordinates: "-6.692400, -78.514178"
+    },
+    SJ01: {
+      altitude: "3650 m s. n. m.",
+      coordinates: "-6.763875, -78.601542"
+    }
+  };
+
+  function safeText(value, fallback = "—") {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return fallback;
+    }
+
+    return String(value);
+  }
+
+  function formatAge(seconds) {
+    const value = Number(seconds);
+
+    if (!Number.isFinite(value) || value < 0) {
+      return "—";
+    }
+
+    const rounded = Math.round(value);
+
+    if (rounded < 60) {
+      return `${rounded} s`;
+    }
+
+    const minutes = Math.floor(rounded / 60);
+    const remainingSeconds = rounded % 60;
+
+    if (minutes < 60) {
+      return `${minutes} min ${String(
+        remainingSeconds
+      ).padStart(2, "0")} s`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    return `${hours} h ${String(
+      remainingMinutes
+    ).padStart(2, "0")} min`;
+  }
+
+  function formatDate(value) {
+    if (!value) {
+      return "—";
+    }
+
+    const normalized =
+      String(value).includes("T")
+        ? String(value)
+        : String(value).replace(" ", "T");
+
+    const date = new Date(normalized);
+
+    if (Number.isNaN(date.getTime())) {
+      return safeText(value);
+    }
+
+    return new Intl.DateTimeFormat(
+      "es-PE",
+      {
+        dateStyle: "short",
+        timeStyle: "medium"
+      }
+    ).format(date);
+  }
+
+  function stateMessage(state) {
+    const messages = {
+      FRESH: "Adquisición meteorológica funcionando normalmente.",
+      WAITING: "Esperando una nueva observación dentro de la tolerancia operativa.",
+      STALE: "La observación está retrasada y requiere seguimiento.",
+      CRITICAL: "No se reciben observaciones dentro del límite crítico.",
+      ERROR: "No fue posible evaluar el estado de la plataforma.",
+      UNKNOWN: "Estado operacional no determinado."
+    };
+
+    return messages[state] || messages.UNKNOWN;
+  }
+
+  function stateClass(state) {
+    const mapping = {
+      FRESH: "state-fresh",
+      WAITING: "state-waiting",
+      STALE: "state-stale",
+      CRITICAL: "state-critical",
+      ERROR: "state-error"
+    };
+
+    return mapping[state] || "";
+  }
+
+  function setText(id, value, fallback = "—") {
+    const element = document.getElementById(id);
+
+    if (element) {
+      element.textContent = safeText(value, fallback);
+    }
+  }
+
+  async function updateScientificPlatformOverview() {
+    const operationalCard = document.getElementById(
+      "scientificOperationalCard"
+    );
+
+    try {
+      const response = await fetch(
+        "/api/health",
+        {
+          cache: "no-store",
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const health = await response.json();
+
+      const state = safeText(
+        health.operational_state,
+        "UNKNOWN"
+      ).toUpperCase();
+
+      if (operationalCard) {
+        operationalCard.classList.remove(
+          "state-fresh",
+          "state-waiting",
+          "state-stale",
+          "state-critical",
+          "state-error"
+        );
+
+        const cssClass = stateClass(state);
+
+        if (cssClass) {
+          operationalCard.classList.add(cssClass);
+        }
+      }
+
+      setText(
+        "scientificOperationalState",
+        state
+      );
+
+      setText(
+        "scientificOperationalMessage",
+        stateMessage(state)
+      );
+
+      setText(
+        "scientificObservationAge",
+        formatAge(health.observation_age_seconds)
+      );
+
+      setText(
+        "scientificLatestObservation",
+        formatDate(health.latest_observation)
+      );
+
+      const stationId = safeText(
+        health.station_id,
+        "UNKNOWN"
+      );
+
+      const metadata =
+        stationMetadata[stationId] || {};
+
+      setText(
+        "scientificCampaignStation",
+        stationId
+      );
+
+      setText(
+        "scientificStationId",
+        stationId
+      );
+
+      setText(
+        "scientificStationName",
+        health.station_name,
+        "Estación sin nombre configurado"
+      );
+
+      setText(
+        "scientificStationAltitude",
+        metadata.altitude,
+        "No configurada"
+      );
+
+      setText(
+        "scientificStationCoordinates",
+        metadata.coordinates,
+        "No configuradas"
+      );
+
+      const platformStatus = safeText(
+        health.status,
+        "unknown"
+      ).toUpperCase();
+
+      setText(
+        "scientificPlatformHealth",
+        platformStatus
+      );
+
+      const platformHealthElement =
+        document.getElementById(
+          "scientificPlatformHealth"
+        );
+
+      if (platformHealthElement) {
+        platformHealthElement.className =
+          "scientific-overview-value";
+
+        if (platformStatus === "HEALTHY") {
+          platformHealthElement.classList.add("ok");
+        } else if (
+          platformStatus === "OBSERVING" ||
+          platformStatus === "DEGRADED"
+        ) {
+          platformHealthElement.classList.add("warning");
+        } else {
+          platformHealthElement.classList.add("bad");
+        }
+      }
+
+      const databaseStatus = safeText(
+        health.database?.status,
+        "unknown"
+      ).toUpperCase();
+
+      setText(
+        "scientificDatabaseStatus",
+        databaseStatus
+      );
+
+      setText(
+        "scientificServiceName",
+        health.service
+      );
+
+      setText(
+        "scientificPlatformVersion",
+        `DASHBOARD V5.2 · API ${safeText(
+          health.version,
+          "—"
+        )}`
+      );
+
+      setText(
+        "scientificOverviewUpdated",
+        "Actualizado: " +
+          new Intl.DateTimeFormat(
+            "es-PE",
+            {
+              dateStyle: "short",
+              timeStyle: "medium"
+            }
+          ).format(new Date())
+      );
+
+    } catch (error) {
+      console.error(
+        "Scientific Platform Overview:",
+        error
+      );
+
+      if (operationalCard) {
+        operationalCard.classList.remove(
+          "state-fresh",
+          "state-waiting",
+          "state-stale",
+          "state-critical"
+        );
+
+        operationalCard.classList.add(
+          "state-error"
+        );
+      }
+
+      setText(
+        "scientificOperationalState",
+        "ERROR"
+      );
+
+      setText(
+        "scientificOperationalMessage",
+        "No fue posible consultar /api/health."
+      );
+
+      setText(
+        "scientificPlatformHealth",
+        "UNAVAILABLE"
+      );
+
+      setText(
+        "scientificOverviewUpdated",
+        "Error de actualización: " +
+          new Intl.DateTimeFormat(
+            "es-PE",
+            {
+              timeStyle: "medium"
+            }
+          ).format(new Date())
+      );
+    }
+  }
+
+  updateScientificPlatformOverview();
+
+  window.setInterval(
+    updateScientificPlatformOverview,
+    10000
+  );
+})();
+</script>
+
+
+
+<script>
+/* ==========================================================
+   ATMOSLINK DASHBOARD V5.3
+   THEME MANAGER + CAMPAIGN STATUS
+   ========================================================== */
+(function () {
+  "use strict";
+
+  const themeSelector =
+    document.getElementById("atmoslinkThemeSelector");
+
+  const stationSelector =
+    document.getElementById("atmoslinkStationSelector");
+
+  function safe(value, fallback = "—") {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return fallback;
+    }
+
+    return String(value);
+  }
+
+  function setText(id, value, fallback = "—") {
+    const element = document.getElementById(id);
+
+    if (element) {
+      element.textContent = safe(value, fallback);
+    }
+  }
+
+  function setMetricClass(id, status) {
+    const element = document.getElementById(id);
+
+    if (!element) {
+      return;
+    }
+
+    element.classList.remove(
+      "atmoslink-v53-good",
+      "atmoslink-v53-warning",
+      "atmoslink-v53-error"
+    );
+
+    const normalized =
+      safe(status, "").toUpperCase();
+
+    if (
+      ["OK", "HEALTHY", "FRESH", "ONLINE", "ACTIVE"]
+        .includes(normalized)
+    ) {
+      element.classList.add("atmoslink-v53-good");
+    } else if (
+      ["WAITING", "DEGRADED", "STALE", "DELAYED"]
+        .includes(normalized)
+    ) {
+      element.classList.add("atmoslink-v53-warning");
+    } else if (
+      ["ERROR", "CRITICAL", "OFFLINE", "FAILED", "UNHEALTHY"]
+        .includes(normalized)
+    ) {
+      element.classList.add("atmoslink-v53-error");
+    }
+  }
+
+  function formatAge(seconds) {
+    const value = Number(seconds);
+
+    if (!Number.isFinite(value) || value < 0) {
+      return "Edad no disponible";
+    }
+
+    const total = Math.round(value);
+
+    if (total < 60) {
+      return `${total} s desde la última observación`;
+    }
+
+    const minutes = Math.floor(total / 60);
+    const secondsLeft = total % 60;
+
+    return `${minutes} min ${String(
+      secondsLeft
+    ).padStart(2, "0")} s desde la última observación`;
+  }
+
+  function formatTimestamp(value) {
+    if (!value) {
+      return "Sin registro";
+    }
+
+    const normalized =
+      String(value).includes("T")
+        ? String(value)
+        : String(value).replace(" ", "T");
+
+    const date = new Date(normalized);
+
+    if (Number.isNaN(date.getTime())) {
+      return safe(value);
+    }
+
+    return new Intl.DateTimeFormat(
+      "es-PE",
+      {
+        dateStyle: "short",
+        timeStyle: "short"
+      }
+    ).format(date);
+  }
+
+  function resolveTheme(theme) {
+    if (theme === "light") {
+      return "light";
+    }
+
+    if (theme === "dark") {
+      return "dark";
+    }
+
+    return window.matchMedia(
+      "(prefers-color-scheme: light)"
+    ).matches
+      ? "light"
+      : "dark";
+  }
+
+  function applyTheme(theme) {
+    const selected = ["light", "dark", "system"]
+      .includes(theme)
+      ? theme
+      : "system";
+
+    document.documentElement.dataset.theme =
+      resolveTheme(selected);
+
+    localStorage.setItem(
+      "atmoslink-theme",
+      selected
+    );
+
+    if (themeSelector) {
+      themeSelector.value = selected;
+    }
+  }
+
+  const savedTheme =
+    localStorage.getItem("atmoslink-theme")
+    || "system";
+
+  applyTheme(savedTheme);
+
+  if (themeSelector) {
+    themeSelector.addEventListener(
+      "change",
+      function () {
+        applyTheme(themeSelector.value);
+      }
+    );
+  }
+
+  window.matchMedia(
+    "(prefers-color-scheme: light)"
+  ).addEventListener(
+    "change",
+    function () {
+      const current =
+        localStorage.getItem("atmoslink-theme")
+        || "system";
+
+      if (current === "system") {
+        applyTheme("system");
+      }
+    }
+  );
+
+  function findFirst(object, keys) {
+    if (!object || typeof object !== "object") {
+      return null;
+    }
+
+    for (const key of keys) {
+      if (
+        object[key] !== undefined &&
+        object[key] !== null &&
+        object[key] !== ""
+      ) {
+        return object[key];
+      }
+    }
+
+    return null;
+  }
+
+  async function updateAtmosLinkV53() {
+    try {
+      const responses = await Promise.all([
+        fetch("/api/health", {cache: "no-store"}),
+        fetch("/api/latest", {cache: "no-store"}),
+        fetch("/api/core/status", {cache: "no-store"}),
+        fetch("/api/stations/latest", {cache: "no-store"})
+      ]);
+
+      const invalid =
+        responses.find(response => !response.ok);
+
+      if (invalid) {
+        throw new Error(`HTTP ${invalid.status}`);
+      }
+
+      const [
+        health,
+        latest,
+        core,
+        stationsPayload
+      ] = await Promise.all(
+        responses.map(response => response.json())
+      );
+
+      const localState =
+        safe(
+          health.operational_state,
+          health.status
+        ).toUpperCase();
+
+      setText(
+        "atmoslinkV53LocalState",
+        localState
+      );
+
+      setMetricClass(
+        "atmoslinkV53LocalState",
+        localState
+      );
+
+      setText(
+        "atmoslinkV53LocalAge",
+        formatAge(health.observation_age_seconds)
+      );
+
+      const dbStatus =
+        safe(
+          health.database?.status,
+          "UNKNOWN"
+        ).toUpperCase();
+
+      setText(
+        "atmoslinkV53Database",
+        dbStatus
+      );
+
+      setMetricClass(
+        "atmoslinkV53Database",
+        dbStatus
+      );
+
+      const era5Timestamp = findFirst(
+        latest,
+        [
+          "era5_timestamp_local",
+          "era5_timestamp",
+          "era5_time",
+          "era5_datetime"
+        ]
+      );
+
+      const nasaTimestamp = findFirst(
+        latest,
+        [
+          "nasa_timestamp_local",
+          "nasa_timestamp",
+          "nasa_time",
+          "nasa_datetime"
+        ]
+      );
+
+      setText(
+        "atmoslinkV53Era5",
+        era5Timestamp ? "AVAILABLE" : "WAITING"
+      );
+
+      setMetricClass(
+        "atmoslinkV53Era5",
+        era5Timestamp ? "ONLINE" : "WAITING"
+      );
+
+      setText(
+        "atmoslinkV53Era5Time",
+        era5Timestamp
+          ? `Último dato: ${formatTimestamp(era5Timestamp)}`
+          : "Sin marca temporal disponible"
+      );
+
+      setText(
+        "atmoslinkV53Nasa",
+        nasaTimestamp ? "AVAILABLE" : "WAITING"
+      );
+
+      setMetricClass(
+        "atmoslinkV53Nasa",
+        nasaTimestamp ? "ONLINE" : "WAITING"
+      );
+
+      setText(
+        "atmoslinkV53NasaTime",
+        nasaTimestamp
+          ? `Último dato: ${formatTimestamp(nasaTimestamp)}`
+          : "Sin marca temporal disponible"
+      );
+
+      const rfValue = findFirst(
+        latest,
+        [
+          "rssi",
+          "snr",
+          "rf_rssi",
+          "signal_strength",
+          "mcs"
+        ]
+      );
+
+      setText(
+        "atmoslinkV53Rf",
+        rfValue !== null ? "AVAILABLE" : "WAITING"
+      );
+
+      setMetricClass(
+        "atmoslinkV53Rf",
+        rfValue !== null ? "ONLINE" : "WAITING"
+      );
+
+      const platformStatus =
+        safe(
+          health.status,
+          "UNKNOWN"
+        ).toUpperCase();
+
+      setText(
+        "atmoslinkV53Platform",
+        platformStatus
+      );
+
+      setMetricClass(
+        "atmoslinkV53Platform",
+        platformStatus
+      );
+
+      setText(
+        "atmoslinkV53PlatformDetail",
+        `${safe(
+          health.service,
+          "atmoslink-dashboard"
+        )} · API ${safe(health.version)}`
+      );
+
+      const stationId =
+        safe(health.station_id, "CU01");
+
+      const stationName =
+        safe(
+          health.station_name,
+          "Estación AtmosLink"
+        );
+
+      if (stationSelector) {
+        const existing =
+          Array.from(stationSelector.options)
+            .some(option => option.value === stationId);
+
+        if (!existing) {
+          const option =
+            document.createElement("option");
+
+          option.value = stationId;
+          option.textContent =
+            `${stationId} · ${stationName}`;
+
+          stationSelector.appendChild(option);
+        }
+
+        stationSelector.value = stationId;
+      }
+
+      const stationList =
+        Array.isArray(stationsPayload)
+          ? stationsPayload
+          : Array.isArray(stationsPayload.stations)
+            ? stationsPayload.stations
+            : [];
+
+      if (stationSelector) {
+        stationList.forEach(function (station) {
+          const id = safe(
+            station.station_id || station.id,
+            ""
+          );
+
+          if (!id) {
+            return;
+          }
+
+          const exists =
+            Array.from(stationSelector.options)
+              .some(option => option.value === id);
+
+          if (!exists) {
+            const option =
+              document.createElement("option");
+
+            option.value = id;
+            option.textContent =
+              `${id} · ${safe(
+                station.station_name || station.name,
+                "Estación"
+              )}`;
+
+            stationSelector.appendChild(option);
+          }
+        });
+      }
+
+      setText(
+        "atmoslinkV53Updated",
+        "Panel actualizado: " +
+          new Intl.DateTimeFormat(
+            "es-PE",
+            {
+              dateStyle: "short",
+              timeStyle: "medium"
+            }
+          ).format(new Date())
+      );
+
+    } catch (error) {
+      console.error(
+        "AtmosLink Dashboard V5.3:",
+        error
+      );
+
+      [
+        "atmoslinkV53LocalState",
+        "atmoslinkV53Database",
+        "atmoslinkV53Era5",
+        "atmoslinkV53Nasa",
+        "atmoslinkV53Rf",
+        "atmoslinkV53Platform"
+      ].forEach(function (id) {
+        setText(id, "ERROR");
+        setMetricClass(id, "ERROR");
+      });
+
+      setText(
+        "atmoslinkV53Updated",
+        "Error de actualización: " +
+          new Intl.DateTimeFormat(
+            "es-PE",
+            {
+              timeStyle: "medium"
+            }
+          ).format(new Date())
+      );
+    }
+  }
+
+  updateAtmosLinkV53();
+
+  window.setInterval(
+    updateAtmosLinkV53,
+    30000
+  );
+})();
+</script>
+
 
 </body>
 </html>

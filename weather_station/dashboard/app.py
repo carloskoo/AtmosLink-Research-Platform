@@ -1034,27 +1034,53 @@ def api_health():
         or latest_data.get("weather_timestamp_local")
     )
 
+    # AtmosLink V5.1.1 operational state model.
+    #
+    # 0-180 s: normal acquisition cadence.
+    # 181-600 s: expected operational delay.
+    # 601-900 s: confirmed stale observation.
+    # >900 s: critical acquisition interruption.
     if database_status != "ok":
         overall_status = "unhealthy"
+        operational_state = "CRITICAL"
         http_status = 503
 
     elif observation_age_seconds is None:
         overall_status = "degraded"
+        operational_state = "UNKNOWN"
         http_status = 200
 
-    elif observation_age_seconds > 300:
+    elif observation_age_seconds <= 180:
+        overall_status = "healthy"
+        operational_state = "FRESH"
+        http_status = 200
+
+    elif observation_age_seconds <= 600:
+        overall_status = "observing"
+        operational_state = "WAITING"
+        http_status = 200
+
+    elif observation_age_seconds <= 900:
         overall_status = "degraded"
+        operational_state = "STALE"
         http_status = 200
 
     else:
-        overall_status = "healthy"
+        overall_status = "critical"
+        operational_state = "CRITICAL"
         http_status = 200
 
     payload = {
         "status": overall_status,
+        "operational_state": operational_state,
+        "state_thresholds_seconds": {
+            "fresh_max": 180,
+            "waiting_max": 600,
+            "stale_max": 900,
+        },
         "service": "atmoslink-dashboard",
         "platform": "AtmosLink Research Platform",
-        "version": "5.1.0",
+        "version": "5.1.1",
         "station_id": STATION_CONTEXT.get("station_id"),
         "station_name": STATION_CONTEXT.get("station_name"),
         "database": {
