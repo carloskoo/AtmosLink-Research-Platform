@@ -1,0 +1,50 @@
+platform:
+  name: AtmosLink Research Platform
+  version: 1.0.0-lts
+  schema_version: 1
+  timezone: America/Lima
+  deployment_mode: field
+
+station_aliases:
+  CUNACALES_01: CU01
+  CUÑACALES_01: CU01
+  SANJOSE_01: SJ01
+  SAN_JOSE_01: SJ01
+
+stations:
+  CU01:
+    station_id: CU01
+    station_name: Cerro Cuñacales
+    enabled: true
+    role: AP
+    config_file: Config/station_cu01.yaml
+    database: SQLite/CU01/weather_local.db
+    backup_directory: Backups/CU01
+    deployment_mode: field
+
+  SJ01:
+    station_id: SJ01
+    station_name: Cerro San José - Hualgayoc
+    enabled: false
+    role: SM
+    config_file: Config/station_sj01.yaml
+    database: SQLite/SJ01/weather_local.db
+    backup_directory: Backups/SJ01
+    deployment_mode: field
+
+databases:
+  global_master: SQLite/global_master.db
+  propagation_field: SQLite/propagation_physics_field.db
+  propagation_synthetic_archive: SQLite/archive/propagation_physics_synthetic_2026-07-26.db
+
+backup:
+  local_root: Backups
+  remote_name: atmoslink_drive
+  remote_root: AtmosLink_Backups
+  keep_local_per_station: 20
+  verify_remote: true
+
+runtime:
+  directory: runtime
+  logs_directory: logs
+  reports_directory: reports
