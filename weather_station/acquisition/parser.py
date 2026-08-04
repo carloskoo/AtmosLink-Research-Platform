@@ -85,7 +85,7 @@ def parse_line(line: str):
         "bme_ok": int(p[15]),
         "rain_ok": int(p[16]),
 
-        "firmware": "V3_1_CLASSIC"
+        "firmware": "UNKNOWN"
     }
 
 

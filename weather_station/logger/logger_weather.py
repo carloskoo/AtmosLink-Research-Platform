@@ -19,26 +19,72 @@ from weather_station.acquisition.wind_rs485 import read_wind
 
 STATION_CONTEXT = get_station_context()
 
-SERIAL_PORT = STATION_CONTEXT.get("serial_port") or "/dev/ttyUSB0"
-BAUD_RATE = STATION_CONTEXT.get("serial_baudrate") or 115200
-SERIAL_TIMEOUT = STATION_CONTEXT.get("serial_timeout") or 2
+SERIAL_PORT = (
+    os.getenv("ATMOSLINK_SERIAL_PORT")
+    or STATION_CONTEXT.get("serial_port")
+    or "/dev/ttyUSB0"
+)
 
-WIND_REQUESTED = os.getenv(
-    "ATMOSLINK_WIND_ENABLED", "0"
-).strip().lower() in {"1", "true", "yes", "on"}
+BAUD_RATE = int(
+    os.getenv("ATMOSLINK_SERIAL_BAUDRATE")
+    or STATION_CONTEXT.get("serial_baudrate")
+    or 115200
+)
 
-WIND_PORT = os.getenv(
-    "ATMOSLINK_WIND_PORT",
-    "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0",
+SERIAL_TIMEOUT = float(
+    os.getenv("ATMOSLINK_SERIAL_TIMEOUT")
+    or STATION_CONTEXT.get("serial_timeout")
+    or 2
+)
+
+wind_enabled_env = os.getenv("ATMOSLINK_WIND_ENABLED")
+
+if wind_enabled_env is None:
+    WIND_REQUESTED = bool(
+        STATION_CONTEXT.get("wind_enabled", False)
+    )
+else:
+    WIND_REQUESTED = (
+        wind_enabled_env.strip().lower()
+        in {"1", "true", "yes", "on"}
+    )
+
+WIND_PORT = (
+    os.getenv("ATMOSLINK_WIND_PORT")
+    or STATION_CONTEXT.get("wind_port")
+    or "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0"
 ).strip()
 
-WIND_BAUDRATE = int(os.getenv("ATMOSLINK_WIND_BAUDRATE", "9600"))
-WIND_SLAVE_ID = int(os.getenv("ATMOSLINK_WIND_SLAVE_ID", "1"))
-WIND_START_REGISTER = int(
-    os.getenv("ATMOSLINK_WIND_START_REGISTER", "0")
+WIND_BAUDRATE = int(
+    os.getenv("ATMOSLINK_WIND_BAUDRATE")
+    or STATION_CONTEXT.get("wind_baudrate")
+    or 9600
 )
-WIND_QUANTITY = int(os.getenv("ATMOSLINK_WIND_QUANTITY", "3"))
-WIND_TIMEOUT = float(os.getenv("ATMOSLINK_WIND_TIMEOUT", "2.0"))
+
+WIND_SLAVE_ID = int(
+    os.getenv("ATMOSLINK_WIND_SLAVE_ID")
+    or STATION_CONTEXT.get("wind_slave_id")
+    or 1
+)
+
+WIND_START_REGISTER = int(
+    os.getenv("ATMOSLINK_WIND_START_REGISTER")
+    or STATION_CONTEXT.get("wind_start_register")
+    or 0
+)
+
+WIND_QUANTITY = int(
+    os.getenv("ATMOSLINK_WIND_QUANTITY")
+    or STATION_CONTEXT.get("wind_quantity")
+    or 10
+)
+
+WIND_TIMEOUT = float(
+    os.getenv("ATMOSLINK_WIND_TIMEOUT")
+    or STATION_CONTEXT.get("wind_timeout")
+    or 2.0
+)
+
 
 _WIND_WARNING_STATE = {
     "reason": None,
@@ -511,6 +557,19 @@ def run_logger():
                                 line,
                             )
                             continue
+
+                        row["firmware_version"] = (
+                            STATION_CONTEXT.get("firmware_version")
+                            or "UNKNOWN"
+                        )
+                        row["firmware_build"] = (
+                            STATION_CONTEXT.get("firmware_build")
+                            or "UNKNOWN"
+                        )
+                        row["device_id"] = (
+                            STATION_CONTEXT.get("device_id")
+                            or "UNKNOWN"
+                        )
 
                         ts_utc, ts_local = insert_weather(row)
                         append_csv(

@@ -139,9 +139,16 @@ def insert_weather(row: dict):
             wind_speed_ms,
             wind_direction_deg,
             wind_gust_ms,
-            wind_ok
+            wind_ok,
+            firmware_version,
+            firmware_build,
+            device_id
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
     """, (
         timestamp_utc,
         timestamp_local,
@@ -169,6 +176,9 @@ def insert_weather(row: dict):
         row.get("wind_direction_deg"),
         row.get("wind_gust_ms"),
         row.get("wind_ok", 0),
+        row.get("firmware_version", "UNKNOWN"),
+        row.get("firmware_build", "UNKNOWN"),
+        row.get("device_id", "UNKNOWN"),
     ))
 
     conn.commit()
