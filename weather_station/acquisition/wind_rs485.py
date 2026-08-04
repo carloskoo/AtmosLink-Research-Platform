@@ -134,14 +134,15 @@ def read_wind(
         ser.flush()
 
         time.sleep(0.2)
-
         response = ser.read(64)
 
     if not response:
         return {
             "wind_speed_ms": None,
+            "wind_speed_kmh": None,
             "wind_direction_deg": None,
             "wind_direction_text": None,
+            "wind_sector_code": None,
             "wind_gust_ms": None,
             "wind_ok": 0,
             "wind_error": "sin_respuesta",
@@ -150,34 +151,50 @@ def read_wind(
 
     _, registers = parse_registers(response)
 
-    if len(registers) < 2:
-        raise ValueError(f"Registros insuficientes: {registers}")
+    if len(registers) < 9:
+        raise ValueError(
+            f"Registros insuficientes: {registers}"
+        )
 
-    speed_raw = registers[0]
-    direction_code = registers[1]
+    # Mapa validado experimentalmente para este anemómetro:
+    # R00 = velocidad en décimas de m/s
+    # R02 = velocidad en centésimas de km/h
+    # R03 = dirección en décimas de grado
+    # R04 = sector cardinal codificado de 0 a 15
+    speed_ms = registers[0] / 10.0
+    speed_kmh = registers[2] / 100.0
+    direction_deg = registers[3] / 10.0
+    sector_code = registers[4]
 
-    speed_ms = speed_raw / 10.0
-
-    direction_text, direction_deg = DIRECTIONS_16.get(
-        direction_code,
+    direction_text, sector_reference_deg = DIRECTIONS_16.get(
+        sector_code,
         ("UNKNOWN", None),
     )
 
     wind_ok = 1
+    wind_error = None
 
-    if speed_ms < 0 or speed_ms > 60:
+    if not 0.0 <= speed_ms <= 60.0:
         wind_ok = 0
+        wind_error = f"velocidad_fuera_de_rango:{speed_ms}"
 
-    if direction_deg is None:
+    if not 0.0 <= direction_deg <= 360.0:
         wind_ok = 0
+        wind_error = f"direccion_fuera_de_rango:{direction_deg}"
+
+    if sector_reference_deg is None:
+        wind_ok = 0
+        wind_error = f"sector_desconocido:{sector_code}"
 
     return {
         "wind_speed_ms": round(speed_ms, 2),
-        "wind_direction_deg": direction_deg,
+        "wind_speed_kmh": round(speed_kmh, 2),
+        "wind_direction_deg": round(direction_deg, 1),
         "wind_direction_text": direction_text,
+        "wind_sector_code": sector_code,
         "wind_gust_ms": None,
         "wind_ok": wind_ok,
-        "wind_error": None,
+        "wind_error": wind_error,
         "wind_raw_registers": registers,
     }
 
